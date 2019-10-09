@@ -20,7 +20,7 @@ CAUTION: NIFs can crash the Erlang VM
 
 # Example
 
-**nif.nim**
+*nif.nim*
 
 ```nim
 import nif_interface
@@ -45,7 +45,7 @@ ERL_NIF_INIT(Elixir.NimNif, funcs, NULL, NULL, NULL, NULL)
 """.}
 ```
 
-**niftest.ex**
+*niftest.ex*
 
 ```elixir
 defmodule NimNif do
@@ -65,7 +65,7 @@ end
 
 ```
 $ nim c -f --gc:none -d:release --noMain --app:lib --cincludes:/usr/lib/erlang/usr/include  -o:nif.so nif.nim
-$ iex ./nimtest.ex
+$ iex ./niftest.ex
 
 > Erlang/OTP 22 [erts-10.5] [source] [64-bit] [smp:2:2] [ds:2:2:10] [async-threads:1] [hipe]
 >
@@ -79,9 +79,4 @@ $ iex ./nimtest.ex
 * Impl enif consume_timeslice
 * Attempt impl enif events
 * Attempt impl enif select
-
-
-
-
-
 

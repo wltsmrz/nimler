@@ -1,3 +1,4 @@
+
 import nif_interface
 
 proc add_int(env: ptr ErlNifEnv, argc: cint, argv: array[2, ErlNifTerm]): ErlNifTerm {.exportc.} =
@@ -31,15 +32,3 @@ proc update_map(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): Erl
     return res
   else:
     return enif_make_badarg(env)
-
-
-{.emit: """
-static ErlNifFunc funcs[] = {
-  {"add_int", 2, add_int},
-  {"add_double", 2, add_double},
-  {"update_map", 1, update_map}
-};
-
-ERL_NIF_INIT(Elixir.NimNif, funcs, NULL, NULL, NULL, NULL)
-""".}
-

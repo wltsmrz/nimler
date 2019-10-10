@@ -56,34 +56,45 @@ type
 
 
 proc enif_alloc*(size: csize): pointer {.importc: "enif_alloc",
+                                     header: "erl_nif.h".}
 proc enif_free*(`ptr`: pointer) {.importc: "enif_free", header: "erl_nif.h".}
 proc enif_realloc*(`ptr`: pointer; size: csize): pointer {.importc: "enif_realloc",
     header: "erl_nif.h".}
 
-proc enif_is_atom*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.importc: "enif_is_atom",
+proc enif_is_process_alive*(a1: ptr ErlNifEnv; a2: ptr ErlNifPid): bool {.importc: "enif_is_process_alive",
+    header: "erl_nif.h".}
+proc enif_is_port_alive*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_port_alive",
+    header: "erl_nif.h".}
+proc enif_is_pid_undefined*(a2: ptr ErlNifPid): bool {.importc: "enif_is_pid_undefined",
+    header: "erl_nif.h".}
+proc enif_is_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_exception",
+    header: "erl_nif.h".}
+proc enif_is_atom*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_atom",
     header: "erl_nif.h".}
 proc enif_is_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.
     importc: "enif_is_binary", header: "erl_nif.h".}
-proc enif_is_ref*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.importc: "enif_is_ref",
+proc enif_is_ref*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_ref",
     header: "erl_nif.h".}
-proc enif_is_fun*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.importc: "enif_is_fun",
+proc enif_is_fun*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_fun",
     header: "erl_nif.h".}
-proc enif_is_pid*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.importc: "enif_is_pid",
+proc enif_is_pid*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_pid",
     header: "erl_nif.h".}
-proc enif_is_port*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.importc: "enif_is_port",
+proc enif_is_port*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_port",
     header: "erl_nif.h".}
-proc enif_is_identical*(a1: ErlNifTerm; a2: ErlNifTerm): cint {.
+proc enif_is_identical*(lhs: ErlNifTerm; rhs: ErlNifTerm): bool {.
     importc: "enif_is_identical", header: "erl_nif.h".}
-proc enif_is_list*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.importc: "enif_is_list",
+proc enif_is_list*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_list",
     header: "erl_nif.h".}
-proc enif_is_tuple*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.
+proc enif_is_tuple*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.
     importc: "enif_is_tuple", header: "erl_nif.h".}
-proc enif_is_empty_list*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.
+proc enif_is_empty_list*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.
     importc: "enif_is_empty_list", header: "erl_nif.h".}
-proc enif_is_map*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.importc: "enif_is_map",
+proc enif_is_map*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_map",
     header: "erl_nif.h".}
-proc enif_is_number*(a1: ptr ErlNifEnv; term: ErlNifTerm): cint {.
+proc enif_is_number*(a1: ptr ErlNifEnv; term: ErlNifTerm): bool {.
     importc: "enif_is_number", header: "erl_nif.h".}
+proc enif_is_current_process_alive*(a1: ptr ErlNifEnv): bool {.
+    importc: "enif_is_current_process_alive", header: "erl_nif.h".}
 proc enif_compare*(a1: ErlNifTerm; a2: ErlNifTerm): cint {.importc: "enif_compare",
     header: "erl_nif.h".}
 
@@ -97,48 +108,64 @@ proc enif_realloc_binary*(bin: ptr ErlNifBinary; size: csize): cint {.
 proc enif_release_binary*(bin: ptr ErlNifBinary): cint {.
     importc: "enif_release_binary", header: "erl_nif.h".}
 
+proc enif_get_atom*(a1: ptr ErlNifEnv; atom: ErlNifTerm; buf: cstringArray; len: cuint;
+                   a5: ErlNifCharEncoding): cuint {.importc: "enif_get_atom",
+    header: "erl_nif.h".}
+proc enif_get_atom_length*(a1: ptr ErlNifEnv; atom: ErlNifTerm; len: ptr cuint;
+                   a5: ErlNifCharEncoding): bool {.importc: "enif_get_atom_length",
+    header: "erl_nif.h".}
 proc enif_get_int*(a1: ptr ErlNifEnv; a2: ErlNifTerm; ip: ptr cint): bool {.
     importc: "enif_get_int", header: "erl_nif.h".}
-proc enif_get_uint*(a1: ptr ErlNifEnv; a2: ErlNifTerm; ip: ptr cuint): cint {.
-    importc: "enif_get_uint", header: "erl_nif.h".}
-proc enif_get_long*(a1: ptr ErlNifEnv; a2: ErlNifTerm; ip: ptr clong): cint {.
+proc enif_get_long*(a1: ptr ErlNifEnv; a2: ErlNifTerm; ip: ptr clong): bool {.
     importc: "enif_get_long", header: "erl_nif.h".}
-proc enif_get_ulong*(a1: ptr ErlNifEnv; a2: ErlNifTerm; ip: ptr culong): cint {.
+proc enif_get_int64*(a1: ptr ErlNifEnv; a2: ErlNifTerm; ip: ptr clonglong): bool {.
+    importc: "enif_get_int64", header: "erl_nif.h".}
+proc enif_get_uint*(a1: ptr ErlNifEnv; a2: ErlNifTerm; ip: ptr cuint): bool {.
+    importc: "enif_get_uint", header: "erl_nif.h".}
+proc enif_get_ulong*(a1: ptr ErlNifEnv; a2: ErlNifTerm; ip: ptr culong): bool {.
     importc: "enif_get_ulong", header: "erl_nif.h".}
+proc enif_get_uint64*(a1: ptr ErlNifEnv; a2: ErlNifTerm; ip: ptr culonglong): bool {.
+    importc: "enif_get_uint64", header: "erl_nif.h".}
 proc enif_get_double*(a1: ptr ErlNifEnv; a2: ErlNifTerm; dp: ptr cdouble): bool {.
     importc: "enif_get_double", header: "erl_nif.h".}
 proc enif_get_list_cell*(a1: ptr ErlNifEnv; a2: ErlNifTerm; head: ptr ErlNifTerm;
-                        tail: ptr ErlNifTerm): cint {.importc: "enif_get_list_cell",
+                        tail: ptr ErlNifTerm): bool {.importc: "enif_get_list_cell",
     header: "erl_nif.h".}
-proc enif_get_list_length*(a1: ptr ErlNifEnv; a2: ErlNifTerm; len: ptr cuint): cint {.
+proc enif_get_list_length*(a1: ptr ErlNifEnv; a2: ErlNifTerm; len: ptr cuint): bool {.
     importc: "enif_get_list_length", header: "erl_nif.h".}
 proc enif_get_tuple*(a1: ptr ErlNifEnv; a2: ErlNifTerm; arity: ptr cint;
                     array: ptr ptr ErlNifTerm): cint {.importc: "enif_get_tuple",
     header: "erl_nif.h".}
-proc enif_get_string*(a1: ptr ErlNifEnv; list: ErlNifTerm; buf: cstring; len: cuint;
+proc enif_get_string*(a1: ptr ErlNifEnv; list: ErlNifTerm; buf: cstringArray; len: cuint;
                      a5: ErlNifCharEncoding): cint {.importc: "enif_get_string",
     header: "erl_nif.h".}
-proc enif_get_atom*(a1: ptr ErlNifEnv; atom: ErlNifTerm; buf: cstring; len: cuint;
-                   a5: ErlNifCharEncoding): cint {.importc: "enif_get_atom",
-    header: "erl_nif.h".}
 
+proc enif_make_atom*(a1: ptr ErlNifEnv; a2: cstring): ErlNifTerm {.
+    importc: "enif_make_atom", header: "erl_nif.h".}
+proc enif_make_atom_len*(a1: ptr ErlNifEnv; a2: cstring; a3: csize): ErlNifTerm {.
+    importc: "enif_make_atom_len", header: "erl_nif.h".}
+proc enif_make_exisiting_atom*(a1: ptr ErlNifEnv; a2: cstring; atom: ptr ErlNifTerm;
+                              a4: ErlNifCharEncoding): bool {.
+    importc: "enif_make_exisiting_atom", header: "erl_nif.h".}
+proc enif_make_exisiting_atom_len*(a1: ptr ErlNifEnv; a2: cstring; len: csize; atom: ptr ErlNifTerm;
+                              a4: ErlNifCharEncoding): cint {.
+    importc: "enif_make_exisiting_atom_len", header: "erl_nif.h".}
 proc enif_make_binary*(a1: ptr ErlNifEnv; a2: ptr ErlNifBinary): ErlNifTerm {.
     importc: "enif_make_binary", header: "erl_nif.h".}
 proc enif_make_badarg*(a1: ptr ErlNifEnv): ErlNifTerm {.importc: "enif_make_badarg",
     header: "erl_nif.h".}
 proc enif_make_int*(a1: ptr ErlNifEnv; a2: cint): ErlNifTerm {.
     importc: "enif_make_int", header: "erl_nif.h".}
+proc enif_make_long*(a1: ptr ErlNifEnv; a2: clong): ErlNifTerm {.
+    importc: "enif_make_long", header: "erl_nif.h".}
+proc enif_make_int64*(a1: ptr ErlNifEnv; a2: clonglong): ErlNifTerm {.
+    importc: "enif_make_int64", header: "erl_nif.h".}
 proc enif_make_ulong*(a1: ptr ErlNifEnv; a2: culong): ErlNifTerm {.
     importc: "enif_make_ulong", header: "erl_nif.h".}
+proc enif_make_uint64*(a1: ptr ErlNifEnv; a2: culonglong): ErlNifTerm {.
+    importc: "enif_make_ulonglong", header: "erl_nif.h".}
 proc enif_make_double*(a1: ptr ErlNifEnv; a2: cdouble): ErlNifTerm {.
     importc: "enif_make_double", header: "erl_nif.h".}
-proc enif_make_atom*(a1: ptr ErlNifEnv; a2: cstring): ErlNifTerm {.
-    importc: "enif_make_atom", header: "erl_nif.h".}
-proc enif_make_atom_len*(a1: ptr ErlNifEnv; a2: cstring; a3: csize): ErlNifTerm {.
-    importc: "enif_make_atom_len", header: "erl_nif.h".}
-proc enif_make_exisiting_atom*(a1: ptr ErlNifEnv; a2: cstring; atom: ptr ErlNifTerm;
-                              a4: ErlNifCharEncoding): cint {.
-    importc: "enif_make_exisiting_atom", header: "erl_nif.h".}
 proc enif_make_tuple*(a1: ptr ErlNifEnv; cnt: cuint): ErlNifTerm {.varargs,
     importc: "enif_make_tuple", header: "erl_nif.h".}
 proc enif_make_list*(a1: ptr ErlNifEnv; cnt: cuint): ErlNifTerm {.varargs,
@@ -151,8 +178,6 @@ proc enif_make_ref*(a1: ptr ErlNifEnv): ErlNifTerm {.importc: "enif_make_ref",
     header: "erl_nif.h".}
 proc enif_make_uint*(a1: ptr ErlNifEnv; i: cuint): ErlNifTerm {.
     importc: "enif_make_uint", header: "erl_nif.h".}
-proc enif_make_long*(a1: ptr ErlNifEnv; i: clong): ErlNifTerm {.
-    importc: "enif_make_long", header: "erl_nif.h".}
 proc enif_make_tuple_from_array*(a1: ptr ErlNifEnv; arr: ptr ErlNifTerm; cnt: cuint): ErlNifTerm {.
     importc: "enif_make_tuple_from_array", header: "erl_nif.h".}
 proc enif_make_list_from_array*(a1: ptr ErlNifEnv; arr: ptr ErlNifTerm; cnt: cuint): ErlNifTerm {.
@@ -178,30 +203,35 @@ proc enif_free_env*(env: ptr ErlNifEnv) {.importc: "enif_free_env",
                                       header: "erl_nif.h".}
 proc enif_clear_env*(env: ptr ErlNifEnv) {.importc: "enif_clear_env",
                                        header: "erl_nif.h".}
+
 proc enif_send*(a1: ptr ErlNifEnv; a2: ptr ErlNifPid; msg_env: ptr ErlNifEnv;
                msg: ErlNifTerm): cint {.importc: "enif_send", header: "erl_nif.h".}
 proc enif_make_copy*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.
     importc: "enif_make_copy", header: "erl_nif.h".}
 proc enif_self*(a1: ptr ErlNifEnv; a2: ptr ErlNifPid): ptr ErlNifPid {.
     importc: "enif_self", header: "erl_nif.h".}
-proc enif_get_local_pid*(a1: ptr ErlNifEnv; a2: ErlNifTerm; pid: ptr ErlNifPid): cint {.
+proc enif_get_local_pid*(a1: ptr ErlNifEnv; a2: ErlNifTerm; pid: ptr ErlNifPid): bool {.
     importc: "enif_get_local_pid", header: "erl_nif.h".}
 
-proc enif_get_map_size*(a1: ptr ErlNifEnv; a2: ErlNifTerm; size: ptr csize): cint {.
+proc enif_get_map_size*(a1: ptr ErlNifEnv; a2: ErlNifTerm; size: ptr csize): bool {.
     importc: "enif_get_map_size", header: "erl_nif.h".}
 proc enif_make_new_map*(a1: ptr ErlNifEnv): ErlNifTerm {.
     importc: "enif_make_new_map", header: "erl_nif.h".}
 proc enif_make_map_put*(a1: ptr ErlNifEnv; map_in: ErlNifTerm; key: ErlNifTerm;
-                       value: ErlNifTerm; map_out: ptr ErlNifTerm): cint {.
+                       value: ErlNifTerm; map_out: ptr ErlNifTerm): bool {.
     importc: "enif_make_map_put", header: "erl_nif.h".}
 proc enif_get_map_value*(a1: ptr ErlNifEnv; map: ErlNifTerm; key: ErlNifTerm;
-                        value: ptr ErlNifTerm): cint {.
+                        value: ptr ErlNifTerm): bool {.
     importc: "enif_get_map_value", header: "erl_nif.h".}
 proc enif_make_map_update*(a1: ptr ErlNifEnv; map_in: ErlNifTerm; key: ErlNifTerm;
                           value: ErlNifTerm; map_out: ptr ErlNifTerm): bool {.
     importc: "enif_make_map_update", header: "erl_nif.h".}
 proc enif_make_map_remove*(a1: ptr ErlNifEnv; map_in: ErlNifTerm; key: ErlNifTerm;
-                          map_out: ptr ErlNifTerm): cint {.
+                          map_out: ptr ErlNifTerm): bool {.
     importc: "enif_make_map_remove", header: "erl_nif.h".}
 
   
+proc alloc_c_string*(len: Natural): cstringArray =
+  return cast[cstringArray](alloc0(sizeof(cstring) * (1 + len)))
+
+

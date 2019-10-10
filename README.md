@@ -64,12 +64,8 @@ end
 ### Running example
 
 ```
-$ nim c -f --gc:none -d:release --noMain --app:lib --cincludes:/usr/lib/erlang/usr/include  -o:nif.so nif.nim
-$ iex ./niftest.ex
-
-> Erlang/OTP 22 [erts-10.5] [source] [64-bit] [smp:2:2] [ds:2:2:10] [async-threads:1] [hipe]
->
-> add_int(1, 2): 3
+$ nim c -f --gc:none -d:release --noMain --app:lib --cincludes:/usr/lib/erlang/usr/include  -o:nif.so example_nif.nim
+$ iex ./example_nif.ex
 ```
 
 # TODO

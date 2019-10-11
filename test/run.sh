@@ -20,7 +20,7 @@ echo "building nim nif"
 # $NIM_BUILD_IN
 
 nim c \
---verbosity:0 \
+--verbosity:1 \
 --hints:off \
 --warnings:off \
 --forceBuild \

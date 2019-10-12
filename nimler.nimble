@@ -9,7 +9,7 @@ skipDirs = @["test"]
 # installFiles = @["nif_interface.nim"]
 requires "nim >= 1.0.0"
 
---cincludes:"/usr/lib/erlang/usr/include"
+switch("cincludes", staticExec("escript ./get_erts_path.erl"))
 
 proc configTest() =
   --verbosity:1
@@ -19,12 +19,11 @@ proc configTest() =
   --stacktrace:on
   --linetrace:on
   --debuginfo
-  --gc:"none"
+  --gc:none
   --noMain
   --app:lib
   --path:"."
   --out:"test/nif.so"
-
 
 task test, "noop": quit()
 

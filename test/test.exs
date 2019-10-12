@@ -79,20 +79,34 @@ defmodule NimlerTest do
             assert(0 == NimlerWrapper.enif_is_atom(1))
         test "is_binary(\"test\")", do:
             assert(1 == NimlerWrapper.enif_is_binary("test"))
+        test "is_binary(1)", do:
+            assert(0 == NimlerWrapper.enif_is_binary(1))
         test "is_current_process_alive()", do:
             assert(1 == NimlerWrapper.enif_is_current_process_alive())
         test "is_empty_list([])", do:
             assert(1 == NimlerWrapper.enif_is_empty_list([]))
+        test "is_empty_list([1])", do:
+            assert(0 == NimlerWrapper.enif_is_empty_list([1]))
         test "is_identical(:test, :test)", do:
             assert(1 == NimlerWrapper.enif_is_identical(:test, :test))
+        test "is_identical(:test, :testx)", do:
+            assert(0 == NimlerWrapper.enif_is_identical(:test, :testx))
         test "is_list([1])", do:
             assert(1 == NimlerWrapper.enif_is_list([1]))
+        test "is_list(1)", do:
+            assert(0 == NimlerWrapper.enif_is_list(1))
         test "is_map(%{a: 1})", do:
             assert(1 == NimlerWrapper.enif_is_map(%{a: 1}))
+        test "is_map(1)", do:
+            assert(0 == NimlerWrapper.enif_is_map(1))
         test "is_number(1)", do:
             assert(1 == NimlerWrapper.enif_is_number(1))
+        test "is_number([])", do:
+            assert(0 == NimlerWrapper.enif_is_number([]))
         test "is_pid(self())", do:
             assert(1 == NimlerWrapper.enif_is_pid(self()))
+        test "is_pid(1))", do:
+            assert(0 == NimlerWrapper.enif_is_pid(1))
         test "is_pid_undefined(self())", do:
             assert(0 == NimlerWrapper.enif_is_pid_undefined(self()))
         @tag :skip
@@ -112,8 +126,8 @@ defmodule NimlerTest do
         test "is_exception()", do:
             assert(1 == NimlerWrapper.enif_is_exception())
         @tag :skip
-        test "is_fun()", do:
-            assert(1 == NimlerWrapper.enif_is_fun())
+        test "is_fun(fn)", do:
+            assert(1 == NimlerWrapper.enif_is_ref(&round/1))
     end # term_type_checkers
 
     describe "constructors" do

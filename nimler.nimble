@@ -9,8 +9,6 @@ skipDirs = @["test"]
 # installFiles = @["nif_interface.nim"]
 requires "nim >= 1.0.0"
 
-switch("cincludes", staticExec("escript ./get_erts_path.erl"))
-
 proc configTest() =
   --verbosity:1
   --forceBuild
@@ -29,7 +27,8 @@ task test, "noop": quit()
 
 task build_test, "build Erlang NIF shared obj for integration test":
   configTest()
+  switch("cincludes", staticExec("escript get_erts_path.erl"))
   setCommand("compile", "test/nif")
 
 task test_integration, "run Elixir integration test":
-  exec("elixir test/test.exs")
+  exec("elixir -r test/wrapper.ex test/test.exs")

@@ -76,8 +76,7 @@ proc enif_is_pid_undefined*(a2: ptr ErlNifPid): bool {.importc: "enif_is_pid_und
     header: "erl_nif.h".}
 proc enif_is_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_exception",
     header: "erl_nif.h".}
-proc enif_is_atom*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_atom",
-    header: "erl_nif.h".}
+proc enif_is_atom*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_atom", header: "erl_nif.h".}
 proc enif_is_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.
     importc: "enif_is_binary", header: "erl_nif.h".}
 proc enif_is_ref*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_ref",
@@ -119,8 +118,7 @@ proc enif_get_atom*(a1: ptr ErlNifEnv; atom: ErlNifTerm; buf: Buffer; len: cuint
                    a5: ErlNifCharEncoding): cuint {.importc: "enif_get_atom",
     header: "erl_nif.h".}
 proc enif_get_atom_length*(a1: ptr ErlNifEnv; atom: ErlNifTerm; len: ptr cuint;
-                   a5: ErlNifCharEncoding): bool {.importc: "enif_get_atom_length",
-    header: "erl_nif.h".}
+                   a5: ErlNifCharEncoding): bool {.importc: "enif_get_atom_length", header: "erl_nif.h".}
 proc enif_get_int*(a1: ptr ErlNifEnv; a2: ErlNifTerm; ip: ptr cint): bool {.
     importc: "enif_get_int", header: "erl_nif.h".}
 proc enif_get_long*(a1: ptr ErlNifEnv; a2: ErlNifTerm; ip: ptr clong): bool {.

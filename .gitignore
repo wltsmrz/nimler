@@ -1,3 +1,5 @@
 test/nif.so
 test/erl_crash.dump
 test/erl_nif.nim
+erl_crash.dump
+.formatter.exs

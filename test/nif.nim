@@ -2,6 +2,7 @@ import ../nif_interface
 
 proc is_atom(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int(env, cast[cint](enif_is_atom(env, argv[0])))
+
 proc is_binary(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int(env, cast[cint](enif_is_binary(env, argv[0])))
 
@@ -13,6 +14,7 @@ proc is_empty_list(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): 
 
 proc is_exception(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int(env, cast[cint](enif_is_exception(env, argv[0])))
+
 proc is_fun(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int(env, cast[cint](enif_is_fun(env, argv[0])))
 
@@ -21,10 +23,13 @@ proc is_identical(env: ptr ErlNifEnv, argc: cint, argv: array[2, ErlNifTerm]): E
 
 proc is_list(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int(env, cast[cint](enif_is_list(env, argv[0])))
+
 proc is_map(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int(env, cast[cint](enif_is_map(env, argv[0])))
+
 proc is_number(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int(env, cast[cint](enif_is_number(env, argv[0])))
+
 proc is_pid(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int(env, cast[cint](enif_is_pid(env, argv[0])))
 
@@ -32,7 +37,7 @@ proc is_pid_undefined(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]
   var pid: ErlNifPid
   discard enif_get_local_pid(env, argv[0], addr(pid))
   return enif_make_int(env, cast[cint](enif_is_pid_undefined(addr(pid))))
- 
+
 # proc is_port(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
 #   return enif_make_int(env, cast[cint](enif_is_port(env, argv[0])))
 # 
@@ -46,22 +51,26 @@ proc is_process_alive(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]
 
 proc is_ref(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int(env, cast[cint](enif_is_ref(env, argv[0])))
+
 proc is_tuple(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int(env, cast[cint](enif_is_tuple(env, argv[0])))
 
 proc get_atom(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
+  let atom_len = 4
+  let string_buf = cast[Buffer](create(cchar, atom_len + 1))
+
+  if enif_get_atom(env, argv[0], string_buf, cuint(atom_len + 1), ERL_NIF_LATIN1) == 0:
+    return enif_make_badarg(env)
+
+  return enif_make_atom(env, string_buf)
+
+proc get_atom_length(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   var atom_len: cuint
 
   if not enif_get_atom_length(env, argv[0], addr(atom_len), ERL_NIF_LATIN1):
     return enif_make_badarg(env)
 
-  let string_buf = cast[Buffer](create(cchar, int(atom_len) + 1))
-
-  if enif_get_atom(env, argv[0], string_buf, atom_len + 1, ERL_NIF_LATIN1) == 0:
-    return enif_make_badarg(env)
-
-  return enif_make_string(env, string_buf, ERL_NIF_LATIN1)
-
+  return enif_make_uint(env, atom_len)
 
 proc get_string(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   var string_len: cuint
@@ -165,32 +174,49 @@ proc get_map_value(env: ptr ErlNifEnv, argc: cint, argv: array[2, ErlNifTerm]): 
 
   return map_val_term
 
-proc make_map_put(env: ptr ErlNifEnv, argc: cint, argv: array[3, ErlNifTerm]): ErlNifTerm {.exportc.} =
-  let new_map = enif_make_new_map(env)
+proc get_local_pid(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
+  var pid_obj: ErlNifPid
 
-  if not enif_make_map_put(env, argv[0], argv[1], argv[2], unsafeAddr(new_map)):
+  if not enif_get_local_pid(env, argv[0], addr(pid_obj)):
+    return enif_make_badarg(env)
+
+  return pid_obj.pid
+
+proc make_map_put(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
+  let new_map = enif_make_new_map(env)
+  let k = enif_make_atom(env, cstring("a"))
+  let v = enif_make_int(env, 1)
+
+  if not enif_make_map_put(env, new_map, k, v, unsafeAddr(new_map)):
     return enif_make_badarg(env)
 
   return new_map
 
-proc make_map_remove(env: ptr ErlNifEnv, argc: cint, argv: array[2, ErlNifTerm]): ErlNifTerm {.exportc.} =
+proc make_map_remove(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
   let new_map = enif_make_new_map(env)
+  let k = enif_make_atom(env, cstring("a"))
+  let v = enif_make_int(env, 1)
 
-  if not enif_make_map_remove(env, argv[0], argv[1], unsafeAddr(new_map)):
+  if not enif_make_map_put(env, new_map, k, v, unsafeAddr(new_map)):
+    return enif_make_badarg(env)
+
+  if not enif_make_map_remove(env, new_map, k, unsafeAddr(new_map)):
     return enif_make_badarg(env)
 
   return new_map
 
-proc make_map_update(env: ptr ErlNifEnv, argc: cint, argv: array[3, ErlNifTerm]): ErlNifTerm {.exportc.} =
+proc make_map_update(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
   let new_map = enif_make_new_map(env)
+  let k = enif_make_atom(env, cstring("a"))
+  let v = enif_make_int(env, 1)
+  let nv = enif_make_int(env, 2)
 
-  if not enif_make_map_update(env, argv[0], argv[1], argv[2], unsafeAddr(new_map)):
+  if not enif_make_map_update(env, new_map, k, nv, unsafeAddr(new_map)):
     return enif_make_badarg(env)
 
   return new_map
 
 proc make_string(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
-
   return enif_make_string(env, cstring("test"), ERL_NIF_LATIN1)
 
 proc make_string_len(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
@@ -198,7 +224,6 @@ proc make_string_len(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm])
   return enif_make_string_len(env, cstring("test"), 4, ERL_NIF_LATIN1)
 
 proc make_tuple(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
-
   let tuple_len: cuint = 3
   let t1 = enif_make_int(env, cint(1))
   let t2 = enif_make_int(env, cint(2))
@@ -215,7 +240,6 @@ proc make_long(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm]): ErlN
 proc make_int64(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int64(env, clonglong(1))
 
-
 proc make_uint(env: ptr ErlNifEnv, argc: cuint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_uint(env, cuint(1))
 
@@ -230,10 +254,12 @@ proc make_double(env: ptr ErlNifEnv, argc: cuint, argv: array[0, ErlNifTerm]): E
 
 proc make_new_binary(env: ptr ErlNifEnv, argc: cuint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
   var term: ErlNifTerm
-  let binary_ptr = enif_make_new_binary(env, sizeof(cchar) * 2, addr(term))
+  let binary_ptr = enif_make_new_binary(env, sizeof(cchar) * 4, addr(term))
   let res = cast[Buffer](binary_ptr)
-  res[0] = 'o'
-  res[1] = 'k'
+  res[0] = 't'
+  res[1] = 'e'
+  res[2] = 's'
+  res[3] = 't'
 
   return term
 
@@ -241,10 +267,9 @@ proc make_new_map(env: ptr ErlNifEnv, argc: cuint, argv: array[0, ErlNifTerm]): 
   return enif_make_new_map(env)
 
 proc make_map_from_arrays(env: ptr ErlNifEnv, argc: cuint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
-
   let keys = [
-    enif_make_atom(env, cstring("test1")),
-    enif_make_atom(env, cstring("test2"))
+    enif_make_atom(env, cstring("a")),
+    enif_make_atom(env, cstring("b"))
   ]
   let values = [
     enif_make_int(env, cint(1)),
@@ -328,8 +353,6 @@ proc make_resource(env: ptr ErlNifEnv, argc: cuint, argv: array[0, ErlNifTerm]):
 
 proc make_unique_integer(env: ptr ErlNifEnv, argc: cuint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_unique_integer(env, ERL_NIF_UNIQUE_POSITIVE)
-
-# TODO
 # proc make_sub_binary(env: ptr ErlNifEnv, argc: cuint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
 #   var bin_term: ErlNifTerm
 #   let bin_ptr = enif_make_new_binary(env, sizeof(cchar) * 2, addr(bin_term))
@@ -363,23 +386,24 @@ static ErlNifFunc funcs[] = {
   {"enif_is_process_alive", 1, is_process_alive},
   {"enif_is_ref", 1, is_ref},
   {"enif_is_tuple", 1, is_tuple},
-
-  {"get_atom", 1, get_atom},
-  {"get_string", 1, get_string},
-  {"get_int", 1, get_int},
-  {"get_long", 1, get_long},
-  {"get_int64", 1, get_int64},
-  {"get_uint", 1, get_uint},
-  {"get_ulong", 1, get_ulong},
-  {"get_uint64", 1, get_uint64},
-  {"get_double", 1, get_double},
-  {"get_list_length", 1, get_list_length},
-  {"get_list_cell", 1, get_list_cell},
-  {"get_map_size", 1, get_map_size},
-  {"get_map_value", 2, get_map_value},
-  {"make_map_put", 3, make_map_put},
-  {"make_map_remove", 2, make_map_remove},
-  {"make_map_update", 3, make_map_update},
+  {"enif_get_atom", 1, get_atom},
+  {"enif_get_atom_length", 1, get_atom_length},
+  {"enif_get_string", 1, get_string},
+  {"enif_get_int", 1, get_int},
+  {"enif_get_long", 1, get_long},
+  {"enif_get_int64", 1, get_int64},
+  {"enif_get_uint", 1, get_uint},
+  {"enif_get_ulong", 1, get_ulong},
+  {"enif_get_uint64", 1, get_uint64},
+  {"enif_get_double", 1, get_double},
+  {"enif_get_list_length", 1, get_list_length},
+  {"enif_get_list_cell", 1, get_list_cell},
+  {"enif_get_map_size", 1, get_map_size},
+  {"enif_get_map_value", 2, get_map_value},
+  {"enif_get_local_pid", 1, get_local_pid},
+  {"enif_make_map_put", 0, make_map_put},
+  {"enif_make_map_remove", 0, make_map_remove},
+  {"enif_make_map_update", 0, make_map_update},
   {"enif_make_string", 0, make_string},
   {"enif_make_string_len", 0, make_string_len},
   {"enif_make_list", 0, make_list},
@@ -404,9 +428,8 @@ static ErlNifFunc funcs[] = {
   {"enif_make_pid", 0, make_pid},
   {"enif_make_ref", 0, make_ref},
   {"enif_make_unique_integer", 0, make_unique_integer}
-
 };
 
-ERL_NIF_INIT(Elixir.NimNif, funcs, NULL, NULL, NULL, NULL)
+ERL_NIF_INIT(Elixir.NimlerWrapper, funcs, NULL, NULL, NULL, NULL)
 """.}
 

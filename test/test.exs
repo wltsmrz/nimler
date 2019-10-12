@@ -1,0 +1,212 @@
+
+ExUnit.start(trace: false, seed: 0)
+
+defmodule NimlerWrapper do
+    def load_nif, do: :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), "nif")), 0)
+
+    def enif_is_atom(_a), do: raise "not implemented"
+    def enif_is_binary(_a), do: raise "not implemented"
+    def enif_is_current_process_alive(), do: raise "not implemented"
+    def enif_is_empty_list(_a), do: raise "not implemented"
+    def enif_is_exception(_a), do: raise "not implemented"
+    def enif_is_fun(_a), do: raise "not implemented"
+    def enif_is_identical(_a, _b), do: raise "not implemented"
+    def enif_is_list(_a), do: raise "not implemented"
+    def enif_is_map(_a), do: raise "not implemented"
+    def enif_is_number(_a), do: raise "not implemented"
+    def enif_is_pid(_a), do: raise "not implemented"
+    def enif_is_pid_undefined(_a), do: raise "not implemented"
+    def enif_is_port(_a), do: raise "not implemented"
+    def enif_is_port_alive(_a), do: raise "not implemented"
+    def enif_is_process_alive(_a), do: raise "not implemented"
+    def enif_is_ref(_a), do: raise "not implemented"
+    def enif_is_tuple(_a), do: raise "not implemented"
+    def enif_make_atom(), do: "raise not implemented"
+    def enif_make_existing_atom(), do: "raise not implemented"
+    def enif_make_existing_atom_len(), do: "raise not implemented"
+    def enif_make_int(), do: raise "not implemented"
+    def enif_make_long(), do: raise "not implemented"
+    def enif_make_int64(), do: raise "not implemented"
+    def enif_make_uint(), do: raise "not implemented"
+    def enif_make_ulong(), do: raise "not implemented"
+    def enif_make_uint64(), do: raise "not implemented"
+    def enif_make_double(), do: raise "not implemented"
+    def enif_make_string(), do: raise "not implemented"
+    def enif_make_string_len(), do: raise "not implemented"
+    def enif_make_list(), do: raise "not implemented"
+    def enif_make_list_cell(), do: raise "not implemented"
+    def enif_make_list_from_array(), do: raise "not implemented"
+    def enif_make_tuple(), do: raise "not implemented"
+    def enif_make_new_binary(), do: raise "not implemented"
+    def enif_make_new_map(), do: raise "not implemented"
+    def enif_make_map_from_arrays(), do: raise "not implemented"
+    def enif_make_map_put(), do: raise "not implemented"
+    def enif_make_map_remove(), do: raise "not implemented"
+    def enif_make_map_update(), do: raise "not implemented"
+    def enif_make_copy(), do: raise "not implemented"
+    def enif_make_pid(), do: raise "not implemented"
+    def enif_make_ref(), do: raise "not implemented"
+    def enif_make_reverse_list(), do: raise "not implemented"
+    def enif_make_unique_integer(), do: "raise not implemented"
+    def enif_get_map_value(_a, _b), do: "raise not implemented"
+    def enif_get_map_size(_a), do: "raise not implemented"
+    def enif_get_list_length(_a), do: "raise not implemented"
+    def enif_get_list_cell(_a), do: "raise not implemented"
+    def enif_get_string(_a), do: "raise not implemented"
+    def enif_get_int(_a), do: "raise not implemented"
+    def enif_get_long(_a), do: "raise not implemented"
+    def enif_get_int64(_a), do: "raise not implemented"
+    def enif_get_uint(_a), do: "raise not implemented"
+    def enif_get_ulong(_a), do: "raise not implemented"
+    def enif_get_uint64(_a), do: "raise not implemented"
+    def enif_get_double(_a), do: "raise not implemented"
+    def enif_get_atom(_a), do: "raise not implemented"
+    def enif_get_atom_length(_a), do: "raise not implemented"
+    def enif_get_local_pid(_a), do: "raise not implemented"
+end
+
+defmodule NimlerTest do
+    use ExUnit.Case, async: false
+
+    setup_all do
+        NimlerWrapper.load_nif()
+    end
+
+    describe "type_checkers" do
+        test "is_atom(:test)", do:
+            assert(1 == NimlerWrapper.enif_is_atom(:test))
+        test "is_atom(1)", do:
+            assert(0 == NimlerWrapper.enif_is_atom(1))
+        test "is_binary(\"test\")", do:
+            assert(1 == NimlerWrapper.enif_is_binary("test"))
+        test "is_current_process_alive()", do:
+            assert(1 == NimlerWrapper.enif_is_current_process_alive())
+        test "is_empty_list([])", do:
+            assert(1 == NimlerWrapper.enif_is_empty_list([]))
+        test "is_identical(:test, :test)", do:
+            assert(1 == NimlerWrapper.enif_is_identical(:test, :test))
+        test "is_list([1])", do:
+            assert(1 == NimlerWrapper.enif_is_list([1]))
+        test "is_map(%{a: 1})", do:
+            assert(1 == NimlerWrapper.enif_is_map(%{a: 1}))
+        test "is_number(1)", do:
+            assert(1 == NimlerWrapper.enif_is_number(1))
+        test "is_pid(self())", do:
+            assert(1 == NimlerWrapper.enif_is_pid(self()))
+        test "is_pid_undefined(self())", do:
+            assert(0 == NimlerWrapper.enif_is_pid_undefined(self()))
+        @tag :skip
+        test "is_port()", do:
+            assert(1 == NimlerWrapper.enif_is_port(:test))
+        @tag :skip
+        test "is_port_alive()", do:
+            assert(1 == NimlerWrapper.enif_is_port_alive(:test))
+        test "is_process_alive()", do:
+            assert(1 == NimlerWrapper.enif_is_process_alive(self()))
+        test "is_tuple({1, 2})", do:
+            assert(1 == NimlerWrapper.enif_is_tuple({1, 2}))
+        @tag :skip
+        test "is_ref()", do:
+            assert(1 == NimlerWrapper.enif_is_ref(:test))
+        @tag :skip
+        test "is_exception()", do:
+            assert(1 == NimlerWrapper.enif_is_exception())
+        @tag :skip
+        test "is_fun()", do:
+            assert(1 == NimlerWrapper.enif_is_fun())
+    end # term_type_checkers
+
+    describe "constructors" do
+        test "make_atom()", do:
+            assert(:test == NimlerWrapper.enif_make_atom())
+        test "make_existing_atom()", do:
+            assert(:test == NimlerWrapper.enif_make_existing_atom())
+        test "make_existing_atom_en()", do:
+            assert(:test == NimlerWrapper.enif_make_existing_atom_len())
+        test "make_tuple()", do:
+            assert({1,2,3} == NimlerWrapper.enif_make_tuple())
+        test "make_int()", do:
+            assert(1 == NimlerWrapper.enif_make_int())
+        test "make_long()", do:
+            assert(1 == NimlerWrapper.enif_make_long())
+        test "make_int64()", do:
+            assert(1 == NimlerWrapper.enif_make_int64())
+        test "make_uint()", do:
+            assert(1 == NimlerWrapper.enif_make_uint())
+        test "make_ulong()", do:
+            assert(1 == NimlerWrapper.enif_make_ulong())
+        test "make_uint64()", do:
+            assert(1 == NimlerWrapper.enif_make_uint64())
+        test "make_double()", do:
+            assert(1.1 == NimlerWrapper.enif_make_double())
+        test "make_string()", do:
+            assert('test' == NimlerWrapper.enif_make_string())
+        test "make_string_len()", do:
+            assert('test' == NimlerWrapper.enif_make_string_len())
+        test "make_list()", do:
+            assert([1,2,3] == NimlerWrapper.enif_make_list())
+        test "make_list_cell()", do:
+            assert([1|2] == NimlerWrapper.enif_make_list_cell())
+        test "make_list_from_aray()", do:
+            assert([1,2] == NimlerWrapper.enif_make_list_from_array())
+        test "make_reverse_list()", do:
+            assert([3,2,1] == NimlerWrapper.enif_make_reverse_list())
+        test "make_new_binary()", do:
+            assert("test" == NimlerWrapper.enif_make_new_binary())
+        test "make_map_from_arrays()", do:
+            assert(%{a: 1, b: 2} == NimlerWrapper.enif_make_map_from_arrays())
+        test "make_new_map()", do:
+            assert(%{} == NimlerWrapper.enif_make_new_map())
+        @tag :skip
+        test "make_map_update()", do:
+            assert(%{a: 2} == NimlerWrapper.enif_make_map_update(%{a: 1}, :a, 2))
+        @tag :skip
+        test "make_map_put()", do:
+            assert(%{a: 1} == NimlerWrapper.enif_make_map_put())
+        @tag :skip
+        test "make_map_remove()", do:
+            assert(%{} == NimlerWrapper.enif_make_map_remove())
+        test "make_copy()", do:
+            assert(1 == NimlerWrapper.enif_make_copy())
+        @tag :skip
+        test "make_pid()", do:
+            assert(:erlang.is_pid(NimlerWrapper.enif_make_pid()))
+        test "make_ref()", do:
+            assert(:erlang.is_reference(NimlerWrapper.enif_make_ref()))
+    end
+
+    describe "getters" do
+        test "get_atom()", do:
+            assert(:test == NimlerWrapper.enif_get_atom(:test))
+        test "get_atom_length()", do:
+            assert(4 == NimlerWrapper.enif_get_atom_length(:test))
+        test "get_local_pid()", do:
+            assert(self() == NimlerWrapper.enif_get_local_pid(self()))
+        test "get_int()", do:
+            assert(123 == NimlerWrapper.enif_get_int(123))
+        test "get_long()", do:
+            assert(2147483647 == NimlerWrapper.enif_get_long(2147483647))
+        test "get_int64()", do:
+            assert(9223372036854775807 == NimlerWrapper.enif_get_int64(9223372036854775807))
+        test "get_uint()", do:
+            assert(123 == NimlerWrapper.enif_get_uint(123))
+        test "get_ulong()", do:
+            assert(4294967295 == NimlerWrapper.enif_get_ulong(4294967295))
+        test "get_uint64()", do:
+            assert(18446744073709551615 == NimlerWrapper.enif_get_uint64(18446744073709551615))
+        test "get_double()", do:
+            assert(123.4 == NimlerWrapper.enif_get_double(123.4))
+        test "get_string()", do:
+            assert('test' == NimlerWrapper.enif_get_string('test'))
+        test "get_list_length()", do:
+            assert(2 == NimlerWrapper.enif_get_list_length([1, 2]))
+        test "get_list_cell()", do:
+            assert([2,3] == NimlerWrapper.enif_get_list_cell([1, 2, 3]))
+        test "get_map_size()", do:
+            assert(2 == NimlerWrapper.enif_get_map_size(%{a: "test", b: "test2"}))
+        test "get_map_value()", do:
+            assert(1 == NimlerWrapper.enif_get_map_value(%{a: 1}, :a))
+    end
+end
+
+

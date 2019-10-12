@@ -220,7 +220,6 @@ proc make_string(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm]): Er
   return enif_make_string(env, cstring("test"), ERL_NIF_LATIN1)
 
 proc make_string_len(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =
-
   return enif_make_string_len(env, cstring("test"), 4, ERL_NIF_LATIN1)
 
 proc make_tuple(env: ptr ErlNifEnv, argc: cint, argv: array[0, ErlNifTerm]): ErlNifTerm {.exportc.} =

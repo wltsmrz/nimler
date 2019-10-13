@@ -27,7 +27,7 @@ task test, "noop": quit()
 
 task build_test, "build Erlang NIF shared obj for integration test":
   configTest()
-  switch("cincludes", staticExec("escript get_erts_path.erl"))
+  switch("cincludes", staticExec("escript get_erl_lib_dir.erl"))
   setCommand("compile", "test/nif")
 
 task test_integration, "run Elixir integration test":

@@ -9,6 +9,9 @@ skipDirs = @["test"]
 # installFiles = @["nif_interface.nim"]
 requires "nim >= 1.0.0"
 
+proc configErlHeaders() =
+  switch("cincludes", staticExec("escript get_erl_lib_dir.erl"))
+
 proc configTest() =
   --verbosity:1
   --forceBuild
@@ -17,18 +20,24 @@ proc configTest() =
   --stacktrace:on
   --linetrace:on
   --debuginfo
+  --path:"."
+
+proc configNif() =
   --gc:none
   --noMain
   --app:lib
-  --path:"."
 
-task test, "noop": quit()
+task test, "build and run test":
+  exec("nimble build_integration")
+  exec("nimble test_integration")
 
-task build_test, "build Erlang NIF shared obj for integration test":
+task build_integration, "build nif":
+  configErlHeaders()
+  configNif()
   configTest()
-  switch("cincludes", staticExec("escript get_erl_lib_dir.erl"))
   switch("out", "test/integration/nif.so")
   setCommand("compile", "test/integration/nif")
 
-task test_integration, "run Elixir integration test":
+task test_integration, "run integration test":
   exec("elixir -r test/integration/wrapper.ex test/integration/test.exs")
+

@@ -21,14 +21,14 @@ proc configTest() =
   --noMain
   --app:lib
   --path:"."
-  --out:"test/nif.so"
 
 task test, "noop": quit()
 
 task build_test, "build Erlang NIF shared obj for integration test":
   configTest()
   switch("cincludes", staticExec("escript get_erl_lib_dir.erl"))
-  setCommand("compile", "test/nif")
+  switch("out", "test/integration/nif.so")
+  setCommand("compile", "test/integration/nif")
 
 task test_integration, "run Elixir integration test":
-  exec("elixir -r test/wrapper.ex test/test.exs")
+  exec("elixir -r test/integration/wrapper.ex test/integration/test.exs")

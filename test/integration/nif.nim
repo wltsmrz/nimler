@@ -1,4 +1,4 @@
-import ../nif_interface
+import ../../bindings/erl_nif
 
 proc is_atom(env: ptr ErlNifEnv, argc: cint, argv: array[1, ErlNifTerm]): ErlNifTerm {.exportc.} =
   return enif_make_int(env, cast[cint](enif_is_atom(env, argv[0])))

@@ -1,2 +1,3 @@
 
-main(_) -> io:format("~s/usr/include", [code:root_dir()]).
+main(_) ->
+    io:format("~s/erts-~s/include/", [code:root_dir(), erlang:system_info(version)]).

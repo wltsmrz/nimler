@@ -1,18 +1,15 @@
-
 type
   Buffer* = ptr UncheckedArray[cchar]
   ErlNifEnv* {.importc: "ErlNifEnv", header: "erl_nif.h", bycopy.} = object
   ErlNifTerm* = culonglong
   ErlNifUInt64* = culonglong
-  ErlNifBinary* {.importc: "ErlNifBinary", header: "erl_nif.h", bycopy.} = object
-    size* {.importc: "size".}: csize
-    data* {.importc: "data".}: ptr cuchar
-    ref_bin* {.importc: "ref_bin".}: pointer
-    spare* {.importc: "__spare__".}: array[2, pointer]
+  ErlNifArgs* = UncheckedArray[ErlNifTerm]
+  NifFunc* = proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm {.nimcall.}
+  NifSpec* = tuple[name: string, arity: int, fptr: NifFunc]
   ErlNifFunc* {.importc: "ErlNifFunc", header: "erl_nif.h", bycopy.} = object
     name* {.importc: "name".}: cstring
     arity* {.importc: "arity".}: cuint
-    fptr* {.importc: "fptr".}: proc (env: ptr ErlNifEnv; argc: cint; argv: ptr ErlNifTerm): ErlNifTerm
+    fptr* {.importc: "fptr".}: NifFunc
     flags* {.importc: "flags".}: cuint
   ErlNifUniqueInteger* {.size: sizeof(cint).} = enum
     ERL_NIF_UNIQUE_POSITIVE = (1 shl 0),
@@ -35,6 +32,9 @@ type
     ERL_NIF_INTERNAL_HASH = 1, ERL_NIF_PHASH2 = 2
   ErlNifCharEncoding* {.size: sizeof(cint).} = enum
     ERL_NIF_LATIN1 = 1
+  ErlNifEvent* {.importc: "ErlNifEvent", header: "erl_nif.h".} = cint
+  ErlNifMonitor* {.importc: "ErlNifMonitor", header: "erl_nif.h".} = object
+    data {.importc: "data".}: array[4, csize]
   ErlNifEntryLoad = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint
   ErlNifEntryReload = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint
   ErlNifEntryUpgrade = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; old_priv_data: ptr pointer; load_info: ErlNifTerm): cint
@@ -44,16 +44,28 @@ type
     minor* {.importc: "minor".}: cint
     name* {.importc: "name".}: cstring
     num_of_funcs* {.importc: "num_of_funcs".}: cint
-    funcs* {.importc: "funcs".}: ptr ErlNifFunc
-    load* {.importc: "load".}: ErlNifEntryLoad
-    reload* {.importc: "reload".}: ErlNifEntryReload
-    upgrade* {.importc: "upgrade".}: ErlNifEntryUpgrade
-    unload* {.importc: "unload".}: ErlNifEntryUnload
+    funcs* {.importc: "funcs".}: ptr UncheckedArray[ErlNifFunc]
+    load* {.importc: "load".}: pointer
+    reload* {.importc: "reload".}: pointer
+    upgrade* {.importc: "upgrade".}: pointer
+    unload* {.importc: "unload".}: pointer
     vm_variant* {.importc: "vm_variant".}: cstring
-    options* {.importc: "options".}: cuint
+    options* {.importc: "options".}: cint
     sizeof_ErlNifResourceTypeInit* {.importc: "sizeof_ErlNifResourceTypeInit".}: csize
     min_erts* {.importc: "min_erts".}: cstring
-
+  ErlNifResourceType* = object {.importc: "enif_resource_type_t", header: "erl_nif.h".}
+  ErlNifResourceDtor* = proc (a1: ptr ErlNifEnv; a2: pointer): void
+  ErlNifResourceStop* = proc (a1: ptr ErlNifEnv; a2: pointer; a3: ErlNifEvent; is_direct_call: cint): void
+  ErlNifResourceDown* = proc (a1: ptr ErlNifEnv; a2: pointer; a3: ptr ErlNifPid; a4: ptr ErlNifMonitor): void
+  ErlNifResourceTypeInit* {.importc: "ErlNifResourceTypeInit", header: "erl_nif.h", bycopy.} = object
+    dtor* {.importc: "dtor".}: ptr ErlNifResourceDtor
+    stop* {.importc: "stop".}: ptr ErlNifResourceStop
+    down* {.importc: "down".}: ptr ErlNifResourceDown
+  ErlNifBinary* {.importc: "ErlNifBinary", header: "erl_nif.h", bycopy.} = object
+    size* {.importc: "size".}: csize
+    data* {.importc: "data".}: ptr cuchar
+    ref_bin* {.importc: "ref_bin".}: pointer
+    spare* {.importc: "__spare__".}: array[2, pointer]
 
 proc enif_alloc*(a1: csize): pointer {.importc: "enif_alloc", header: "erl_nif.h".}
 proc enif_free*(a1: pointer) {.importc: "enif_free", header: "erl_nif.h".}

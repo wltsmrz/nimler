@@ -19,11 +19,12 @@ proc configTest() =
   --warnings:off
   --stacktrace:on
   --linetrace:on
+  --threadAnalysis:off
   --debuginfo
   --path:"."
 
 proc configNif() =
-  --gc:none
+  # --gc:none
   --noMain
   --app:lib
 

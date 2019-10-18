@@ -1,8 +1,8 @@
 
 # nimler
 
-Erlang/elixir NIF bindings for nim. Motivating use case is bridging [control](https://en.wikipedia.org/wiki/Control_theory) libraries, often written in C/C++, to Elixir and [Nerves](https://nerves-project.org/).
+Erlang/elixir NIF bindings for nim.
 
-**Status** Stage -1 experimental work
+**Status** Stage 0 experimental work
 
 **Caution** NIFs can crash the Erlang VM

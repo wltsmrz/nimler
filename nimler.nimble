@@ -5,12 +5,12 @@ author = "wltsmrz"
 description = "Erlang/Elixir NIF wrapper"
 license = "MIT"
 srcDir = "src"
-skipDirs = @["test"]
-# installFiles = @["nif_interface.nim"]
+skipDirs = @["tests"]
+# installFiles = @["nimler.nim"]
 requires "nim >= 1.0.0"
 
 proc configErlHeaders() =
-  switch("cincludes", staticExec("escript get_erl_lib_dir.erl"))
+  switch("cincludes", staticExec("escript scripts/get_erl_lib_dir.erl"))
 
 proc configTest() =
   --verbosity:1
@@ -40,11 +40,11 @@ task build_integration, "build nif":
   configErlHeaders()
   configNif()
   configTest()
-  switch("out", "test/integration/nif.so")
-  setCommand("compile", "test/integration/nif")
+  switch("out", "tests/integration/nif.so")
+  setCommand("compile", "tests/integration/nif")
 
 task test_integration, "run test":
-  exec("elixir -r test/integration/wrapper.ex test/integration/test.exs")
+  exec("elixir -r tests/integration/wrapper.ex tests/integration/test.exs")
 
 
 # ErlNifTerm codec
@@ -52,10 +52,10 @@ task build_codec, "build nif":
   configErlHeaders()
   configNif()
   configTest()
-  switch("out", "test/codec/nif.so")
-  setCommand("compile", "test/codec/nif")
+  switch("out", "tests/codec/nif.so")
+  setCommand("compile", "tests/codec/nif")
 
 task test_codec, "run test":
-  exec("elixir -r test/codec/wrapper.ex test/codec/test.exs")
+  exec("elixir -r tests/codec/wrapper.ex tests/codec/test.exs")
 
 

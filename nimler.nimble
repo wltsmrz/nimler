@@ -24,14 +24,18 @@ proc configTest() =
   --path:"."
 
 proc configNif() =
-  # --gc:none
+  --gc:none
   --noMain
   --app:lib
 
 task test, "build and run test":
   exec("nimble build_integration")
   exec("nimble test_integration")
+  exec("nimble build_codec")
+  exec("nimble test_codec")
 
+
+# Kitchen skink tests
 task build_integration, "build nif":
   configErlHeaders()
   configNif()
@@ -39,6 +43,19 @@ task build_integration, "build nif":
   switch("out", "test/integration/nif.so")
   setCommand("compile", "test/integration/nif")
 
-task test_integration, "run integration test":
+task test_integration, "run test":
   exec("elixir -r test/integration/wrapper.ex test/integration/test.exs")
+
+
+# ErlNifTerm codec
+task build_codec, "build nif":
+  configErlHeaders()
+  configNif()
+  configTest()
+  switch("out", "test/codec/nif.so")
+  setCommand("compile", "test/codec/nif")
+
+task test_codec, "run test":
+  exec("elixir -r test/codec/wrapper.ex test/codec/test.exs")
+
 

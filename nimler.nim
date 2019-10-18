@@ -1,6 +1,8 @@
 import bindings/erl_nif
+import ./codec
 
 export erl_nif
+export codec
 
 template export_nifs*(module_name: string, funcs_seq: openArray[NifSpec]) =
   proc NimMain() {.gensym, importc: "NimMain", cdecl.}

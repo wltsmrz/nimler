@@ -148,6 +148,8 @@ defmodule NimlerTest do
             assert(123.4 == NimlerWrapper.enif_get_double(123.4))
         test "get_string()", do:
             assert('test' == NimlerWrapper.enif_get_string('test'))
+        test "get_tuple()", do:
+            assert({1,2} == NimlerWrapper.enif_get_tuple({1,2}))
         test "get_list_length()", do:
             assert(2 == NimlerWrapper.enif_get_list_length([1, 2]))
         test "get_list_cell()", do:

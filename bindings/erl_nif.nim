@@ -106,7 +106,7 @@ proc enif_get_uint64*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr culonglong): bo
 proc enif_get_double*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr cdouble): bool {.importc: "enif_get_double", header: "erl_nif.h".}
 proc enif_get_list_cell*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifTerm; a4: ptr ErlNifTerm): bool {.importc: "enif_get_list_cell", header: "erl_nif.h".}
 proc enif_get_list_length*(a1: ptr ErlNifEnv; a2: ErlNifTerm; len: ptr cuint): bool {.importc: "enif_get_list_length", header: "erl_nif.h".}
-proc enif_get_tuple*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr cint; array: ptr UncheckedArray[ErlNifTerm]): bool {.importc: "enif_get_tuple", header: "erl_nif.h".}
+proc enif_get_tuple*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr cuint; a4: ptr ptr UncheckedArray[ErlNifTerm]): bool {.importc: "enif_get_tuple", header: "erl_nif.h".}
 proc enif_get_string*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: Buffer; a4: cuint; a5: ErlNifCharEncoding): cint {.importc: "enif_get_string", header: "erl_nif.h".}
 proc enif_make_unique_integer*(a1: ptr ErlNifEnv; a2: ErlNifUniqueInteger): ErlNifTerm {.importc: "enif_make_unique_integer", header: "erl_nif.h".}
 proc enif_make_atom*(a1: ptr ErlNifEnv; a2: cstring): ErlNifTerm {.importc: "enif_make_atom", header: "erl_nif.h".}

@@ -1,61 +1,65 @@
 import ../../nimler
 
-proc is_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_atom(env, argv[0])))
 
-proc is_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_binary(env, argv[0])))
 
-proc is_current_process_alive(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_current_process_alive(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_current_process_alive(env)))
 
-proc is_empty_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_empty_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_empty_list(env, argv[0])))
 
-proc is_exception(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_exception(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_exception(env, argv[0])))
 
-proc is_fun(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_fun(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_fun(env, argv[0])))
 
-proc is_identical(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_identical(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_identical(argv[0], argv[1])))
 
-proc is_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_list(env, argv[0])))
 
-proc is_map(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_map(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_map(env, argv[0])))
 
-proc is_number(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_number(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_number(env, argv[0])))
 
-proc is_pid(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_pid(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_pid(env, argv[0])))
 
-proc is_pid_undefined(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_pid_undefined(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var pid: ErlNifPid
-  discard enif_get_local_pid(env, argv[0], addr(pid))
+  if not enif_get_local_pid(env, argv[0], addr(pid)):
+    return enif_make_badarg(env)
   return enif_make_int(env, cast[cint](enif_is_pid_undefined(addr(pid))))
 
-# proc is_port(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+# proc is_port(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
 #   return enif_make_int(env, cast[cint](enif_is_port(env, argv[0])))
 # 
-# proc is_port_alive(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+# proc is_port_alive(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
 #   return enif_make_int(env, cast[cint](enif_is_port_alive(env, argv[0])))
 
-proc is_process_alive(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_process_alive(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var pid: ErlNifPid
-  discard enif_get_local_pid(env, argv[0], addr(pid))
+
+  if not enif_get_local_pid(env, argv[0], addr(pid)):
+    return enif_make_badarg(env)
+
   return enif_make_int(env, cast[cint](enif_is_process_alive(env, addr(pid))))
 
-proc is_ref(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_ref(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_ref(env, argv[0])))
 
-proc is_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc is_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_tuple(env, argv[0])))
 
-proc get_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let atom_len = 4
   let string_buf = cast[Buffer](create(cchar, atom_len + 1))
 
@@ -64,7 +68,7 @@ proc get_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.ex
 
   return enif_make_atom(env, string_buf)
 
-proc get_atom_length(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_atom_length(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var atom_len: cuint
 
   if not enif_get_atom_length(env, argv[0], addr(atom_len), ERL_NIF_LATIN1):
@@ -72,7 +76,7 @@ proc get_atom_length(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
 
   return enif_make_uint(env, atom_len)
 
-proc get_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var string_len: cuint
 
   if not enif_get_list_length(env, argv[0], addr(string_len)):
@@ -85,7 +89,7 @@ proc get_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.
 
   return enif_make_string(env, string_buf, ERL_NIF_LATIN1)
 
-proc get_int(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_int(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var v: cint
 
   if not enif_get_int(env, argv[0], addr(v)):
@@ -93,7 +97,7 @@ proc get_int(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exp
 
   return enif_make_int(env, v)
 
-proc get_long(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_long(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var v: clong
 
   if not enif_get_long(env, argv[0], addr(v)):
@@ -101,7 +105,7 @@ proc get_long(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.ex
 
   return enif_make_long(env, v)
 
-proc get_int64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_int64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var v: clonglong
 
   if not enif_get_int64(env, argv[0], addr(v)):
@@ -109,7 +113,7 @@ proc get_int64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.e
 
   return enif_make_int64(env, v)
 
-proc get_uint(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_uint(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var v: cuint
 
   if not enif_get_uint(env, argv[0], addr(v)):
@@ -117,7 +121,7 @@ proc get_uint(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.ex
 
   return enif_make_uint(env, v)
 
-proc get_ulong(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_ulong(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var v: culong
 
   if not enif_get_ulong(env, argv[0], addr(v)):
@@ -125,7 +129,7 @@ proc get_ulong(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.e
 
   return enif_make_ulong(env, v)
 
-proc get_uint64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_uint64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var v: culonglong
 
   if not enif_get_uint64(env, argv[0], addr(v)):
@@ -133,7 +137,7 @@ proc get_uint64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.
 
   return enif_make_uint64(env, v)
 
-proc get_double(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_double(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var v: cdouble
 
   if not enif_get_double(env, argv[0], addr(v)):
@@ -141,7 +145,27 @@ proc get_double(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.
 
   return enif_make_double(env, v)
 
-proc get_list_length(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  var tuple_len: cuint
+  var tup: ptr UncheckedArray[ErlNifTerm]
+
+  if not enif_get_tuple(env, argv[0], addr(tuple_len), addr(tup)):
+    return enif_make_badarg(env)
+
+  var t1: cint
+  var t2: cint
+  discard enif_get_int(env, tup[0], addr(t1))
+  discard enif_get_int(env, tup[1], addr(t2))
+
+  doAssert(t1 == 1)
+  doAssert(t2 == 2)
+
+  let t11 = enif_make_int(env, t1)
+  let t12 = enif_make_int(env, t2)
+
+  return enif_make_tuple(env, tuple_len, t11, t12)
+
+proc get_list_length(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var list_len: cuint
 
   if not enif_get_list_length(env, argv[0], addr(list_len)):
@@ -149,7 +173,7 @@ proc get_list_length(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
 
   return enif_make_uint(env, cast[cuint](list_len))
 
-proc get_list_cell(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_list_cell(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var head: ErlNifTerm
   var tail: ErlNifTerm
 
@@ -158,7 +182,7 @@ proc get_list_cell(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm
 
   return tail
 
-proc get_map_size(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_map_size(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var map_size: csize
 
   if not enif_get_map_size(env, argv[0], addr(map_size)):
@@ -166,7 +190,7 @@ proc get_map_size(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm 
 
   return enif_make_int(env, cast[cint](map_size))
 
-proc get_map_value(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_map_value(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var map_val_term: ErlNifTerm
 
   if not enif_get_map_value(env, argv[0], argv[1], addr(map_val_term)):
@@ -174,7 +198,7 @@ proc get_map_value(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm
 
   return map_val_term
 
-proc get_local_pid(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc get_local_pid(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var pid_obj: ErlNifPid
 
   if not enif_get_local_pid(env, argv[0], addr(pid_obj)):
@@ -182,7 +206,7 @@ proc get_local_pid(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm
 
   return pid_obj.pid
 
-proc make_map_put(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_map_put(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let new_map = enif_make_new_map(env)
   let k = enif_make_atom(env, cstring("a"))
   let v = enif_make_int(env, 1)
@@ -192,7 +216,7 @@ proc make_map_put(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm 
 
   return new_map
 
-proc make_map_remove(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_map_remove(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let new_map = enif_make_new_map(env)
   let k = enif_make_atom(env, cstring("a"))
   let v = enif_make_int(env, 1)
@@ -205,7 +229,7 @@ proc make_map_remove(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
 
   return new_map
 
-proc make_map_update(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_map_update(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let new_map = enif_make_new_map(env)
   let k = enif_make_atom(env, cstring("a"))
   let v = enif_make_int(env, 1)
@@ -216,13 +240,13 @@ proc make_map_update(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
 
   return new_map
 
-proc make_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_string(env, cstring("test"), ERL_NIF_LATIN1)
 
-proc make_string_len(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_string_len(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_string_len(env, cstring("test"), 4, ERL_NIF_LATIN1)
 
-proc make_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let tuple_len: cuint = 3
   let t1 = enif_make_int(env, cint(1))
   let t2 = enif_make_int(env, cint(2))
@@ -230,31 +254,32 @@ proc make_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.
 
   return enif_make_tuple(env, tuple_len, t1, t2, t3)
 
-proc make_int(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_int(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cint(1))
 
-proc make_long(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_long(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_long(env, clong(1))
 
-proc make_int64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_int64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int64(env, clonglong(1))
 
-proc make_uint(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_uint(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_uint(env, cuint(1))
 
-proc make_ulong(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_ulong(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_ulong(env, culong(1))
 
-proc make_uint64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_uint64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_uint64(env, culonglong(1))
 
-proc make_double(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_double(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_double(env, cdouble(1.1))
 
-proc make_new_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_new_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var term: ErlNifTerm
   let binary_ptr = enif_make_new_binary(env, sizeof(cchar) * 4, addr(term))
   let res = cast[Buffer](binary_ptr)
+
   res[0] = 't'
   res[1] = 'e'
   res[2] = 's'
@@ -262,10 +287,10 @@ proc make_new_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
 
   return term
 
-proc make_new_map(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_new_map(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_new_map(env)
 
-proc make_map_from_arrays(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_map_from_arrays(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let keys = [
     enif_make_atom(env, cstring("a")),
     enif_make_atom(env, cstring("b"))
@@ -284,10 +309,10 @@ proc make_map_from_arrays(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): Erl
 
   return map_out
 
-proc make_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_atom(env, cstring("test"))
 
-proc make_existing_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_existing_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var existing_atom: ErlNifTerm
 
   if not enif_make_existing_atom(env, cstring("test"), addr(existing_atom), ERL_NIF_LATIN1):
@@ -295,7 +320,7 @@ proc make_existing_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNi
 
   return existing_atom
 
-proc make_existing_atom_len(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_existing_atom_len(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var existing_atom: ErlNifTerm
 
   if not enif_make_existing_atom_len(env, cstring("test"), csize(4), addr(existing_atom), ERL_NIF_LATIN1):
@@ -303,7 +328,7 @@ proc make_existing_atom_len(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): E
 
   return existing_atom
 
-proc make_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let list_len: cuint = 3
   let t1 = enif_make_int(env, cint(1))
   let t2 = enif_make_int(env, cint(2))
@@ -311,13 +336,13 @@ proc make_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.e
 
   return enif_make_list(env, list_len, t1, t2, t3)
 
-proc make_list_cell(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_list_cell(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let h = enif_make_int(env, cint(1))
   let t = enif_make_int(env, cint(2))
 
   return enif_make_list_cell(env, h, t)
 
-proc make_list_from_array(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_list_from_array(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let values = [
     enif_make_int(env, cint(1)),
     enif_make_int(env, cint(2))
@@ -326,34 +351,33 @@ proc make_list_from_array(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): Erl
 
   return enif_make_list_from_array(env, v, cuint(2))
 
-proc make_reverse_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_reverse_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
  let l1 = make_list(env, argc, argv)
  var l2: ErlNifTerm
  if not enif_make_reverse_list(env, l1, addr(l2)):
    return enif_make_badarg(env)
  return l2
 
-proc make_copy(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_copy(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let v = enif_make_int(env, cint(1))
   let c = enif_make_copy(env, v)
-
   return c
 
-proc make_pid(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_pid(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var pid_term = ErlNifPid(pid: 0xBEEF)
   return enif_make_pid(env, addr(pid_term))
 
-proc make_ref(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_ref(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_ref(env)
 
-proc make_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var res: pointer
   return enif_make_resource(env, addr(res))
 
-proc make_unique_integer(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+proc make_unique_integer(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_unique_integer(env, ERL_NIF_UNIQUE_POSITIVE)
 
-# proc make_sub_binary(env: ptr ErlNifEnv, argc: cuint, argv: ErlNifArgs): ErlNifTerm {.exportc.} =
+# proc make_sub_binary(env: ptr ErlNifEnv, argc: cuint, argv: ErlNifArgs): ErlNifTerm =
 #   var bin_term: ErlNifTerm
 #   let bin_ptr = enif_make_new_binary(env, sizeof(cchar) * 2, addr(bin_term))
 #   let bin_buf = cast[Buffer](bin_ptr)
@@ -395,6 +419,7 @@ export_nifs("Elixir.NimlerWrapper", @[
   ("enif_get_ulong", 1, get_ulong),
   ("enif_get_uint64", 1, get_uint64),
   ("enif_get_double", 1, get_double),
+  ("enif_get_tuple", 1, get_tuple),
   ("enif_get_list_length", 1, get_list_length),
   ("enif_get_list_cell", 1, get_list_cell),
   ("enif_get_map_size", 1, get_map_size),

@@ -48,6 +48,7 @@ defmodule NimlerWrapper do
     def enif_make_unique_integer(), do: "raise not implemented"
     def enif_get_map_value(_a, _b), do: "raise not implemented"
     def enif_get_map_size(_a), do: "raise not implemented"
+    def enif_get_tuple(_a), do: "raise not implemented"
     def enif_get_list_length(_a), do: "raise not implemented"
     def enif_get_list_cell(_a), do: "raise not implemented"
     def enif_get_string(_a), do: "raise not implemented"

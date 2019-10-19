@@ -36,8 +36,7 @@ proc check_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTer
     return enif_make_badarg(env)
   if resource_ptr[].thing != 1234:
     return enif_make_badarg(env)
-  else:
-    return argv[0]
+  return argv[0]
 
 proc release_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var resource_ptr: ptr MyResource

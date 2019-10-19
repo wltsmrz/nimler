@@ -12,6 +12,7 @@ const AtomErr* = cast[ErlAtom]("error")
 proc ResultOk*(rval: ErlNifTerm): ErlResult = (AtomOk, rval)
 proc ResultErr*(rval: ErlNifTerm): ErlResult = (AtomErr, rval)
 
+########## int32 ##########
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int32]): Option[T] =
   var res: clong
   if not enif_get_long(env, term, addr(res)):
@@ -21,6 +22,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int32]): Option[T
 proc encode*(V: int32, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_long(env, V)
 
+########## uint32 ##########
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint32]): Option[T] =
   var res: culong
   if not enif_get_ulong(env, term, addr(res)):
@@ -30,6 +32,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint32]): Option[
 proc encode*(V: uint32, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_ulong(env, V)
 
+########## ErlAtom ##########
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlAtom]): Option[T] =
   var atom_len: cuint
   if not enif_get_atom_length(env, term, addr(atom_len), ERL_NIF_LATIN1):
@@ -42,6 +45,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlAtom]): Option
 proc encode*(V: ErlAtom, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_atom(env, V)
 
+########## ErlResult ##########
 proc encode*(V: ErlResult, env: ptr ErlNifEnv): ErlNifTerm =
   let arity = cuint(2)
   let rtype = enif_make_atom(env, V.rtype)

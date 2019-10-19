@@ -1,19 +1,19 @@
-import bindings/erl_nif
+import ./bindings/erl_nif
 import ./codec
 
 export erl_nif
 export codec
 
 template export_nifs*(module_name: string, funcs_seq: openArray[NifSpec]) =
-  proc NimMain() {.gensym, importc: "NimMain", cdecl.}
+  proc NimMain() {.gensym, importc: "NimMain".}
 
   var entry {.gensym.}: ErlNifEntry
-  var funcs {.gensym.}: array[len(funcs_seq), ErlNifFunc]
+  var funcs: array[len(funcs_seq), ErlNifFunc]
 
   for i, (name, arity, fptr) in pairs(funcs_seq):
     funcs[i] = ErlNifFunc(name: cstring(name), arity: cuint(arity), fptr: fptr)
 
-  proc nif_init*(): ptr ErlNifEntry {.dynlib, cdecl, exportc.} =
+  proc nif_init*(): ptr ErlNifEntry {.dynlib, exportc.} =
     NimMain()
     entry.major = cint(2)
     entry.minor = cint(15)

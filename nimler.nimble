@@ -19,13 +19,11 @@ proc configTest() =
   --warnings:off
   --stacktrace:on
   --linetrace:on
-  --threadAnalysis:off
   --debuginfo
   --path:"."
 
 proc configNif() =
-  --gc:none
-  --noMain
+  --checks:off
   --app:lib
 
 task test, "build and run test":
@@ -57,5 +55,4 @@ task build_codec, "build nif":
 
 task test_codec, "run test":
   exec("elixir -r tests/codec/wrapper.ex tests/codec/test.exs")
-
 

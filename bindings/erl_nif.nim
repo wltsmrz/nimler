@@ -6,11 +6,15 @@ type
   ErlNifArgs* = UncheckedArray[ErlNifTerm]
   NifFunc* = proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm {.nimcall.}
   NifSpec* = tuple[name: string, arity: int, fptr: NifFunc]
+  DirtyNifSpec* = tuple[name: string, arity: int, fptr: NifFunc, flags: ErlNifFlags]
   ErlNifFunc* {.importc: "ErlNifFunc", header: "erl_nif.h", bycopy.} = object
     name* {.importc: "name".}: cstring
     arity* {.importc: "arity".}: cuint
     fptr* {.importc: "fptr".}: NifFunc
     flags* {.importc: "flags".}: cuint
+  ErlNifFlags* {.size: sizeof(cint).} = enum
+    ERL_NIF_DIRTY_CPU,
+    ERL_NIF_DIRTY_IO
   ErlNifUniqueInteger* {.size: sizeof(cint).} = enum
     ERL_NIF_UNIQUE_POSITIVE = (1 shl 0),
     ERL_NIF_UNIQUE_MONOTONIC = (1 shl 1)

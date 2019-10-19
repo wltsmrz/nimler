@@ -27,7 +27,6 @@ export_nifs("Elixir.NimlerWrapper", @[
   ("codec_uint32", 2, codec_uint32),
   ("codec_atom", 1, codec_atom),
   ("codec_result_ok", 1, codec_result_ok),
-  ("codec_result_error", 1, codec_result_error),
   ("codec_result_error", 1, codec_result_error)
 ])
 

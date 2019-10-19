@@ -30,13 +30,13 @@ task test, "build and run test":
   exec("nimble build_codec")
   exec("nimble build_resource")
   exec("nimble build_dirty_nif")
+  exec("nimble build_timeslice")
   exec("nimble test_integration")
   exec("nimble test_codec")
   exec("nimble test_resource")
   exec("nimble test_dirty_nif")
+  exec("nimble test_timeslice")
 
-
-# Kitchen skink tests
 task build_integration, "build nif":
   configErlHeaders()
   configNif()
@@ -76,4 +76,14 @@ task build_dirty_nif, "build nif":
 
 task test_dirty_nif, "run test":
   exec("elixir -r tests/dirty_nif/wrapper.ex tests/dirty_nif/test.exs")
+
+task build_timeslice, "build nif":
+  configErlHeaders()
+  configNif()
+  configTest()
+  switch("out", "tests/timeslice/nif.so")
+  setCommand("compile", "tests/timeslice/nif")
+
+task test_timeslice, "run test":
+  exec("elixir -r tests/timeslice/wrapper.ex tests/timeslice/test.exs")
 

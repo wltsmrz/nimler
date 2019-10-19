@@ -31,6 +31,8 @@ task test, "build and run test":
   exec("nimble test_integration")
   exec("nimble build_codec")
   exec("nimble test_codec")
+  exec("nimble build_resource")
+  exec("nimble test_resource")
 
 
 # Kitchen skink tests
@@ -44,8 +46,6 @@ task build_integration, "build nif":
 task test_integration, "run test":
   exec("elixir -r tests/integration/wrapper.ex tests/integration/test.exs")
 
-
-# ErlNifTerm codec
 task build_codec, "build nif":
   configErlHeaders()
   configNif()
@@ -55,4 +55,14 @@ task build_codec, "build nif":
 
 task test_codec, "run test":
   exec("elixir -r tests/codec/wrapper.ex tests/codec/test.exs")
+
+task build_resource, "build nif":
+  configErlHeaders()
+  configNif()
+  configTest()
+  switch("out", "tests/resource/nif.so")
+  setCommand("compile", "tests/resource/nif")
+
+task test_resource, "run test":
+  exec("elixir -r tests/resource/wrapper.ex tests/resource/test.exs")
 

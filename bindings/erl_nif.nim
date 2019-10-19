@@ -54,6 +54,9 @@ type
     sizeof_ErlNifResourceTypeInit* {.importc: "sizeof_ErlNifResourceTypeInit".}: csize
     min_erts* {.importc: "min_erts".}: cstring
   ErlNifResourceType* = object {.importc: "enif_resource_type_t", header: "erl_nif.h".}
+  ErlNifResourceFlags* {.size: sizeof(cint).} = enum
+    ERL_NIF_RT_CREATE = (1 shl 0),
+    ERL_NIF_RT_TAKEOVER = (1 shl 1)
   ErlNifResourceDtor* = proc (a1: ptr ErlNifEnv; a2: pointer): void
   ErlNifResourceStop* = proc (a1: ptr ErlNifEnv; a2: pointer; a3: ErlNifEvent; is_direct_call: cint): void
   ErlNifResourceDown* = proc (a1: ptr ErlNifEnv; a2: pointer; a3: ptr ErlNifPid; a4: ptr ErlNifMonitor): void
@@ -75,7 +78,7 @@ proc enif_is_port_alive*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "en
 proc enif_is_pid_undefined*(a2: ptr ErlNifPid): bool {.importc: "enif_is_pid_undefined", header: "erl_nif.h".}
 proc enif_is_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_exception", header: "erl_nif.h".}
 proc enif_is_atom*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_atom", header: "erl_nif.h".}
-proc enif_is_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm): cint {.  importc: "enif_is_binary", header: "erl_nif.h".}
+proc enif_is_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.  importc: "enif_is_binary", header: "erl_nif.h".}
 proc enif_is_ref*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_ref", header: "erl_nif.h".}
 proc enif_is_fun*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_fun", header: "erl_nif.h".}
 proc enif_is_pid*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_pid", header: "erl_nif.h".}
@@ -150,5 +153,9 @@ proc enif_make_map_put*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: E
 proc enif_get_map_value*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ptr ErlNifTerm): bool {.importc: "enif_get_map_value", header: "erl_nif.h".}
 proc enif_make_map_update*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ErlNifTerm; a5: ptr ErlNifTerm): bool {.importc: "enif_make_map_update", header: "erl_nif.h".}
 proc enif_make_map_remove*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ptr ErlNifTerm): bool {.importc: "enif_make_map_remove", header: "erl_nif.h".}
+proc enif_open_resource_type*(a1: ptr ErlNifEnv, a2: typeof(nil); a3: cstring, a4: pointer; a5: ErlNifResourceFlags; a6: ptr ErlNifResourceFlags): pointer {.importc: "enif_open_resource_type", header: "erl_nif.h".}
+proc enif_alloc_resource*(a1: pointer; a2: csize): pointer {.importc: "enif_alloc_resource", header: "erl_nif.h".}
+proc enif_release_resource*(a1: pointer): void {.importc: "enif_release_resource", header: "erl_nif.h".}
 proc enif_make_resource*(a1: ptr ErlNifEnv; a2: pointer): ErlNifTerm {.importc: "enif_make_resource", header: "erl_nif.h".}
+proc enif_get_resource*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: pointer; a4: pointer): bool {.importc: "enif_get_resource", header: "erl_nif.h".}
   

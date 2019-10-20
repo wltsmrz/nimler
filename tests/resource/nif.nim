@@ -1,9 +1,10 @@
+import sharedtables
 import ../../nimler
 
 type MyResource = object
   thing: int32
 
-var resource_types: seq[pointer] = @[]
+var resource_types {.global.}: seq[pointer] = @[]
 
 proc create_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let my_resource = MyResource(thing: 123)

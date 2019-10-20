@@ -35,6 +35,7 @@ defmodule NimlerWrapper do
     def enif_make_list_cell(), do: raise "not implemented"
     def enif_make_list_from_array(), do: raise "not implemented"
     def enif_make_tuple(), do: raise "not implemented"
+    def enif_make_tuple_from_array(), do: raise "not implemented"
     def enif_make_new_binary(), do: raise "not implemented"
     def enif_make_new_map(), do: raise "not implemented"
     def enif_make_map_from_arrays(), do: raise "not implemented"

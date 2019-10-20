@@ -134,8 +134,8 @@ proc enif_make_string*(a1: ptr ErlNifEnv; string: cstring; a3: ErlNifCharEncodin
 proc enif_make_string_len*(a1: ptr ErlNifEnv; string: cstring; a2: csize; a3: ErlNifCharEncoding): ErlNifTerm {.  importc: "enif_make_string_len", header: "erl_nif.h".}
 proc enif_make_ref*(a1: ptr ErlNifEnv): ErlNifTerm {.importc: "enif_make_ref", header: "erl_nif.h".}
 proc enif_make_uint*(a1: ptr ErlNifEnv; a2: cuint): ErlNifTerm {.importc: "enif_make_uint", header: "erl_nif.h".}
-proc enif_make_tuple_from_array*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm; a3: cuint): ErlNifTerm {.  importc: "enif_make_tuple_from_array", header: "erl_nif.h".}
-proc enif_make_list_from_array*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm; a3: cuint): ErlNifTerm {.importc: "enif_make_list_from_array", header: "erl_nif.h".}
+proc enif_make_tuple_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): ErlNifTerm {.  importc: "enif_make_tuple_from_array", header: "erl_nif.h".}
+proc enif_make_list_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): ErlNifTerm {.importc: "enif_make_list_from_array", header: "erl_nif.h".}
 proc enif_make_new_binary*(a1: ptr ErlNifEnv; a2: csize; a3: ptr ErlNifTerm): ptr cuchar {.importc: "enif_make_new_binary", header: "erl_nif.h".}
 proc enif_system_info*(a1: ptr ErlNifSysInfo; a2: csize) {.importc: "enif_system_info", header: "erl_nif.h".}
 proc enif_raise_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.importc: "enif_raise_exception", header: "erl_nif.h".}

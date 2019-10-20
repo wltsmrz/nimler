@@ -254,6 +254,13 @@ proc make_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
 
   return enif_make_tuple(env, tuple_len, t1, t2, t3)
 
+proc make_tuple_from_array(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  return enif_make_tuple_from_array(env, [
+    enif_make_int(env, cint(1)),
+    enif_make_int(env, cint(2)),
+    enif_make_int(env, cint(3))
+  ])
+
 proc make_int(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cint(1))
 
@@ -347,9 +354,8 @@ proc make_list_from_array(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): Erl
     enif_make_int(env, cint(1)),
     enif_make_int(env, cint(2))
   ]
-  let v = cast[ptr ErlNifTerm](unsafeAddr(values))
 
-  return enif_make_list_from_array(env, v, cuint(2))
+  return enif_make_list_from_array(env, values)
 
 proc make_reverse_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
  let l1 = make_list(env, argc, argv)
@@ -435,6 +441,7 @@ export_nifs("Elixir.NimlerWrapper", @[
   ("enif_make_list_from_array", 0, make_list_from_array),
   ("enif_make_reverse_list", 0, make_reverse_list),
   ("enif_make_tuple", 0, make_tuple),
+  ("enif_make_tuple_from_array", 0, make_tuple_from_array),
   ("enif_make_int", 0, make_int),
   ("enif_make_long", 0, make_long),
   ("enif_make_int64", 0, make_int64),

@@ -29,10 +29,18 @@ defmodule NimlerTest do
     end
 
     describe "codec_tuples" do
+        test "codec_varargs_tuple()", do:
+            assert({1,2,3} == NimlerWrapper.codec_varargs_tuple())
         test "codec_result()", do:
             assert({:ok, 1} == NimlerWrapper.codec_result_ok(1))
         test "codec_result_err()", do:
             assert({:error, 1} == NimlerWrapper.codec_result_error(1))
+    end
+
+    describe "codec_list" do
+        @tag :skip
+        test "codec_list()", do:
+            assert([1,2,3] == NimlerWrapper.codec_list())
     end
 end
 

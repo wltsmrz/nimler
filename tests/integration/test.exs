@@ -75,6 +75,8 @@ defmodule NimlerTest do
             assert(:test == NimlerWrapper.enif_make_existing_atom_len())
         test "make_tuple()", do:
             assert({1,2,3} == NimlerWrapper.enif_make_tuple())
+        test "make_tuple_from_array()", do:
+            assert({1,2,3} == NimlerWrapper.enif_make_tuple())
         test "make_int()", do:
             assert(1 == NimlerWrapper.enif_make_int())
         test "make_long()", do:

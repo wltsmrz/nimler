@@ -5,6 +5,8 @@ export options
 
 type ErlAtom* = Buffer
 type ErlResult* = tuple[rtype: ErlAtom, rval: ErlNifTerm]
+type ErlTuple* = varargs[ErlNifTerm]
+type ErlList* = openArray[ErlNifTerm]
 
 const AtomOk* = cast[ErlAtom]("ok")
 const AtomErr* = cast[ErlAtom]("error")
@@ -50,4 +52,13 @@ proc encode*(V: ErlResult, env: ptr ErlNifEnv): ErlNifTerm =
   let arity = cuint(2)
   let rtype = enif_make_atom(env, V.rtype)
   return enif_make_tuple(env, arity, rtype, V.rval)
+
+########## tuple ##########
+proc encode*(V: ErlTuple, env: ptr ErlNifEnv): ErlNifTerm =
+  return enif_make_tuple_from_array(env, V)
+
+########## list ##########
+proc encode*(V: ErlList, env: ptr ErlNifEnv): ErlNifTerm =
+  return enif_make_list_from_array(env, V)
+
 

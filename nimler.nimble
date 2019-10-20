@@ -4,9 +4,8 @@ version = "0.0.1"
 author = "wltsmrz"
 description = "Erlang/Elixir NIF wrapper"
 license = "MIT"
-srcDir = "src"
-skipDirs = @["tests"]
-# installFiles = @["nimler.nim"]
+skipDirs = @["tests", "docs", "example"]
+skipFiles = @["README.md"]
 requires "nim >= 1.0.0"
 
 proc configErlHeaders() =
@@ -25,7 +24,10 @@ proc configNif() =
   --checks:off
   --app:lib
 
-task test, "build and run test":
+task test, "dummy":
+  quit(0)
+
+task test_all, "build and run test":
   exec("nimble build_integration")
   exec("nimble build_codec")
   exec("nimble build_resource")

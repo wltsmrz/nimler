@@ -10,7 +10,7 @@ defmodule NimlerTest do
 
     describe "test_consume_timeslice" do
         test "timeslice iter" do
-            res = NimlerWrapper.test_consume_timeslice(0)
+            res = NimlerWrapper.test_consume_timeslice(0, 0)
             assert(elem(res, 0) == :ok)
             assert(elem(res, 1) == 1000) # countup val
             assert(elem(res, 2) > 10) # invocations

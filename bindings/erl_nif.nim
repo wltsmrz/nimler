@@ -164,4 +164,6 @@ proc enif_make_resource*(a1: ptr ErlNifEnv; a2: pointer): ErlNifTerm {.importc: 
 proc enif_get_resource*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: pointer; a4: pointer): bool {.importc: "enif_get_resource", header: "erl_nif.h".}
 proc enif_consume_timeslice*(a1: ptr ErlNifEnv; a2: cint): bool {.importc: "enif_consume_timeslice", header: "erl_nif.h".}
 proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: NifFunc; a5: cint; a6: ptr ErlNifArgs): ErlNifTerm {.importc: "enif_schedule_nif", header: "erl_nif.h".}
+proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: NifFunc; a5: openArray[ErlNifTerm]): ErlNifTerm =
+  return enif_schedule_nif(a1, a2, a3, a4, len(a5).cint, cast[ptr ErlNifArgs](a5))
   

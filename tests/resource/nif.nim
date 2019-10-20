@@ -1,4 +1,3 @@
-import sharedtables
 import ../../nimler
 
 type MyResource = object

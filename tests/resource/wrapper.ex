@@ -5,5 +5,4 @@ defmodule NimlerWrapper do
     def create_resource(), do: raise "not implemented"
     def update_resource(_a), do: raise "not implemented"
     def check_resource(_a), do: raise "not implemented"
-    def release_resource(_a), do: raise "not implemented"
 end

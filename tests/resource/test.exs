@@ -13,6 +13,5 @@ defmodule NimlerTest do
         assert(is_reference(res))
         assert(is_reference(NimlerWrapper.update_resource(res)))
         assert(is_reference(NimlerWrapper.check_resource(res)))
-        assert(1 == NimlerWrapper.release_resource(res))
     end
 end

@@ -1,4 +1,4 @@
-# Available types for codec convenience functions
+# Available types for codec functions
 
 See [codec tests](https://github.com/wltsmrz/nimler/tree/master/tests/codec) for example usage and potentially more up to date list.
 

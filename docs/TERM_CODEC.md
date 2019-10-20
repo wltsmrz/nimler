@@ -70,7 +70,7 @@ Proxies the first argument as an `ErlResult` tuple such as `{:ok, 1}`.
 
 ### See also
 
-See [docs/TERM_GETTERS](TERM_GETTERS.md) for for reading terms the inconvenient way.
+See [docs/TERM_GETTERS](TERM_GETTERS.md) for reading terms the inconvenient way.
 
 See [docs/TERM_MAKERS](TERM_MAKERS.md) for writing terms the inconvenient way.
 

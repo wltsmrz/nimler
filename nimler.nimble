@@ -23,16 +23,19 @@ proc configTest() =
 proc configNif() =
   --checks:off
   --app:lib
+  --noMain
 
 task test, "dummy":
   quit(0)
 
 task test_all, "build and run test":
+  exec("nimble build_init_api")
   exec("nimble build_integration")
   exec("nimble build_codec")
   exec("nimble build_resource")
   exec("nimble build_dirty_nif")
   exec("nimble build_timeslice")
+  exec("nimble test_init_api")
   exec("nimble test_integration")
   exec("nimble test_codec")
   exec("nimble test_resource")
@@ -88,4 +91,14 @@ task build_timeslice, "build nif":
 
 task test_timeslice, "run test":
   exec("elixir -r tests/timeslice/wrapper.ex tests/timeslice/test.exs")
+
+task build_init_api, "build nif":
+  configErlHeaders()
+  configNif()
+  configTest()
+  switch("out", "tests/init_api/nif.so")
+  setCommand("compile", "tests/init_api/nif")
+
+task test_init_api, "run test":
+  exec("elixir -r tests/init_api/wrapper.ex tests/init_api/test.exs")
 

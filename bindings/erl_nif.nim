@@ -5,8 +5,6 @@ type
   ErlNifUInt64* = culonglong
   ErlNifArgs* = UncheckedArray[ErlNifTerm]
   NifFunc* = proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm {.nimcall.}
-  NifSpec* = tuple[name: string, arity: int, fptr: NifFunc]
-  DirtyNifSpec* = tuple[name: string, arity: int, fptr: NifFunc, flags: ErlNifFlags]
   ErlNifFunc* {.importc: "ErlNifFunc", header: "erl_nif.h", bycopy.} = object
     name* {.importc: "name".}: cstring
     arity* {.importc: "arity".}: cuint
@@ -39,10 +37,10 @@ type
   ErlNifEvent* {.importc: "ErlNifEvent", header: "erl_nif.h".} = cint
   ErlNifMonitor* {.importc: "ErlNifMonitor", header: "erl_nif.h".} = object
     data {.importc: "data".}: array[4, csize]
-  ErlNifEntryLoad = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint
-  ErlNifEntryReload = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint
-  ErlNifEntryUpgrade = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; old_priv_data: ptr pointer; load_info: ErlNifTerm): cint
-  ErlNifEntryUnload = proc (a1: ptr ErlNifEnv; priv_data: pointer)
+  ErlNifEntryLoad* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
+  ErlNifEntryReload* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
+  ErlNifEntryUpgrade* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; old_priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
+  ErlNifEntryUnload* = proc (a1: ptr ErlNifEnv; priv_data: pointer) {.nimcall.}
   ErlNifEntry* {.importc: "ErlNifEntry", header: "erl_nif.h", bycopy.} = object
     major* {.importc: "major".}: cint
     minor* {.importc: "minor".}: cint
@@ -77,6 +75,7 @@ type
 proc enif_alloc*(a1: csize): pointer {.importc: "enif_alloc", header: "erl_nif.h".}
 proc enif_free*(a1: pointer) {.importc: "enif_free", header: "erl_nif.h".}
 proc enif_realloc*(a1: pointer; a2: csize): pointer {.importc: "enif_realloc", header: "erl_nif.h".}
+proc enif_priv_data*(a1: ptr ErlNifEnv): pointer {.importc: "enif_priv_data", header: "erl_nif.h".}
 proc enif_is_process_alive*(a1: ptr ErlNifEnv; a2: ptr ErlNifPid): bool {.importc: "enif_is_process_alive", header: "erl_nif.h".}
 proc enif_is_port_alive*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_port_alive", header: "erl_nif.h".}
 proc enif_is_pid_undefined*(a2: ptr ErlNifPid): bool {.importc: "enif_is_pid_undefined", header: "erl_nif.h".}

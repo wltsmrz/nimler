@@ -12,7 +12,7 @@ proc add_numbers(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
     let r = a1 + a2
     return r.encode(env)
 
-export_nifs("Elixir.NumberAdder", [
+export_nifs("Elixir.NumberAdder", @[
   ("add_numbers", 2, add_numbers),
 ```
 
@@ -49,7 +49,5 @@ Note:
 
 * Placeholder functions (in this case `add_numbers(_a, _b)` must exist when NIF is loaded
 * Placeholder arguments (_a, _b) must also exist, and must match the arity of the exported NIF from step 1 (in our case, arity=2)
-
-
 
 

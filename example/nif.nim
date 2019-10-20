@@ -6,7 +6,7 @@ proc add_numbers(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let r = a1 + a2
   return r.encode(env)
 
-export_nifs("Elixir.NumberAdder", [
+export_nifs("Elixir.NumberAdder", @[
   ("add_numbers", 2, add_numbers),
 ])
 

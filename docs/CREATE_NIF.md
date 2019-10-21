@@ -91,8 +91,11 @@ export_nifs("Elixir.NumberAdder", NifOptions(
 ### See also
 
 See [docs/GLOSSARY](GLOSSARY.md) for unknown terminology.
+
 See [docs/TERM_CODEC](TERM_CODEC.md) for convenient encoding and decoding of Erlang terms.
+
 See [docs/RESOURCES](RESOURCES.md) for managing native (nim) data structures within a NIF.
+
 See [tests](../tests) for example usage.
 
 

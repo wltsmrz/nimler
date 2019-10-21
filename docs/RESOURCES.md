@@ -38,12 +38,11 @@ proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm):
     let priv = cast[ptr MyResourcePriv](enif_allof(sizeof(MyResourcePriv)))
     var flags_created: ErlNifResourceFlags
     priv[].resource_type = enif_open_resource_type(env, nil, cstring("MyResource"), nil, ERL_NIF_RT_CREATE, addr(flags_created))
-    priv[].atom_ok = enif_make_atom(env, AtomOk)
+    priv[].atom_ok = ErlAtom("ok").encode(env)
     priv_data[] = priv
     return 0
 
-export_nifs(NifOptions(
-    name: "Elixir.NimlerWrapper",
+export_nifs("Elixir.NimlerWrapper", NifOptions(
     funcs: @[],
     load: on_load,
     unload: on_unload

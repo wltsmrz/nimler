@@ -39,10 +39,8 @@ If work can be reasonably iterated, NIFs can reschedule subsequent invocations i
 
 ```nim
 proc test_consume_timeslice(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  var it, invocations: int32
-
-  discard enif_get_int(env, argv[0], addr(it))
-  discard enif_get_int(env, argv[1], addr(invocations))
+  var it = argv[0].decode(env, int32).get(0)
+  var invocations = argv[1].decode(env, int32).get(0)
 
   inc(invocations)
 

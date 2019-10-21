@@ -60,7 +60,7 @@ nim arrays become Erlang tuples.
 let my_tuple = encode([
     enif_make_int(env, 1),
     enif_make_int(env, 2),
-    enif_make_int(env, 1)
+    enif_make_int(env, 3)
 ], env)
 # ErlNifTerm({1,2,3})
 ```
@@ -71,7 +71,7 @@ varargs are also tuples.
 let my_tuple = encode(
     enif_make_int(env, 1),
     enif_make_int(env, 2),
-    enif_make_int(env, 1),
+    enif_make_int(env, 3),
     env
 )
 # ErlNifTerm({1,2,3})
@@ -101,7 +101,7 @@ let my_result = ResultOk(my_map).encode(env)
 Example proxying first argument within a result tuple
 
 ```nim
-proc add_numbers(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+proc test_nif(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return ResultOk(argv[0]) # {:ok, <whatever>}
 ```
 
@@ -151,7 +151,7 @@ let atm = argv[1].decode(ErlAtom, env)
 This NIF proxies the first argument back to the implementing module, if decoding into uint32 succeeds. Otherwise it sends an ErlNifTerm representing the value 0.
 
 ```nim
-proc add_numbers(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+proc test_nif(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let a1 = argv[0].decode(env, uint32).get(0)
   return a1.encode(env)
 ```

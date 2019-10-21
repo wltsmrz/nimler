@@ -10,6 +10,7 @@ type
     arity* {.importc: "arity".}: cuint
     fptr* {.importc: "fptr".}: NifFunc
     flags* {.importc: "flags".}: cuint
+  NifFuncArr* = ptr UncheckedArray[ErlNifFunc]
   ErlNifFlags* {.size: sizeof(cint).} = enum
     ERL_NIF_DIRTY_CPU,
     ERL_NIF_DIRTY_IO
@@ -46,7 +47,7 @@ type
     minor* {.importc: "minor".}: cint
     name* {.importc: "name".}: cstring
     num_of_funcs* {.importc: "num_of_funcs".}: cint
-    funcs* {.importc: "funcs".}: ptr UncheckedArray[ErlNifFunc]
+    funcs* {.importc: "funcs".}: NifFuncArr
     load* {.importc: "load".}: pointer
     reload* {.importc: "reload".}: pointer
     upgrade* {.importc: "upgrade".}: pointer

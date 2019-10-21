@@ -4,7 +4,9 @@ See [codec tests](https://github.com/wltsmrz/nimler/tree/master/tests/codec) for
 
 * `int32`
 * `uint32`
-* `ErlAtom`
-* `ErlResult`
-* `ErlTuple`
+* `ErlAtom` represented in nim as `cstring`
+* `ErlList` represented in nim as `seq`
+* `ErlString` represented in nim as `cstring`
+* `ErlTuple` represented in nim as either `array` or `varargs`
+* `ErlResult` represented in nim as tuple of arity=2 {`AtomOk` , `ErlNifTerm`}
 

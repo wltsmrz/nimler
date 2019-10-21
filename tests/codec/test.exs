@@ -28,9 +28,16 @@ defmodule NimlerTest do
             assert(:test == NimlerWrapper.codec_atom(:test))
     end
 
+    describe "codec_strings" do
+        test "codec_strings()", do:
+            assert('test' == NimlerWrapper.codec_string('test'))
+    end
+
     describe "codec_tuples" do
         test "codec_varargs_tuple()", do:
             assert({1,2,3} == NimlerWrapper.codec_varargs_tuple())
+        test "codec_array_tuple()", do:
+            assert({1,2,3} == NimlerWrapper.codec_array_tuple())
         test "codec_result()", do:
             assert({:ok, 1} == NimlerWrapper.codec_result_ok(1))
         test "codec_result_err()", do:
@@ -38,7 +45,6 @@ defmodule NimlerTest do
     end
 
     describe "codec_list" do
-        @tag :skip
         test "codec_list()", do:
             assert([1,2,3] == NimlerWrapper.codec_list())
     end

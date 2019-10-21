@@ -11,11 +11,8 @@ proc test_consume_timeslice(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): E
 
   while it < 1000:
     if enif_consume_timeslice(env, cint(10)):
-      let fun_name = cstring("test_consume_timeslice")
-      let flags = cint(0)
-      let fptr = test_consume_timeslice
       let next_args = [ it.encode(env), invocations.encode(env) ]
-      return enif_schedule_nif(env, fun_name, flags, fptr, next_args)
+      return enif_schedule_nif(env, test_consume_timeslice, next_args)
     os.sleep(1)
     inc(it)
 

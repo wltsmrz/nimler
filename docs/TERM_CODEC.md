@@ -26,9 +26,46 @@ let term = my_val.encode(env)
 # ErlNifTerm(10)
 ```
 
+### Atom types
+
+nimler ErlAtom  become Erlang atoms
+
+```nim
+let my_atom = encode(ErlAtom("test"), env)
+# ErlNifTerm(:test)
+
+let s = ErlAtom("test")
+s.encode(env)
+# ErlNifTerm(:test)
+```
+
+### String types
+
+nimler ErlString become Erlang strings.
+
+```nim
+let my_str = encode(ErlString("test"), env)
+# ErlNifTerm('test')
+
+let s = ErlString("test")
+s.encode(env)
+# ErlNifTerm('test')
+```
+
 ### Tuple types
 
-varargs of ErlNifTerm is used to encode Erlang tuples.
+nim arrays become Erlang tuples.
+
+```nim
+let my_tuple = encode([
+    enif_make_int(env, 1),
+    enif_make_int(env, 2),
+    enif_make_int(env, 1)
+], env)
+# ErlNifTerm({1,2,3})
+```
+
+varargs are also tuples.
 
 ```nim
 let my_tuple = encode(
@@ -54,18 +91,40 @@ let my_bad_result = ResultErr(enif_make_int(env, 1)).encode(env)
 let my_map = enif_make_new_map(env)
 let k = enif_make_string(env, "a")
 let v = enif_make_int(env, 1)
-discard enif_make_map_put(env, my_map, k, v unsafeAddr(my_map))
+discard enif_make_map_put(env, my_map, k, v, unsafeAddr(my_map))
 
 let my_result = ResultOk(my_map).encode(env)
 
 # ErlNifTerm({:ok, %{"a": 1}})
 ```
 
-Example:
+Example proxying first argument within a result tuple
 
 ```nim
 proc add_numbers(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  return ResultOk(argv[0])
+  return ResultOk(argv[0]) # {:ok, <whatever>}
+```
+
+### List types
+
+nim seq types become Erlang list.
+
+```nim
+let my_list = encode(@[
+    enif_make_int(env, 1),
+    enif_make_int(env, 2),
+    enif_make_int(env, 1),
+], env)
+# ErlNifTerm([1,2,3])
+
+let s = @[
+    enif_make_int(env, 1),
+    enif_make_int(env, 2),
+    enif_make_int(env, 1)
+]
+
+s.encode(env)
+# ErlNifTerm([1,2,3])
 ```
 
 # Decode
@@ -82,6 +141,11 @@ if my_other_val_option.isNone:
     return do_something()
 
 let my_val_2 = my_other_val_option.get() # get the decoded val without default
+
+# strings
+let str = argv[0].decode(ErlString, env)
+# atoms
+let atm = argv[1].decode(ErlAtom, env)
 ```
 
 This NIF proxies the first argument back to the implementing module, if decoding into uint32 succeeds. Otherwise it sends an ErlNifTerm representing the value 0.

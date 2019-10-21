@@ -98,7 +98,7 @@ proc enif_inspect_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifBinar
 proc enif_alloc_binary*(a1: csize; a2: ptr ErlNifBinary): cint {.importc: "enif_alloc_binary", header: "erl_nif.h".}
 proc enif_realloc_binary*(a1: ptr ErlNifBinary; a2: csize): cint {.importc: "enif_realloc_binary", header: "erl_nif.h".}
 proc enif_release_binary*(a1: ptr ErlNifBinary): cint {.importc: "enif_release_binary", header: "erl_nif.h".}
-proc enif_get_atom*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: Buffer; a4: cuint; a5: ErlNifCharEncoding): cuint {.importc: "enif_get_atom", header: "erl_nif.h".}
+proc enif_get_atom*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: Buffer; a4: cuint; a5: ErlNifCharEncoding): cint {.importc: "enif_get_atom", header: "erl_nif.h".}
 proc enif_get_atom_length*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr cuint; a4: ErlNifCharEncoding): bool {.importc: "enif_get_atom_length", header: "erl_nif.h".}
 proc enif_get_int*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr cint): bool {.importc: "enif_get_int", header: "erl_nif.h".}
 proc enif_get_long*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr clong): bool {.importc: "enif_get_long", header: "erl_nif.h".}
@@ -165,4 +165,6 @@ proc enif_consume_timeslice*(a1: ptr ErlNifEnv; a2: cint): bool {.importc: "enif
 proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: NifFunc; a5: cint; a6: ptr ErlNifArgs): ErlNifTerm {.importc: "enif_schedule_nif", header: "erl_nif.h".}
 proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: NifFunc; a5: openArray[ErlNifTerm]): ErlNifTerm =
   return enif_schedule_nif(a1, a2, a3, a4, len(a5).cint, cast[ptr ErlNifArgs](a5))
+proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: NifFunc; a3: openArray[ErlNifTerm]): ErlNifTerm =
+  return enif_schedule_nif(a1, astToStr(a2), cint(0), a2, len(a3).cint, cast[ptr ErlNifArgs](a3))
   

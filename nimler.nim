@@ -5,7 +5,9 @@ export erl_nif
 export codec
 
 type NifSpec* = tuple[name: string, arity: int, fptr: NifFunc]
+
 type DirtyNifSpec* = tuple[name: string, arity: int, fptr: NifFunc, flags: ErlNifFlags]
+
 type NifOptions* = object
   name*: string
   funcs*: seq[NifSpec]
@@ -37,7 +39,7 @@ template export_nifs*(module_name: string, funcs_seq: openArray[NifSpec]) =
     entry.vm_variant = cstring("beam.vanilla")
     result = addr(entry)
 
-template export_nifs*(options: NifOptions) =
+template export_nifs*(module_name: string, options: NifOptions) =
   proc NimMain() {.gensym, importc: "NimMain".}
 
   const funcs_len = len(options.funcs) + len(options.dirty_funcs)
@@ -54,7 +56,7 @@ template export_nifs*(options: NifOptions) =
     NimMain()
     entry.major = cint(2)
     entry.minor = cint(15)
-    entry.name = cstring(options.name)
+    entry.name = cstring(module_name)
     entry.num_of_funcs = len(funcs).cint
     entry.funcs = cast[ptr UncheckedArray[ErlNifFunc]](unsafeAddr(funcs[0]))
     entry.load = options.load

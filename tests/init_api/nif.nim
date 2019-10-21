@@ -30,8 +30,7 @@ proc test_priv_data(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTer
 proc on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
   enif_free(priv_data)
 
-export_nifs(NifOptions(
-  name: "Elixir.NimlerWrapper",
+export_nifs("Elixir.NimlerWrapper", NifOptions(
   funcs: @[ ("test", 0, test), ("test_priv", 0, test_priv_data) ],
   dirty_funcs: @[ ("test_dirty", 0, test_dirty, ERL_NIF_DIRTY_IO) ],
   load: on_load,

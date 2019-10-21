@@ -4,8 +4,10 @@ This example will create a NIF for adding two signed 32-bit integers. See [docs/
 
 ### 1. Write NIF in nim
 
-*nif.nim*
 ```nim
+# nif.nim
+import nimler
+
 proc add_numbers(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
     let a1 = argv[0].decode(env, int32).get(0)
     let a2 = argv[1].decode(env, int32).get(0)
@@ -30,13 +32,14 @@ export_nifs("Elixir.NumberAdder", @[
 
 ### 2. Compile shared library
 
-Compile with `--app:lib` to produce `nif.so` shared library to be loaded in Erlang/Elixir.
+Compile with `--noMain --app:lib` to produce `nif.so` shared library to be loaded in Erlang/Elixir.
 
-### 3. Wrap library with Elixir module
+### 3. Wrap NIF library in a module
 
-*NumberAdder.ex*
 
-```elxir
+```elixir
+# NumberAdder.exs
+
 defmodule NumberAdder do
     @on_load :load_nif
 
@@ -46,9 +49,51 @@ defmodule NumberAdder do
 end
 ```
 
-Note:
+**Note**
 
 * Placeholder functions (in this case `add_numbers(_a, _b)` must exist when NIF is loaded
 * Placeholder arguments (_a, _b) must also exist, and must match the arity of the exported NIF from step 1 (in our case, arity=2)
+
+
+### Advanced use
+
+For using dirty schedulers or load/unload callback, use the following init API:
+
+```nim
+# nif.nim
+import nimler
+
+proc on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
+    echo "unload"
+
+proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm): cint =
+    echo "load"
+    return 0
+
+proc add_numbers(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+    let a1 = argv[0].decode(env, int32).get(0)
+    let a2 = argv[1].decode(env, int32).get(0)
+    return (a1 + a2).encode(env)
+
+proc add_numbers_dirty(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+    let a1 = argv[0].decode(env, int32).get(0)
+    let a2 = argv[1].decode(env, int32).get(0)
+    return (a1 + a2).encode(env)
+
+export_nifs("Elixir.NumberAdder", NifOptions(
+    funcs: @[ ("add_numbers", 2, add_numbers) ],
+    dirty_funcs: @[ ("add_numbers_dirty", 2, add_numbers_dirty, ERL_NIF_DIRTY_IO) ],
+    load: on_load,
+    unload: on_unload
+))
+```
+
+### See also
+
+See [docs/GLOSSARY](GLOSSARY.md) for unknown terminology.
+See [docs/TERM_CODEC](TERM_CODEC.md) for convenient encoding and decoding of Erlang terms.
+See [docs/RESOURCES](RESOURCES.md) for managing native (nim) data structures within a NIF.
+See [tests](../tests) for example usage.
+
 
 

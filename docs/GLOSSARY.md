@@ -40,9 +40,6 @@ proc my_nif_func(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
     return argv[0]
 ```
 
-As argv[0] is an ErlNifTerm it can be returned from NIF.
-
-
 ### NifSpec
 
 A tuple containing required details to export a NIF. Its type signature is `tuple[name: string, arity: cint, fptr: proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm]`. Example:

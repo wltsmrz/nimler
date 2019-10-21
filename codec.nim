@@ -6,7 +6,7 @@ export options
 type ErlAtom* = Buffer
 type ErlResult* = tuple[rtype: ErlAtom, rval: ErlNifTerm]
 type ErlTuple* = varargs[ErlNifTerm]
-type ErlList* = openArray[ErlNifTerm]
+type ErlList* = seq[ErlNifTerm]
 
 const AtomOk* = cast[ErlAtom]("ok")
 const AtomErr* = cast[ErlAtom]("error")

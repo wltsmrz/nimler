@@ -44,8 +44,7 @@ proc check_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTer
   return argv[0]
 
 
-export_nifs(NifOptions(
-  name: "Elixir.NimlerWrapper",
+export_nifs("Elixir.NimlerWrapper", NifOptions(
   funcs: @[
     ("create_resource", 0, create_resource),
     ("update_resource", 1, update_resource),

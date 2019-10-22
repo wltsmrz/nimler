@@ -14,11 +14,26 @@ proc codec_uint32(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm 
 
 proc codec_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let a1 = argv[0].decode(env, ErlAtom).get()
+  doAssert(a1.val== "test")
+  let v = ErlAtom((val: "test"))
+  doAssert(a1 == v)
   return a1.encode(env)
 
 proc codec_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let a1 = argv[0].decode(env, ErlString).get()
+  let a2 = argv[1].decode(env, ErlString).get(ErlString("default"))
+  doAssert(a1 == "test")
+  doAssert(a2 == "default")
   return a1.encode(env)
+
+proc codec_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  let a1 = argv[0].decode(env, ErlBinary)
+  if a1.isNone():
+    return enif_make_badarg(env)
+  let a1v = a1.get()
+  doAssert(a1v.size == 5)
+  doAssert(cast[Buffer](a1v.data) == "test".cstring)
+  return a1v.encode(env)
 
 proc codec_varargs_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return encode(
@@ -52,6 +67,7 @@ export_nifs("Elixir.NimlerWrapper", @[
   ("codec_uint32", 2, codec_uint32),
   ("codec_atom", 1, codec_atom),
   ("codec_string", 1, codec_string),
+  ("codec_binary", 1, codec_binary),
   ("codec_varargs_tuple", 0, codec_varargs_tuple),
   ("codec_array_tuple", 0, codec_array_tuple),
   ("codec_list", 0, codec_list),

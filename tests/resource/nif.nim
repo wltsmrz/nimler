@@ -5,7 +5,6 @@ type MyResource = object
 
 type MyResourcePriv = object
   resource_type: ptr ErlNifResourceType
-  atom_ok: ErlNifTerm
 
 proc on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
   enif_free(priv_data)
@@ -16,7 +15,6 @@ proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm):
   priv[].resource_type = enif_open_resource_type(env, nil,
     cstring("MyResource"), nil,
     ERL_NIF_RT_CREATE, addr(flags_created))
-  priv[].atom_ok = ErlAtom("ok").encode(env)
   priv_data[] = priv
   return 0
 

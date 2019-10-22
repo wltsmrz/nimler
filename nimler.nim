@@ -4,18 +4,17 @@ import ./codec
 export erl_nif
 export codec
 
-type NifSpec* = tuple[name: string, arity: int, fptr: NifFunc]
-
-type NifSpecDirty* = tuple[name: string, arity: int, fptr: NifFunc, flags: ErlNifFlags]
-
-type NifOptions* = object
-  name*: string
-  funcs*: seq[NifSpec]
-  dirty_funcs*: seq[NifSpecDirty]
-  load*: ErlNifEntryLoad
-  reload*: ErlNifEntryReload
-  upgrade*: ErlNifEntryUpgrade
-  unload*: ErlNifEntryUnload
+type
+  NifSpec* = tuple[name: string, arity: int, fptr: NifFunc]
+  NifSpecDirty* = tuple[name: string, arity: int, fptr: NifFunc, flags: ErlNifFlags]
+  NifOptions* = object
+    name*: string
+    funcs*: seq[NifSpec]
+    dirty_funcs*: seq[NifSpecDirty]
+    load*: ErlNifEntryLoad
+    reload*: ErlNifEntryReload
+    upgrade*: ErlNifEntryUpgrade
+    unload*: ErlNifEntryUnload
 
 template export_nifs*(module_name: string, funcs_seq: openArray[NifSpec]) =
   proc NimMain() {.gensym, importc: "NimMain".}

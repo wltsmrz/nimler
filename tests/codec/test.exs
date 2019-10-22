@@ -33,6 +33,11 @@ defmodule NimlerTest do
             assert('test' == NimlerWrapper.codec_string('test'))
     end
 
+    describe "codec_binary" do
+        test "codec_binary()", do:
+            assert(<<116, 101, 115, 116, 0>> == NimlerWrapper.codec_binary("test" <> <<0>>))
+    end
+
     describe "codec_tuples" do
         test "codec_varargs_tuple()", do:
             assert({1,2,3} == NimlerWrapper.codec_varargs_tuple())

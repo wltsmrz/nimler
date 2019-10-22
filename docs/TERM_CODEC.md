@@ -28,13 +28,18 @@ let term = my_val.encode(env)
 
 ### Atom types
 
-nimler ErlAtom  become Erlang atoms
+nimler ErlAtom become Erlang atoms. They are represented as a 1-arity tuple of string. Nimler exports the following atoms for convenience:
+
+* `AtomOk` ErlAtom((val: "ok"))
+* `AtomErr` ErlAtom((val: "error"))
+* `Atomtrue` ErlAtom((val: "true"))
+* `AtomFalse` ErlAtom((val: "false"))
 
 ```nim
-let my_atom = encode(ErlAtom("test"), env)
+let my_atom = encode(ErlAtom((val: "test")), env)
 # ErlNifTerm(:test)
 
-let s = ErlAtom("test")
+let s = ErlAtom((val: "test"))
 s.encode(env)
 # ErlNifTerm(:test)
 ```
@@ -143,9 +148,16 @@ if my_other_val_option.isNone:
 let my_val_2 = my_other_val_option.get() # get the decoded val without default
 
 # strings
-let str = argv[0].decode(ErlString, env)
+let str = term.decode(env, ErlString).get()
+# str == "test"
+
 # atoms
-let atm = argv[1].decode(ErlAtom, env)
+let atm = term.decode(env, ErlAtom).get()
+# atm.val == "test"
+
+# binaries
+let bin = term.decode(env, ErlBinary).get()
+# cast[Buffer](bin.data) == "test".cstring
 ```
 
 This NIF proxies the first argument back to the implementing module, if decoding into uint32 succeeds. Otherwise it sends an ErlNifTerm representing the value 0.

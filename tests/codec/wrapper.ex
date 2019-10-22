@@ -11,4 +11,5 @@ defmodule NimlerWrapper do
     def codec_result_ok(_a), do: raise "not implemented"
     def codec_result_error(_a), do: raise "not implemented"
     def codec_list(), do: raise "not implemented"
+    def codec_binary(_a), do: raise "not implemented"
 end

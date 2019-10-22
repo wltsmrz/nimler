@@ -4,9 +4,11 @@ See [codec tests](https://github.com/wltsmrz/nimler/tree/master/tests/codec) for
 
 * `int32`
 * `uint32`
-* `ErlAtom` represented in nim as `cstring`
+* `ErlAtom` represented in nim as `tuple[val: string]`
 * `ErlTuple` represented in nim as either `array` or `varargs`
 * `ErlResult` **encode only** represented in nim as tuple of arity=2 {`AtomOk` , `ErlNifTerm`}
-* `ErlString` represented in nim as `cstring`
+* `ErlString` represented in nim as `string`
+* `ErlBinary` represented in nim as `ptr UncheckedArray[byte]`
 * `ErlList` **encode only** represented in nim as `seq`
+
 

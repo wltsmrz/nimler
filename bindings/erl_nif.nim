@@ -69,7 +69,7 @@ type
     down* {.importc: "down".}: ptr ErlNifResourceDown
   ErlNifBinary* {.importc: "ErlNifBinary", header: "erl_nif.h", bycopy.} = object
     size* {.importc: "size".}: csize
-    data* {.importc: "data".}: ptr cuchar
+    data* {.importc: "data".}: ptr byte
     ref_bin* {.importc: "ref_bin".}: pointer
     spare* {.importc: "__spare__".}: array[2, pointer]
 
@@ -95,7 +95,7 @@ proc enif_is_map*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_m
 proc enif_is_number*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_number", header: "erl_nif.h".}
 proc enif_is_current_process_alive*(a1: ptr ErlNifEnv): bool {.  importc: "enif_is_current_process_alive", header: "erl_nif.h".}
 proc enif_compare*(a1: ErlNifTerm; a2: ErlNifTerm): cint {.importc: "enif_compare", header: "erl_nif.h".}
-proc enif_inspect_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifBinary): cint {.importc: "enif_inspect_binary", header: "erl_nif.h".}
+proc enif_inspect_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifBinary): bool {.importc: "enif_inspect_binary", header: "erl_nif.h".}
 proc enif_alloc_binary*(a1: csize; a2: ptr ErlNifBinary): cint {.importc: "enif_alloc_binary", header: "erl_nif.h".}
 proc enif_realloc_binary*(a1: ptr ErlNifBinary; a2: csize): cint {.importc: "enif_realloc_binary", header: "erl_nif.h".}
 proc enif_release_binary*(a1: ptr ErlNifBinary): cint {.importc: "enif_release_binary", header: "erl_nif.h".}

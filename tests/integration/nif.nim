@@ -414,14 +414,20 @@ proc fprintf(env, argc, argv): ErlNifTerm =
   return enif_make_int(env, cint(res))
 
 proc snprintf(env, argc, argv): ErlNifTerm =
-  let slen = 50
+  let slen = 32
   let b = cast[Buffer](create(cchar, slen))
   discard enif_snprintf(b, slen, "%T", argv[0])
   doAssert(b.cstring == "\"test\"")
   dealloc(b)
   return enif_make_int(env, cint(0))
 
+proc system_info(env, argc, argv): ErlNifTerm =
+  var info: ErlNifSysInfo
+  enif_system_info(addr(info), sizeof(info))
+  return enif_make_int(env, 1)
+
 export_nifs("Elixir.NimlerWrapper", @[
+  ("enif_system_info", 0, system_info),
   ("enif_snprintf", 1, snprintf),
   ("enif_fprintf", 1, fprintf),
   ("enif_raise_exception", 1, raise_exception),

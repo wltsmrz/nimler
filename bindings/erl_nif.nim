@@ -139,7 +139,7 @@ proc enif_make_uint*(a1: ptr ErlNifEnv; a2: cuint): ErlNifTerm {.importc: "enif_
 proc enif_make_tuple_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): ErlNifTerm {.  importc: "enif_make_tuple_from_array", header: "erl_nif.h".}
 proc enif_make_list_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): ErlNifTerm {.importc: "enif_make_list_from_array", header: "erl_nif.h".}
 proc enif_make_new_binary*(a1: ptr ErlNifEnv; a2: csize; a3: ptr ErlNifTerm): ptr cuchar {.importc: "enif_make_new_binary", header: "erl_nif.h".}
-proc enif_system_info*(a1: ptr ErlNifSysInfo; a2: csize) {.importc: "enif_system_info", header: "erl_nif.h".}
+proc enif_system_info*(a1: ptr ErlNifSysInfo; a2: csize): void {.importc: "enif_system_info", header: "erl_nif.h".}
 proc enif_raise_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.importc: "enif_raise_exception", header: "erl_nif.h".}
 proc enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.importc: "enif_has_pending_exception", header: "erl_nif.h".}
 proc enif_has_pending_exception*(a1: ptr ErlNifEnv): bool =

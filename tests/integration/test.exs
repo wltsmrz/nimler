@@ -8,6 +8,11 @@ defmodule NimlerTest do
         NimlerWrapper.load_nif()
     end
 
+    describe "system_info" do
+        test "system_info()", do:
+            NimlerWrapper.enif_system_info()
+    end
+
     describe "fprintf" do
         @tag :skip # skipping by default as output is jarring
         test "fprintf()", do:

@@ -63,4 +63,6 @@ defmodule NimlerWrapper do
     def enif_get_atom(_a), do: "raise not implemented"
     def enif_get_atom_length(_a), do: "raise not implemented"
     def enif_get_local_pid(_a), do: "raise not implemented"
+    def enif_raise_exception(_a), do: raise "not implemented"
+    def enif_fprintf(_a), do: raise "not implemented"
 end

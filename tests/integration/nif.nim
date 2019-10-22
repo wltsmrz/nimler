@@ -1,5 +1,11 @@
 import ../../nimler
 
+using
+  env: ptr ErlNifEnv
+  argc: cint
+  argv: ErlNifArgs
+  term: ErlNifTerm
+
 proc is_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_atom(env, argv[0])))
 
@@ -398,8 +404,16 @@ proc make_unique_integer(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlN
 # 
 #   return bin_term
 
+proc raise_exception(env, argc, argv): ErlNifTerm =
+  return enif_raise_exception(env, argv[0])
+
+proc fprintf(env, argc, argv): ErlNifTerm =
+  let res = enif_fprintf(stdout, "%T", argv[0])
+  return enif_make_int(env, res)
 
 export_nifs("Elixir.NimlerWrapper", @[
+  ("enif_fprintf", 1, fprintf),
+  ("enif_raise_exception", 1, raise_exception),
   ("enif_is_atom", 1, is_atom),
   ("enif_is_binary", 1, is_binary),
   ("enif_is_current_process_alive", 0, is_current_process_alive),

@@ -73,6 +73,7 @@ type
     ref_bin* {.importc: "ref_bin".}: pointer
     spare* {.importc: "__spare__".}: array[2, pointer]
 
+proc enif_fprintf*(a1: File, a2: cstring): cint {.varargs, importc: "enif_fprintf", header: "erl_nif.h".}
 proc enif_alloc*(a1: csize): pointer {.importc: "enif_alloc", header: "erl_nif.h".}
 proc enif_free*(a1: pointer) {.importc: "enif_free", header: "erl_nif.h".}
 proc enif_realloc*(a1: pointer; a2: csize): pointer {.importc: "enif_realloc", header: "erl_nif.h".}

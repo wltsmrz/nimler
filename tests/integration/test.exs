@@ -8,6 +8,17 @@ defmodule NimlerTest do
         NimlerWrapper.load_nif()
     end
 
+    describe "fprintf" do
+        @tag :skip # skipping by default as output is jarring
+        test "fprintf()", do:
+            NimlerWrapper.enif_fprintf(%{a: ["testing", "fprintf", {1,2,3}]})
+    end
+
+    describe "raise_exception" do
+        test "raise_exception()", do:
+            assert_raise(ErlangError, ~s(Erlang error: "test"), fn -> NimlerWrapper.enif_raise_exception("test") end)
+    end
+
     describe "type_checkers" do
         test "is_atom(:test)", do:
             assert(1 == NimlerWrapper.enif_is_atom(:test))

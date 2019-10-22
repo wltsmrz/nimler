@@ -4,6 +4,8 @@ defmodule NimlerWrapper do
 
     def codec_int32(_a, _b), do: raise "not implemented"
     def codec_uint32(_a, _b), do: raise "not implemented"
+    def codec_double(_a), do: raise "not implemented"
+    def codec_uint64(_a), do: raise "not implemented"
     def codec_atom(_a), do: raise "not implemented"
     def codec_string(_a), do: raise "not implemented"
     def codec_varargs_tuple(), do: raise "not implemented"

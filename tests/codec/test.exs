@@ -21,6 +21,10 @@ defmodule NimlerTest do
             assert(4294967295 == NimlerWrapper.codec_uint32(4294967294, 1))
         test "codec_uint32(max+1)", do:
             assert(0 == NimlerWrapper.codec_uint32(4294967295, 1))
+        test "codec_double()", do:
+            assert(1.7976931348623157e+308 == NimlerWrapper.codec_double(1.7976931348623157e+308))
+        test "codec_uint64()", do:
+            assert(0xFFFFFFFFFFFFFFFF == NimlerWrapper.codec_uint64(0xFFFFFFFFFFFFFFFF))
     end
 
     describe "codec_atoms" do

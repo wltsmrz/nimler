@@ -9,6 +9,8 @@ type ErlTuple* = varargs[ErlNifTerm]
 type ErlList* = seq[ErlNifTerm]
 type ErlResult* = tuple[rtype: ErlAtom, rval: ErlNifTerm]
 type ErlBinary* = ErlNifBinary
+type ErlFloat64* = float64
+type ErlUint64* = uint64
 
 const AtomOk*: ErlAtom = (val: "ok")
 const AtomErr*:  ErlAtom = (val: "error")
@@ -37,6 +39,26 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint32]): Option[
 
 proc encode*(V: uint32, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_ulong(env, V)
+
+########## uint64, nim=uint64 ##########
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlUint64]): Option[T] =
+  var res: culonglong
+  if not enif_get_uint64(env, term, addr(res)):
+    return none(T)
+  return some(cast[uint64](res))
+
+proc encode*(V: ErlUint64, env: ptr ErlNifEnv): ErlNifTerm =
+  return enif_make_uint64(env, V)
+
+########## float64, nim=float64 ##########
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlFloat64]): Option[T] =
+  var res: cdouble
+  if not enif_get_double(env, term, addr(res)):
+    return none(T)
+  return some(cast[float64](res))
+
+proc encode*(V: ErlFloat64, env: ptr ErlNifEnv): ErlNifTerm =
+  return enif_make_double(env, V)
 
 ########## ErlAtom, nim=tuple[v=string] ##########
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlAtom]): Option[T] =

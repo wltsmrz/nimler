@@ -12,6 +12,14 @@ proc codec_uint32(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm 
   let r = a1 + a2
   return r.encode(env)
 
+proc codec_double(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  let v = argv[0].decode(env, float64).get()
+  return v.encode(env)
+
+proc codec_uint64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  let v = argv[0].decode(env, uint64).get()
+  return v.encode(env)
+
 proc codec_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let a1 = argv[0].decode(env, ErlAtom).get()
   doAssert(a1.val== "test")
@@ -72,6 +80,8 @@ export_nifs("Elixir.NimlerWrapper", @[
   ("codec_array_tuple", 0, codec_array_tuple),
   ("codec_list", 0, codec_list),
   ("codec_result_ok", 1, codec_result_ok),
-  ("codec_result_error", 1, codec_result_error)
+  ("codec_result_error", 1, codec_result_error),
+  ("codec_double", 1, codec_double),
+  ("codec_uint64", 1, codec_uint64)
 ])
 

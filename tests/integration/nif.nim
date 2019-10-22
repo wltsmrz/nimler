@@ -435,7 +435,12 @@ proc term_type(env, argc, argv): ErlNifTerm =
   doAssert(enif_term_type(env, argv[5]) == ERL_NIF_TERM_TYPE_PID)
   return enif_make_int(env, cint(0))
 
+proc compare(env, argc, argv): ErlNifTerm =
+  let v = enif_compare(argv[0], argv[1])
+  return enif_make_int(env, v)
+
 export_nifs("Elixir.NimlerWrapper", @[
+  ("enif_compare", 2, compare),
   ("enif_term_type", 6, term_type),
   ("enif_system_info", 0, system_info),
   ("enif_snprintf", 1, snprintf),

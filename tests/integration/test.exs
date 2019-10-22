@@ -8,6 +8,17 @@ defmodule NimlerTest do
         NimlerWrapper.load_nif()
     end
 
+    describe "compare" do
+        test "enif_compare(<)", do:
+            assert(-1 == NimlerWrapper.enif_compare(1, 2))
+        test "enif_compare(>)", do:
+            assert(1 == NimlerWrapper.enif_compare(2, 1))
+        test "enif_compare(=)", do:
+            assert(0 == NimlerWrapper.enif_compare(2, 2))
+        test "enif_compare(char)", do:
+            assert(1 == NimlerWrapper.enif_compare('x', 'b'))
+    end
+
     describe "term_type" do
         test "term_type()", do:
             NimlerWrapper.enif_term_type( 1, 'test', {1}, "test", %{}, self())

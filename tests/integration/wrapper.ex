@@ -68,4 +68,5 @@ defmodule NimlerWrapper do
     def enif_snprintf(_a), do: raise "not implemented"
     def enif_system_info(), do: raise "not implemented"
     def enif_term_type(_a, _b, _c, _d, _e, _f), do: raise "not implemented"
+    def enif_compare(_a, _b), do: raise "not implemented"
 end

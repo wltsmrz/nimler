@@ -8,6 +8,11 @@ defmodule NimlerTest do
         NimlerWrapper.load_nif()
     end
 
+    describe "term_type" do
+        test "term_type()", do:
+            NimlerWrapper.enif_term_type( 1, 'test', {1}, "test", %{}, self())
+    end
+
     describe "system_info" do
         test "system_info()", do:
             NimlerWrapper.enif_system_info()

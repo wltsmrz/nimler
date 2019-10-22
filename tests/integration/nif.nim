@@ -424,9 +424,19 @@ proc snprintf(env, argc, argv): ErlNifTerm =
 proc system_info(env, argc, argv): ErlNifTerm =
   var info: ErlNifSysInfo
   enif_system_info(addr(info), sizeof(info))
-  return enif_make_int(env, 1)
+  return enif_make_int(env, cint(0))
+
+proc term_type(env, argc, argv): ErlNifTerm =
+  doAssert(enif_term_type(env, argv[0]) == ERL_NIF_TERM_TYPE_INTEGER)
+  doAssert(enif_term_type(env, argv[1]) == ERL_NIF_TERM_TYPE_LIST)
+  doAssert(enif_term_type(env, argv[2]) == ERL_NIF_TERM_TYPE_TUPLE)
+  doAssert(enif_term_type(env, argv[3]) == ERL_NIF_TERM_TYPE_BITSTRING)
+  doAssert(enif_term_type(env, argv[4]) == ERL_NIF_TERM_TYPE_MAP)
+  doAssert(enif_term_type(env, argv[5]) == ERL_NIF_TERM_TYPE_PID)
+  return enif_make_int(env, cint(0))
 
 export_nifs("Elixir.NimlerWrapper", @[
+  ("enif_term_type", 6, term_type),
   ("enif_system_info", 0, system_info),
   ("enif_snprintf", 1, snprintf),
   ("enif_fprintf", 1, fprintf),

@@ -14,6 +14,18 @@ type
   ErlNifFlags* {.size: sizeof(cint).} = enum
     ERL_NIF_DIRTY_CPU,
     ERL_NIF_DIRTY_IO
+  ErlNifTermType* = enum
+    ERL_NIF_TERM_TYPE_ATOM = 1
+    ERL_NIF_TERM_TYPE_BITSTRING = 2
+    ERL_NIF_TERM_TYPE_FLOAT = 3
+    ERL_NIF_TERM_TYPE_FUN = 4
+    ERL_NIF_TERM_TYPE_INTEGER = 5
+    ERL_NIF_TERM_TYPE_LIST = 6
+    ERL_NIF_TERM_TYPE_MAP = 7
+    ERL_NIF_TERM_TYPE_PID = 8
+    ERL_NIF_TERM_TYPE_PORT = 9
+    ERL_NIF_TERM_TYPE_REFERENCE = 10
+    ERL_NIF_TERM_TYPE_TUPLE = 11
   ErlNifUniqueInteger* {.size: sizeof(cint).} = enum
     ERL_NIF_UNIQUE_POSITIVE = (1 shl 0),
     ERL_NIF_UNIQUE_MONOTONIC = (1 shl 1)
@@ -79,6 +91,7 @@ proc enif_alloc*(a1: csize): pointer {.importc: "enif_alloc", header: "erl_nif.h
 proc enif_free*(a1: pointer) {.importc: "enif_free", header: "erl_nif.h".}
 proc enif_realloc*(a1: pointer; a2: csize): pointer {.importc: "enif_realloc", header: "erl_nif.h".}
 proc enif_priv_data*(a1: ptr ErlNifEnv): pointer {.importc: "enif_priv_data", header: "erl_nif.h".}
+proc enif_term_type*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTermType {.importc: "enif_term_type", header: "erl_nif.h"}
 proc enif_is_process_alive*(a1: ptr ErlNifEnv; a2: ptr ErlNifPid): bool {.importc: "enif_is_process_alive", header: "erl_nif.h".}
 proc enif_is_port_alive*(a1: ptr ErlNifEnv; a2: ErlNifTerm): bool {.importc: "enif_is_port_alive", header: "erl_nif.h".}
 proc enif_is_pid_undefined*(a2: ptr ErlNifPid): bool {.importc: "enif_is_pid_undefined", header: "erl_nif.h".}

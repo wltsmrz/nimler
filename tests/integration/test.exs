@@ -146,15 +146,12 @@ defmodule NimlerTest do
             assert(%{a: 1, b: 2} == NimlerWrapper.enif_make_map_from_arrays())
         test "make_new_map()", do:
             assert(%{} == NimlerWrapper.enif_make_new_map())
-        @tag :skip
         test "make_map_update()", do:
             assert(%{a: 2} == NimlerWrapper.enif_make_map_update(%{a: 1}, :a, 2))
-        @tag :skip
         test "make_map_put()", do:
-            assert(%{a: 1} == NimlerWrapper.enif_make_map_put())
-        @tag :skip
+            assert(%{a: 1} == NimlerWrapper.enif_make_map_put(%{}, :a, 1))
         test "make_map_remove()", do:
-            assert(%{} == NimlerWrapper.enif_make_map_remove())
+            assert(%{} == NimlerWrapper.enif_make_map_remove(%{a: 1}, :a))
         test "make_copy()", do:
             assert(1 == NimlerWrapper.enif_make_copy())
         @tag :skip

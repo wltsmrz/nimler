@@ -213,38 +213,25 @@ proc get_local_pid(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm
   return pid_obj.pid
 
 proc make_map_put(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  let new_map = enif_make_new_map(env)
-  let k = enif_make_atom(env, cstring("a"))
-  let v = enif_make_int(env, 1)
-
-  if not enif_make_map_put(env, new_map, k, v, unsafeAddr(new_map)):
-    return enif_make_badarg(env)
-
-  return new_map
+  let k = argv[1]
+  let v = argv[2]
+  var nm: ErlnifTerm
+  discard enif_make_map_put(env, argv[0], k, v, unsafeAddr(nm))
+  return nm
 
 proc make_map_remove(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  let new_map = enif_make_new_map(env)
-  let k = enif_make_atom(env, cstring("a"))
-  let v = enif_make_int(env, 1)
-
-  if not enif_make_map_put(env, new_map, k, v, unsafeAddr(new_map)):
-    return enif_make_badarg(env)
-
-  if not enif_make_map_remove(env, new_map, k, unsafeAddr(new_map)):
-    return enif_make_badarg(env)
-
-  return new_map
+  let m = argv[0]
+  let k = argv[1]
+  var nm: ErlNifTerm
+  discard enif_make_map_remove(env, argv[0], k, unsafeAddr(nm))
+  return nm
 
 proc make_map_update(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  let new_map = enif_make_new_map(env)
-  let k = enif_make_atom(env, cstring("a"))
-  let v = enif_make_int(env, 1)
-  let nv = enif_make_int(env, 2)
-
-  if not enif_make_map_update(env, new_map, k, nv, unsafeAddr(new_map)):
-    return enif_make_badarg(env)
-
-  return new_map
+  let k = argv[1]
+  let v = argv[2]
+  var nm: ErlNifTerm
+  discard enif_make_map_update(env, argv[0], k, v, unsafeAddr(nm))
+  return nm
 
 proc make_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_string(env, cstring("test"), ERL_NIF_LATIN1)
@@ -292,12 +279,10 @@ proc make_new_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
   var term: ErlNifTerm
   let binary_ptr = enif_make_new_binary(env, sizeof(cchar) * 4, addr(term))
   let res = cast[Buffer](binary_ptr)
-
   res[0] = 't'
   res[1] = 'e'
   res[2] = 's'
   res[3] = 't'
-
   return term
 
 proc make_new_map(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
@@ -477,9 +462,9 @@ export_nifs("Elixir.NimlerWrapper", @[
   ("enif_get_map_size", 1, get_map_size),
   ("enif_get_map_value", 2, get_map_value),
   ("enif_get_local_pid", 1, get_local_pid),
-  ("enif_make_map_put", 0, make_map_put),
-  ("enif_make_map_remove", 0, make_map_remove),
-  ("enif_make_map_update", 0, make_map_update),
+  ("enif_make_map_put", 3, make_map_put),
+  ("enif_make_map_remove", 2, make_map_remove),
+  ("enif_make_map_update", 3, make_map_update),
   ("enif_make_string", 0, make_string),
   ("enif_make_string_len", 0, make_string_len),
   ("enif_make_list", 0, make_list),

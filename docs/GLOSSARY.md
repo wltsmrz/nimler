@@ -52,7 +52,7 @@ export_nifs("Elixir.MyNif", [
 
 Exports a NIF whose external name is "my_nif_function", arity is 1, and whose definition is the nim function my_cool_nif
 
-### NifDirtySpec
+### NifSpecDirty
 
 Like `NifSpec` but includes a fourth element: flags: cint. This can be set to `ERL_NIF_DIRTY_CPU` or `ERL_NIF_DIRTY_IO` to inform Erlang that it should schedule this NIF in a manner such that it does not block work on normal schedulers. i.e. functions marked as dirty are likely to take more than 1ms to execute. Example:
 

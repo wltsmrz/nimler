@@ -111,4 +111,3 @@ proc encode*(V: ErlList, env: ptr ErlNifEnv): ErlNifTerm =
 proc encode*(V: ErlResult, env: ptr ErlNifEnv): ErlNifTerm =
   return encode(enif_make_atom(env, V.rtype.val.cstring), V.rval, env)
 
-

@@ -14,6 +14,11 @@ defmodule NimlerTest do
             NimlerWrapper.enif_fprintf(%{a: ["testing", "fprintf", {1,2,3}]})
     end
 
+    describe "snprintf" do
+        test "snprintf()", do:
+            NimlerWrapper.enif_snprintf('test')
+    end
+
     describe "raise_exception" do
         test "raise_exception()", do:
             assert_raise(ErlangError, ~s(Erlang error: "test"), fn -> NimlerWrapper.enif_raise_exception("test") end)

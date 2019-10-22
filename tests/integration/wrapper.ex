@@ -65,4 +65,5 @@ defmodule NimlerWrapper do
     def enif_get_local_pid(_a), do: "raise not implemented"
     def enif_raise_exception(_a), do: raise "not implemented"
     def enif_fprintf(_a), do: raise "not implemented"
+    def enif_snprintf(_a), do: raise "not implemented"
 end

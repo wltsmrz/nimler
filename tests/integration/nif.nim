@@ -405,13 +405,24 @@ proc make_unique_integer(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlN
 #   return bin_term
 
 proc raise_exception(env, argc, argv): ErlNifTerm =
-  return enif_raise_exception(env, argv[0])
+  let ex = enif_raise_exception(env, argv[0])
+  doAssert(true == enif_has_pending_exception(env))
+  return ex
 
 proc fprintf(env, argc, argv): ErlNifTerm =
   let res = enif_fprintf(stdout, "%T", argv[0])
-  return enif_make_int(env, res)
+  return enif_make_int(env, cint(res))
+
+proc snprintf(env, argc, argv): ErlNifTerm =
+  let slen = 50
+  let b = cast[Buffer](create(cchar, slen))
+  discard enif_snprintf(b, slen, "%T", argv[0])
+  doAssert(b.cstring == "\"test\"")
+  dealloc(b)
+  return enif_make_int(env, cint(0))
 
 export_nifs("Elixir.NimlerWrapper", @[
+  ("enif_snprintf", 1, snprintf),
   ("enif_fprintf", 1, fprintf),
   ("enif_raise_exception", 1, raise_exception),
   ("enif_is_atom", 1, is_atom),

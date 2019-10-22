@@ -73,7 +73,8 @@ type
     ref_bin* {.importc: "ref_bin".}: pointer
     spare* {.importc: "__spare__".}: array[2, pointer]
 
-proc enif_fprintf*(a1: File, a2: cstring): cint {.varargs, importc: "enif_fprintf", header: "erl_nif.h".}
+proc enif_snprintf*(a1: Buffer, a2: csize; a3: cstring): bool {.varargs, importc: "enif_snprintf", header: "erl_nif.h".}
+proc enif_fprintf*(a1: File, a2: cstring): bool {.varargs, importc: "enif_fprintf", header: "erl_nif.h".}
 proc enif_alloc*(a1: csize): pointer {.importc: "enif_alloc", header: "erl_nif.h".}
 proc enif_free*(a1: pointer) {.importc: "enif_free", header: "erl_nif.h".}
 proc enif_realloc*(a1: pointer; a2: csize): pointer {.importc: "enif_realloc", header: "erl_nif.h".}
@@ -140,6 +141,9 @@ proc enif_make_list_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): E
 proc enif_make_new_binary*(a1: ptr ErlNifEnv; a2: csize; a3: ptr ErlNifTerm): ptr cuchar {.importc: "enif_make_new_binary", header: "erl_nif.h".}
 proc enif_system_info*(a1: ptr ErlNifSysInfo; a2: csize) {.importc: "enif_system_info", header: "erl_nif.h".}
 proc enif_raise_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.importc: "enif_raise_exception", header: "erl_nif.h".}
+proc enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.importc: "enif_has_pending_exception", header: "erl_nif.h".}
+proc enif_has_pending_exception*(a1: ptr ErlNifEnv): bool =
+  return enif_has_pending_exception(a1, nil)
 proc enif_term_to_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifBinary): cint {.importc: "enif_term_to_binary", header: "erl_nif.h".}
 proc enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize; a4: ptr ErlNifTerm; a5: cuint): csize {.importc: "enif_binary_to_term", header: "erl_nif.h".}
 proc enif_hash*(a1: ErlNifHash; term: ErlNifTerm; salt: ErlNifUInt64): ErlNifUInt64 {.importc: "enif_hash", header: "erl_nif.h".}

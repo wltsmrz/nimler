@@ -4,7 +4,6 @@ using
   env: ptr ErlNifEnv
   argc: cint
   argv: ErlNifArgs
-  term: ErlNifTerm
 
 proc is_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return enif_make_int(env, cast[cint](enif_is_atom(env, argv[0])))
@@ -67,9 +66,9 @@ proc is_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
 
 proc get_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let atom_len = 4
-  let string_buf = cast[Buffer](create(cchar, atom_len + 1))
+  var string_buf = newString(atom_len)
 
-  if enif_get_atom(env, argv[0], string_buf, cuint(atom_len + 1), ERL_NIF_LATIN1) == 0:
+  if enif_get_atom(env, argv[0], addr(string_buf[0]), cuint(atom_len + 1), ERL_NIF_LATIN1) == 0:
     return enif_make_badarg(env)
 
   return enif_make_atom(env, string_buf)
@@ -88,9 +87,9 @@ proc get_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   if not enif_get_list_length(env, argv[0], addr(string_len)):
     return enif_make_badarg(env)
 
-  let string_buf = cast[Buffer](create(cchar, int(string_len) + 1))
+  var string_buf = newString(string_len)
 
-  if enif_get_string(env, argv[0], string_buf, string_len + 1, ERL_NIF_LATIN1) == 0:
+  if enif_get_string(env, argv[0], addr(string_buf[0]), string_len + 1, ERL_NIF_LATIN1) == 0:
     return enif_make_badarg(env)
 
   return enif_make_string(env, string_buf, ERL_NIF_LATIN1)
@@ -400,10 +399,9 @@ proc fprintf(env, argc, argv): ErlNifTerm =
 
 proc snprintf(env, argc, argv): ErlNifTerm =
   let slen = 32
-  let b = cast[Buffer](create(cchar, slen))
-  discard enif_snprintf(b, slen, "%T", argv[0])
+  var b = newString(slen)
+  discard enif_snprintf(addr(b[0]), slen, "%T", argv[0])
   doAssert(b.cstring == "\"test\"")
-  dealloc(b)
   return enif_make_int(env, cint(0))
 
 proc system_info(env, argc, argv): ErlNifTerm =

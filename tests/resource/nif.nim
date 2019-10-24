@@ -14,7 +14,7 @@ proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm):
   var flags_created: ErlNifResourceFlags
   priv[].resource_type = enif_open_resource_type(env, cstring("MyResource"), ERL_NIF_RT_CREATE, addr(flags_created))
   priv_data[] = priv
-  return 0
+  return cint(0)
 
 proc create_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let priv = cast[ptr MyResourcePriv](enif_priv_data(env))

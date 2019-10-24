@@ -21,7 +21,7 @@ proc codec_uint64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm 
   return v.encode(env)
 
 proc codec_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  let a1 = argv[0].decode(env, ErlAtom).get()
+  let a1 = argv[0].decode(env, ErlAtom).get(ErlAtom((val: "default")))
   doAssert(a1.val== "test")
   let v = ErlAtom((val: "test"))
   doAssert(a1 == v)

@@ -1,11 +1,5 @@
 import ../../nimler
 
-proc test(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  return enif_make_int(env, 1)
-
-proc test_dirty(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  return enif_make_int(env, 1)
-
 proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm): cint =
   var load_data: cint
   if not enif_get_int(env, load_info, addr(load_data)):
@@ -19,6 +13,15 @@ proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm):
 
   return cint(0)
 
+proc on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
+  enif_free(priv_data)
+
+proc test(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  return enif_make_int(env, 1)
+
+proc test_dirty(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  return enif_make_int(env, 1)
+
 proc test_priv_data(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var ptr_priv = enif_priv_data(env)
   if isNil(ptr_priv):
@@ -27,8 +30,6 @@ proc test_priv_data(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTer
   doAssert(vv[] == 123)
   return enif_make_int(env, 1)
 
-proc on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
-  enif_free(priv_data)
 
 export_nifs("Elixir.NimlerWrapper", NifOptions(
   funcs: @[ ("test", 0, test), ("test_priv", 0, test_priv_data) ],

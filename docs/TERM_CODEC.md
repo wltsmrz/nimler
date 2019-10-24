@@ -157,7 +157,7 @@ let atm = term.decode(env, ErlAtom).get()
 
 # binaries
 let bin = term.decode(env, ErlBinary).get()
-# cast[Buffer](bin.data) == "test".cstring
+# cast[ptr UncheckedArray[byte]](bin.data)
 ```
 
 This NIF proxies the first argument back to the implementing module, if decoding into uint32 succeeds. Otherwise it sends an ErlNifTerm representing the value 0.

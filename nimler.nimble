@@ -18,15 +18,17 @@ proc configTest() =
   --warnings:off
   --stacktrace:on
   --linetrace:on
+  --define:useSysAssert
   --path:"."
 
 proc configNif() =
-  --checks:off
   --app:lib
   --noMain
+  --checks:off
 
 task test, "dummy":
   quit(0)
+
 
 task test_all, "build and run test":
   exec("nimble build_init_api")
@@ -101,4 +103,14 @@ task build_init_api, "build nif":
 
 task test_init_api, "run test":
   exec("elixir -r tests/init_api/wrapper.ex tests/init_api/test.exs")
+
+task build_mem, "build nif":
+  configErlHeaders()
+  configNif()
+  configTest()
+  switch("out", "tests/mem/nif.so")
+  setCommand("compile", "tests/mem/nif")
+
+task test_mem, "run test":
+  exec("elixir tests/mem/test.exs")
 

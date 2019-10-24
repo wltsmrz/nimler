@@ -12,10 +12,10 @@ type ErlBinary* = ErlNifBinary
 type ErlFloat64* = float64
 type ErlUint64* = uint64
 
-const AtomOk*: ErlAtom = (val: "ok")
-const AtomErr*:  ErlAtom = (val: "error")
-const AtomTrue*: ErlAtom = (val: "true")
-const AtomFalse*: ErlAtom = (val: "false")
+const AtomOk* = ErlAtom((val: "ok"))
+const AtomErr* = ErlAtom((val: "error"))
+const AtomTrue* = ErlAtom((val: "true"))
+const AtomFalse* = ErlAtom((val: "false"))
 
 proc ResultOk*(rval: ErlNifTerm): ErlResult = cast[ErlResult]((AtomOk, rval))
 proc ResultErr*(rval: ErlNifTerm): ErlResult = cast[ErlResult]((AtomErr, rval))
@@ -65,29 +65,30 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlAtom]): Option
   var atom_len: cuint
   if not enif_get_atom_length(env, term, addr(atom_len), ERL_NIF_LATIN1):
     return none(T)
-  inc(atom_len)
-  let atom_buf = cast[Buffer](create(cchar, atom_len))
-  if enif_get_atom(env, term, atom_buf, atom_len, ERL_NIF_LATIN1) != cint(atom_len):
+  let buf_len = atom_len + 1
+  var string_buf = newStringOfCap(atom_len)
+  if not enif_get_atom(env, term, addr(string_buf[0]), buf_len, ERL_NIF_LATIN1) == cint(buf_len):
     return none(T)
-  let a: ErlAtom = (val: $atom_buf)
-  return some(a)
+  string_buf.setLen(atom_len)
+  return some(ErlAtom((val: string_buf)))
 
 proc encode*(V: ErlAtom, env: ptr ErlNifEnv): ErlNifTerm =
-  return enif_make_atom(env, V.val.cstring)
+  return enif_make_atom(env, V.val)
 
 ########## ErlString, nim=string ##########
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlString]): Option[T] =
   var string_len: cuint
   if not enif_get_list_length(env, term, addr(string_len)):
     return none(T)
-  inc(string_len)
-  let string_buf = cast[Buffer](create(cchar, string_len))
-  if enif_get_string(env, term, string_buf, string_len, ERL_NIF_LATIN1) != cint(string_len):
+  let buf_len = string_len + 1
+  var string_buf = newStringOfCap(string_len)
+  if not enif_get_string(env, term, addr(string_buf[0]), buf_len, ERL_NIF_LATIN1) == cint(buf_len):
     return none(T)
-  return some(ErlString($string_buf))
+  string_buf.setLen(string_len)
+  return some(ErlString(string_buf))
 
 proc encode*(V: ErlString, env: ptr ErlNifEnv): ErlNifTerm =
-  return enif_make_string(env, V.cstring, ERL_NIF_LATIN1)
+  return enif_make_string(env, V, ERL_NIF_LATIN1)
 
 ########## ErlBinary, nim=ptr UncheckedArray[byte] ##########
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlBinary]): Option[T] =
@@ -109,5 +110,5 @@ proc encode*(V: ErlList, env: ptr ErlNifEnv): ErlNifTerm =
 
 ########## ErlResult ##########
 proc encode*(V: ErlResult, env: ptr ErlNifEnv): ErlNifTerm =
-  return encode(enif_make_atom(env, V.rtype.val.cstring), V.rval, env)
+  return encode(enif_make_atom(env, V.rtype.val), V.rval, env)
 

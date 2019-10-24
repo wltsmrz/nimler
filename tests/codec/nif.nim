@@ -3,6 +3,7 @@ import ../../nimler
 proc codec_int32(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let a1 = argv[0].decode(env, int32).get(0)
   let a2 = argv[1].decode(env, int32).get(0)
+  let a3 = 1'i32.encode(env)
   let r = a1 + a2
   return r.encode(env)
 
@@ -25,6 +26,8 @@ proc codec_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   doAssert(a1.val== "test")
   let v = ErlAtom((val: "test"))
   doAssert(a1 == v)
+  let vv = (val: "test")
+  doAssert(a1 == vv)
   return a1.encode(env)
 
 proc codec_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
@@ -32,6 +35,8 @@ proc codec_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm 
   let a2 = argv[1].decode(env, ErlString).get(ErlString("default"))
   doAssert(a1 == "test")
   doAssert(a2 == "default")
+  let a3 = "test".encode(env)
+  doAssert(a3.decode(env, string).get() == "test")
   return a1.encode(env)
 
 proc codec_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =

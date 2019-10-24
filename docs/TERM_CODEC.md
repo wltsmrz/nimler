@@ -24,16 +24,19 @@ The following is equivalent thanks to [UFCS](https://en.wikipedia.org/wiki/Unifo
 let my_val = int32(10)
 let term = my_val.encode(env)
 # ErlNifTerm(10)
+
+let term = 10'i32.encode(env)
+# ErlNifTerm(10)
 ```
 
 ### Atom types
 
 nimler ErlAtom become Erlang atoms. They are represented as a 1-arity tuple of string. Nimler exports the following atoms for convenience:
 
-* `AtomOk` ErlAtom((val: "ok"))
-* `AtomErr` ErlAtom((val: "error"))
-* `Atomtrue` ErlAtom((val: "true"))
-* `AtomFalse` ErlAtom((val: "false"))
+* `AtomOk`: `ErlAtom((val: "ok"))`
+* `AtomErr`: `ErlAtom((val: "error"))`
+* `Atomtrue`: `ErlAtom((val: "true"))`
+* `AtomFalse`: `ErlAtom((val: "false"))`
 
 ```nim
 let my_atom = encode(ErlAtom((val: "test")), env)
@@ -55,6 +58,9 @@ let my_str = encode(ErlString("test"), env)
 let s = ErlString("test")
 s.encode(env)
 # ErlNifTerm('test')
+
+"test".encode(env)
+# ErlNifTerm('test')
 ```
 
 ### Tuple types
@@ -63,10 +69,18 @@ nim arrays become Erlang tuples.
 
 ```nim
 let my_tuple = encode([
-    enif_make_int(env, 1),
-    enif_make_int(env, 2),
-    enif_make_int(env, 3)
+    1'i32.encode(env),
+    2'i32.encode(env),
+    3'i32.encode(env)
 ], env)
+# ErlNifTerm({1,2,3})
+
+let my_tuple = [
+    1'i32.encode(env),
+    2'i32.encode(env),
+    3'i32.encode(env)
+]
+my_tuple.encode(env)
 # ErlNifTerm({1,2,3})
 ```
 
@@ -74,9 +88,9 @@ varargs are also tuples.
 
 ```nim
 let my_tuple = encode(
-    enif_make_int(env, 1),
-    enif_make_int(env, 2),
-    enif_make_int(env, 3),
+    1'i32.encode(env),
+    2'i32.encode(env),
+    3'i32.encode(env)
     env
 )
 # ErlNifTerm({1,2,3})
@@ -94,8 +108,8 @@ let my_bad_result = ResultErr(enif_make_int(env, 1)).encode(env)
 # ErlNifTerm({:error, 1})
 
 let my_map = enif_make_new_map(env)
-let k = enif_make_string(env, "a")
-let v = enif_make_int(env, 1)
+let k = "a".encode(env)
+let v = 1'i32.encode(env)
 discard enif_make_map_put(env, my_map, k, v, unsafeAddr(my_map))
 
 let my_result = ResultOk(my_map).encode(env)
@@ -116,19 +130,19 @@ nim seq types become Erlang list.
 
 ```nim
 let my_list = encode(@[
-    enif_make_int(env, 1),
-    enif_make_int(env, 2),
-    enif_make_int(env, 1),
+    1'i32.encode(env),
+    2'i32.encode(env),
+    3'i32.encode(env)
 ], env)
 # ErlNifTerm([1,2,3])
 
-let s = @[
-    enif_make_int(env, 1),
-    enif_make_int(env, 2),
-    enif_make_int(env, 1)
+let l = @[
+    1'i32.encode(env),
+    2'i32.encode(env),
+    3'i32.encode(env)
 ]
 
-s.encode(env)
+l.encode(env)
 # ErlNifTerm([1,2,3])
 ```
 

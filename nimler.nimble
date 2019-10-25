@@ -14,7 +14,7 @@ proc configErlHeaders() =
 proc configTest() =
   --verbosity:0
   --forceBuild
-  --hints:on
+  --hints:off
   --warnings:on
   --checks:off
   --stacktrace:on
@@ -28,7 +28,6 @@ proc configNif() =
 
 task test, "dummy":
   quit(0)
-
 
 task test_all, "build and run test":
   exec("nimble build_init_api")

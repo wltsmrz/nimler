@@ -1,5 +1,5 @@
-import ./bindings/erl_nif
-import ./codec
+import nimler/bindings/erl_nif
+import nimler/codec
 
 export erl_nif
 export codec

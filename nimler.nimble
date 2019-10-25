@@ -1,6 +1,6 @@
 mode = ScriptMode.Verbose
 
-version = "0.0.1"
+version = "1.0.0"
 author = "wltsmrz"
 description = "Erlang/Elixir NIF wrapper"
 license = "MIT"
@@ -14,8 +14,9 @@ proc configErlHeaders() =
 proc configTest() =
   --verbosity:0
   --forceBuild
-  --hints:off
-  --warnings:off
+  --hints:on
+  --warnings:on
+  --checks:off
   --stacktrace:on
   --linetrace:on
   --define:useSysAssert
@@ -24,7 +25,6 @@ proc configTest() =
 proc configNif() =
   --app:lib
   --noMain
-  --checks:off
 
 task test, "dummy":
   quit(0)
@@ -113,4 +113,3 @@ task build_mem, "build nif":
 
 task test_mem, "run test":
   exec("elixir tests/mem/test.exs")
-

@@ -1,15 +1,13 @@
 type
-  Buffer* = ptr UncheckedArray[cchar]
-  ErlNifEnv* {.importc: "ErlNifEnv", header: "erl_nif.h", bycopy.} = object
+  ErlNifEnv* = object
   ErlNifTerm* = culonglong
-  ErlNifUInt64* = culonglong
-  ErlNifArgs* = UncheckedArray[ErlNifTerm]
+  ErlNifArgs* = ptr UncheckedArray[ErlNifTerm]
   NifFunc* = proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm {.nimcall.}
-  ErlNifFunc* {.importc: "ErlNifFunc", header: "erl_nif.h", bycopy.} = object
-    name* {.importc: "name".}: cstring
-    arity* {.importc: "arity".}: cuint
-    fptr* {.importc: "fptr".}: NifFunc
-    flags* {.importc: "flags".}: cuint
+  ErlNifFunc* = object
+    name*: cstring
+    arity*: cuint
+    fptr*: NifFunc
+    flags*: cuint
   NifFuncArr* = ptr UncheckedArray[ErlNifFunc]
   ErlNifFlags* {.size: sizeof(cint).} = enum
     ERL_NIF_DIRTY_CPU,
@@ -29,61 +27,62 @@ type
   ErlNifUniqueInteger* {.size: sizeof(cint).} = enum
     ERL_NIF_UNIQUE_POSITIVE = (1 shl 0),
     ERL_NIF_UNIQUE_MONOTONIC = (1 shl 1)
-  ErlNifSysInfo* {.importc: "ErlNifSysInfo", header: "erl_nif.h", bycopy.} = object
-    driver_major_version* {.importc: "driver_major_version".}: cint
-    driver_minor_version* {.importc: "driver_minor_version".}: cint
-    erts_version* {.importc: "erts_version".}: cstring
-    otp_release* {.importc: "otp_release".}: cstring
-    thread_support* {.importc: "thread_support".}: cint
-    smp_support* {.importc: "smp_support".}: cint
-    async_threads* {.importc: "async_threads".}: cint
-    scheduler_threads* {.importc: "scheduler_threads".}: cint
-    nif_major_version* {.importc: "nif_major_version".}: cint
-    nif_minor_version* {.importc: "nif_minor_version".}: cint
-    dirty_scheduler_support* {.importc: "dirty_scheduler_support".}: cint
-  ErlNifPid* {.importc: "ErlNifPid", header: "erl_nif.h", bycopy.} = object
-    pid* {.importc: "pid".}: ErlNifTerm
+  ErlNifSysInfo* = object
+    driver_major_version*: cint
+    driver_minor_version*: cint
+    erts_version*: cstring
+    otp_release*: cstring
+    thread_support*: cint
+    smp_support*: cint
+    async_threads*: cint
+    scheduler_threads*: cint
+    nif_major_version*: cint
+    nif_minor_version*: cint
+    dirty_scheduler_support*: cint
+  ErlNifPid* = object
+    pid*: ErlNifTerm
   ErlNifHash* {.size: sizeof(cint).} = enum
-    ERL_NIF_INTERNAL_HASH = 1, ERL_NIF_PHASH2 = 2
+    ERL_NIF_INTERNAL_HASH = 1,
+    ERL_NIF_PHASH2 = 2
   ErlNifCharEncoding* {.size: sizeof(cint).} = enum
     ERL_NIF_LATIN1 = 1
-  ErlNifEvent* {.importc: "ErlNifEvent", header: "erl_nif.h".} = cint
-  ErlNifMonitor* {.importc: "ErlNifMonitor", header: "erl_nif.h".} = object
-    data {.importc: "data".}: array[4, csize]
+  ErlNifEvent* = cint
+  ErlNifMonitor* = object
+    data: array[4, csize]
   ErlNifEntryLoad* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
   ErlNifEntryReload* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
   ErlNifEntryUpgrade* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; old_priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
   ErlNifEntryUnload* = proc (a1: ptr ErlNifEnv; priv_data: pointer) {.nimcall.}
-  ErlNifEntry* {.importc: "ErlNifEntry", header: "erl_nif.h", bycopy.} = object
-    major* {.importc: "major".}: cint
-    minor* {.importc: "minor".}: cint
-    name* {.importc: "name".}: cstring
-    num_of_funcs* {.importc: "num_of_funcs".}: cint
-    funcs* {.importc: "funcs".}: NifFuncArr
-    load* {.importc: "load".}: pointer
-    reload* {.importc: "reload".}: pointer
-    upgrade* {.importc: "upgrade".}: pointer
-    unload* {.importc: "unload".}: pointer
-    vm_variant* {.importc: "vm_variant".}: cstring
-    options* {.importc: "options".}: cint
-    sizeof_ErlNifResourceTypeInit* {.importc: "sizeof_ErlNifResourceTypeInit".}: csize
-    min_erts* {.importc: "min_erts".}: cstring
-  ErlNifResourceType* = object {.importc: "enif_resource_type_t", header: "erl_nif.h".}
+  ErlNifEntry* = object
+    major*: cint
+    minor*: cint
+    name*: cstring
+    num_of_funcs*: cint
+    funcs*: NifFuncArr
+    load*: pointer
+    reload*: pointer
+    upgrade*: pointer
+    unload*: pointer
+    vm_variant*: cstring
+    options*: cint
+    sizeof_ErlNifResourceTypeInit*: csize
+    min_erts*: cstring
+  ErlNifResourceType* = object
   ErlNifResourceFlags* {.size: sizeof(cint).} = enum
     ERL_NIF_RT_CREATE = (1 shl 0),
     ERL_NIF_RT_TAKEOVER = (1 shl 1)
   ErlNifResourceDtor* = proc (a1: ptr ErlNifEnv; a2: pointer): void
   ErlNifResourceStop* = proc (a1: ptr ErlNifEnv; a2: pointer; a3: ErlNifEvent; is_direct_call: cint): void
   ErlNifResourceDown* = proc (a1: ptr ErlNifEnv; a2: pointer; a3: ptr ErlNifPid; a4: ptr ErlNifMonitor): void
-  ErlNifResourceTypeInit* {.importc: "ErlNifResourceTypeInit", header: "erl_nif.h", bycopy.} = object
-    dtor* {.importc: "dtor".}: ptr ErlNifResourceDtor
-    stop* {.importc: "stop".}: ptr ErlNifResourceStop
-    down* {.importc: "down".}: ptr ErlNifResourceDown
+  ErlNifResourceTypeInit* = object
+    dtor*: ptr ErlNifResourceDtor
+    stop*: ptr ErlNifResourceStop
+    down*: ptr ErlNifResourceDown
   ErlNifBinary* {.importc: "ErlNifBinary", header: "erl_nif.h", bycopy.} = object
-    size* {.importc: "size".}: csize
-    data* {.importc: "data".}: ptr byte
-    ref_bin* {.importc: "ref_bin".}: pointer
-    spare* {.importc: "__spare__".}: array[2, pointer]
+    size*: csize
+    data*: ptr byte
+    ref_bin*: pointer
+    spare*: array[2, pointer]
 
 proc enif_snprintf*(a1: ptr char, a2: csize; a3: cstring): bool {.varargs, importc: "enif_snprintf", header: "erl_nif.h".}
 proc enif_fprintf*(a1: File, a2: cstring): bool {.varargs, importc: "enif_fprintf", header: "erl_nif.h".}
@@ -159,7 +158,7 @@ proc enif_has_pending_exception*(a1: ptr ErlNifEnv): bool =
   return enif_has_pending_exception(a1, nil)
 proc enif_term_to_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifBinary): cint {.importc: "enif_term_to_binary", header: "erl_nif.h".}
 proc enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize; a4: ptr ErlNifTerm; a5: cuint): csize {.importc: "enif_binary_to_term", header: "erl_nif.h".}
-proc enif_hash*(a1: ErlNifHash; term: ErlNifTerm; salt: ErlNifUInt64): ErlNifUInt64 {.importc: "enif_hash", header: "erl_nif.h".}
+proc enif_hash*(a1: ErlNifHash; term: ErlNifTerm; salt: culonglong): culonglong {.importc: "enif_hash", header: "erl_nif.h".}
 proc enif_alloc_env*(): ptr ErlNifEnv {.importc: "enif_alloc_env", header: "erl_nif.h".}
 proc enif_free_env*(a1: ptr ErlNifEnv) {.importc: "enif_free_env", header: "erl_nif.h".}
 proc enif_clear_env*(a1: ptr ErlNifEnv) {.importc: "enif_clear_env", header: "erl_nif.h".}
@@ -183,9 +182,9 @@ proc enif_release_resource*(a1: pointer): void {.importc: "enif_release_resource
 proc enif_make_resource*(a1: ptr ErlNifEnv; a2: pointer): ErlNifTerm {.importc: "enif_make_resource", header: "erl_nif.h".}
 proc enif_get_resource*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: pointer; a4: pointer): bool {.importc: "enif_get_resource", header: "erl_nif.h".}
 proc enif_consume_timeslice*(a1: ptr ErlNifEnv; a2: cint): bool {.importc: "enif_consume_timeslice", header: "erl_nif.h".}
-proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: NifFunc; a5: cint; a6: ptr ErlNifArgs): ErlNifTerm {.importc: "enif_schedule_nif", header: "erl_nif.h".}
+proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: NifFunc; a5: cint; a6: ErlNifArgs): ErlNifTerm {.importc: "enif_schedule_nif", header: "erl_nif.h".}
 proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: NifFunc; a5: openArray[ErlNifTerm]): ErlNifTerm =
-  return enif_schedule_nif(a1, a2, a3, a4, len(a5).cint, cast[ptr ErlNifArgs](a5))
+  return enif_schedule_nif(a1, a2, a3, a4, len(a5).cint, cast[ErlNifArgs](a5))
 proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: NifFunc; a3: openArray[ErlNifTerm]): ErlNifTerm =
-  return enif_schedule_nif(a1, astToStr(a2), cint(0), a2, len(a3).cint, cast[ptr ErlNifArgs](a3))
-  
+  return enif_schedule_nif(a1, astToStr(a2), cint(0), a2, len(a3).cint, cast[ErlNifArgs](a3))
+

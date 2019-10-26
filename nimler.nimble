@@ -23,6 +23,7 @@ proc configTest() =
   --path:"."
 
 proc configNif() =
+  --deadCodeELim:on
   --app:lib
   --noMain
 

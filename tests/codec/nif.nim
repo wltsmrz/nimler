@@ -1,3 +1,4 @@
+import tables
 import ../../nimler
 
 proc codec_int32(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
@@ -78,6 +79,22 @@ proc codec_result_ok(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
 proc codec_result_error(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return ResultErr(argv[0]).encode(env)
 
+proc codec_map(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  var o = initTable[ErlNifTerm, ErlNifTerm](4)
+  var k: ErlAtom = (val: "test")
+  var v = 1'i32
+  o.add(k.encode(env), v.encode(env))
+  var l = @[1.encode(env)]
+  o.add("test".encode(env), l.encode(env))
+  return o.encode(env)
+
+proc codec_fieldpairs(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  type O = object
+    test: int
+    test_other: int
+  var o = O(test: 1, test_other: 2)
+  return o.encode(env)
+
 export_nifs("Elixir.NimlerWrapper", @[
   ("codec_int32", 2, codec_int32),
   ("codec_uint32", 2, codec_uint32),
@@ -90,6 +107,8 @@ export_nifs("Elixir.NimlerWrapper", @[
   ("codec_result_ok", 1, codec_result_ok),
   ("codec_result_error", 1, codec_result_error),
   ("codec_double", 1, codec_double),
-  ("codec_uint64", 1, codec_uint64)
+  ("codec_uint64", 1, codec_uint64),
+  ("codec_map", 0, codec_map),
+  ("codec_fieldpairs", 0, codec_fieldpairs)
 ])
 

@@ -158,7 +158,7 @@ proc enif_has_pending_exception*(a1: ptr ErlNifEnv): bool =
   return enif_has_pending_exception(a1, nil)
 proc enif_term_to_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifBinary): cint {.importc: "enif_term_to_binary", header: "erl_nif.h".}
 proc enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize; a4: ptr ErlNifTerm; a5: cuint): csize {.importc: "enif_binary_to_term", header: "erl_nif.h".}
-proc enif_hash*(a1: ErlNifHash; term: ErlNifTerm; salt: culonglong): culonglong {.importc: "enif_hash", header: "erl_nif.h".}
+proc enif_hash*(a1: ErlNifHash; term: ErlNifTerm; salt: culonglong = 0): culonglong {.importc: "enif_hash", header: "erl_nif.h".}
 proc enif_alloc_env*(): ptr ErlNifEnv {.importc: "enif_alloc_env", header: "erl_nif.h".}
 proc enif_free_env*(a1: ptr ErlNifEnv) {.importc: "enif_free_env", header: "erl_nif.h".}
 proc enif_clear_env*(a1: ptr ErlNifEnv) {.importc: "enif_clear_env", header: "erl_nif.h".}

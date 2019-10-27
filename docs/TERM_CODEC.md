@@ -146,6 +146,35 @@ l.encode(env)
 # ErlNifTerm([1,2,3])
 ```
 
+### Map types
+
+nim table of ErlNifTerm: ErlNifTerm  becomes Erlang map. Questionable utility, but it's here. Erlang error is thrown if encoding fails.
+
+```nim
+var o = initTable[ErlNifTerm, ErlNifTerm](4)
+var key: ErlAtom = (val: "test")
+var value = 1'i32
+
+o.add(key.encode(env), value.encode(env))
+
+o.encode(env)
+# %{ :test => 1 }
+```
+
+### Object field pairs
+
+nim object fieldpairs become special form of Erlang map where keys are always atom. Erlang error is thrown if encoding fails. The implication of this is that the NIF will always return an Erlang error, no matter what is ostensibly returned, after this point.
+
+```nim
+type MyObject = object
+    test: int
+    test_other: int
+
+var obj = MyObject(test: 1, test_other: 2)
+obj.encode(env)
+# {:test => 1, :test_other => 2}
+```
+
 # Decode
 
 Decoders return a nim [Option](https://nim-lang.org/docs/options.html) so default values can be easily expressed, or further logic made simpler, if decoding fails.

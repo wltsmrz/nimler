@@ -1,3 +1,4 @@
+import tables
 import options
 import bindings/erl_nif
 
@@ -9,8 +10,7 @@ type ErlTuple* = varargs[ErlNifTerm]
 type ErlList* = seq[ErlNifTerm]
 type ErlResult* = tuple[rtype: ErlAtom, rval: ErlNifTerm]
 type ErlBinary* = ErlNifBinary
-type ErlFloat64* = float64
-type ErlUint64* = uint64
+type ErlMap* = Table[ErlNifTerm, ErlNifTerm]
 
 const AtomOk*: ErlAtom = (val: "ok")
 const AtomErr*: ErlAtom = (val: "error")
@@ -20,7 +20,17 @@ const AtomFalse*: ErlAtom = (val: "false")
 proc ResultOk*(rval: ErlNifTerm): ErlResult = cast[ErlResult]((AtomOk, rval))
 proc ResultErr*(rval: ErlNifTerm): ErlResult = cast[ErlResult]((AtomErr, rval))
 
-########## int32, nim=int32 ##########
+# ErlNifTerm represented as uint64, for which there is already a hash()
+# proc hash*(term: ErlNifTerm): Hash = return cast[Hash](enif_hash(ERL_NIF_PHASH2, term))
+
+########## int ##########
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int]): Option[T] =
+  return decode(term, env, int64)
+
+proc encode*(V: int, env: ptr ErlNifEnv): ErlNifTerm =
+  return enif_make_int64(env, V)
+
+########## int32 ##########
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int32]): Option[T] =
   var res: clong
   if not enif_get_long(env, term, addr(res)):
@@ -30,7 +40,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int32]): Option[T
 proc encode*(V: int32, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_long(env, V)
 
-########## uint32, nim=uint32 ##########
+########## uint32 ##########
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint32]): Option[T] =
   var res: culong
   if not enif_get_ulong(env, term, addr(res)):
@@ -40,27 +50,27 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint32]): Option[
 proc encode*(V: uint32, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_ulong(env, V)
 
-########## uint64, nim=uint64 ##########
-proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlUint64]): Option[T] =
+########## uint64 ##########
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint64]): Option[T] =
   var res: culonglong
   if not enif_get_uint64(env, term, addr(res)):
     return none(T)
   return some(cast[uint64](res))
 
-proc encode*(V: ErlUint64, env: ptr ErlNifEnv): ErlNifTerm =
+proc encode*(V: uint64, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_uint64(env, V)
 
-########## float64, nim=float64 ##########
-proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlFloat64]): Option[T] =
+########## float64 ##########
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[float64]): Option[T] =
   var res: cdouble
   if not enif_get_double(env, term, addr(res)):
     return none(T)
   return some(cast[float64](res))
 
-proc encode*(V: ErlFloat64, env: ptr ErlNifEnv): ErlNifTerm =
+proc encode*(V: float64, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_double(env, V)
 
-########## ErlAtom, nim=tuple[v=string] ##########
+########## ErlAtom ##########
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlAtom]): Option[T] =
   var atom_len: cuint
   if not enif_get_atom_length(env, term, addr(atom_len), ERL_NIF_LATIN1):
@@ -75,7 +85,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlAtom]): Option
 proc encode*(V: ErlAtom, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_atom(env, V.val)
 
-########## ErlString, nim=string ##########
+########## ErlString ##########
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlString]): Option[T] =
   var string_len: cuint
   if not enif_get_list_length(env, term, addr(string_len)):
@@ -90,7 +100,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlString]): Opti
 proc encode*(V: ErlString, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_string(env, V, ERL_NIF_LATIN1)
 
-########## ErlBinary, nim=ptr UncheckedArray[byte] ##########
+########## ErlBinary ##########
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlBinary]): Option[T] =
   var bin: ErlNifBinary
   if not enif_inspect_binary(env, term, addr(bin)):
@@ -100,15 +110,34 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlBinary]): Opti
 proc encode*(V: ErlBinary, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_binary(env, unsafeAddr(V))
 
-########## ErlTuple nim=array ##########
+########## ErlTuple ##########
 proc encode*(V: ErlTuple, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_tuple_from_array(env, V)
 
-########## ErlList nim=seq##########
+########## ErlList ##########
 proc encode*(V: ErlList, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_list_from_array(env, V)
 
 ########## ErlResult ##########
 proc encode*(V: ErlResult, env: ptr ErlNifEnv): ErlNifTerm =
   return encode(enif_make_atom(env, V.rtype.val), V.rval, env)
+
+########## ErlMap ##########
+proc encode*(V: ErlMap, env: ptr ErlNifEnv): ErlNifTerm =
+  var map = enif_make_new_map(env)
+  for k, v in pairs(V):
+    if not enif_make_map_put(env, map, k, v, addr(map)):
+      discard enif_raise_exception(env, "nimler: fail to encode map from table".encode(env))
+  return map
+
+########## object field pairs ##########
+proc encode*(V: object, env: ptr ErlNifEnv): ErlNifTerm =
+  var map = enif_make_new_map(env)
+  for k, v in fieldPairs(V):
+    var key: ErlNifTerm = ErlAtom((val: $k)).encode(env)
+    var value: ErlNifTerm = v.encode(env)
+    if not enif_make_map_put(env, map, key, value, addr(map)):
+      discard enif_raise_exception(env, "nimler: fail to encode map from field pairs".encode(env))
+  return map
+
 

@@ -96,34 +96,6 @@ let my_tuple = encode(
 # ErlNifTerm({1,2,3})
 ```
 
-### Result types
-
-The `ErlResult` codec type represents a tuple of arity=2 whose first element is either an atom `:ok` or `:error`. nimler also exposes `ResultOk` and `ResultErr` functions for creating either.
-
-```nim
-let my_good_result = ResultOk(enif_make_int(env, 1)).encode(env)
-# ErlNifTerm({:ok, 1})
-
-let my_bad_result = ResultErr(enif_make_int(env, 1)).encode(env)
-# ErlNifTerm({:error, 1})
-
-let my_map = enif_make_new_map(env)
-let k = "a".encode(env)
-let v = 1'i32.encode(env)
-discard enif_make_map_put(env, my_map, k, v, unsafeAddr(my_map))
-
-let my_result = ResultOk(my_map).encode(env)
-
-# ErlNifTerm({:ok, %{"a": 1}})
-```
-
-Example proxying first argument within a result tuple
-
-```nim
-proc test_nif(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  return ResultOk(argv[0]) # {:ok, <whatever>}
-```
-
 ### List types
 
 nim seq types become Erlang list.
@@ -175,20 +147,46 @@ obj.encode(env)
 # {:test => 1, :test_other => 2}
 ```
 
+### Result types
+
+The `ErlResult` codec type represents a tuple of arity=2 whose first element is either an atom `:ok` or `:error`. nimler also exposes `ResultOk` and `ResultErr` functions for creating either.
+
+```nim
+let my_good_result = ResultOk(1.encode(env)).encode(env)
+# ErlNifTerm({:ok, 1})
+
+let my_bad_result = ResultErr(1.encode(env)).encode(env)
+# ErlNifTerm({:error, 1})
+
+type MyThing = object
+    prop: int
+
+let thing = MyThing(prop: 1)
+let res = ResultOk(thing.encode(env)).encode(env)
+
+# ErlNifTerm({:ok, %{ :prop => 1 } })
+```
+
+Example proxying first argument within a result tuple
+
+```nim
+proc test_nif(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  return ResultOk(argv[0]).encode(env) # {:ok, <whatever>}
+```
+
 # Decode
 
 Decoders return a nim [Option](https://nim-lang.org/docs/options.html) so default values can be easily expressed, or further logic made simpler, if decoding fails.
 
 ```nim
-let my_val = decode(term, env, int32).get(0) # default=0
+let my_val = term.decode(env, int32)
 
-let my_other_val_option = decode(another_term, env, int32)
-
-if my_other_val_option.isNone:
+if isNone(my_val):
     # The term was not successfully decoded into an int32
     return do_something()
 
-let my_val_2 = my_other_val_option.get() # get the decoded val without default
+let v = my_val.get()
+# v == 10
 
 # strings
 let str = term.decode(env, ErlString).get()
@@ -200,7 +198,7 @@ let atm = term.decode(env, ErlAtom).get()
 
 # binaries
 let bin = term.decode(env, ErlBinary).get()
-# cast[ptr UncheckedArray[byte]](bin.data)
+cast[ptr UncheckedArray[char]](bin.data)
 ```
 
 This NIF proxies the first argument back to the implementing module, if decoding into uint32 succeeds. Otherwise it sends an ErlNifTerm representing the value 0.

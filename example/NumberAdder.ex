@@ -1,6 +1,6 @@
 
 defmodule NumberAdder do
-    @onload :load_nif
+    @on_load :load_nif
 
     def add_numbers(_a, _b), do: raise "not implemented"
 

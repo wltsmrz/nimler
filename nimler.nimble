@@ -6,10 +6,10 @@ description = "Erlang/Elixir NIF wrapper"
 license = "MIT"
 skipDirs = @["tests", "docs", "example"]
 skipFiles = @["README.md"]
-requires "nim >= 1.0.0"
+installDirs = @["nimler", "scripts"]
+installFiles = @["nimler.nim"]
 
-proc configErlHeaders() =
-  switch("cincludes", staticExec("escript scripts/get_erl_lib_dir.erl"))
+requires "nim >= 1.0.0"
 
 proc configTest() =
   --verbosity:0
@@ -44,7 +44,6 @@ task test_all, "build and run test":
   exec("nimble test_timeslice")
 
 task build_integration, "build nif":
-  configErlHeaders()
   configNif()
   configTest()
   switch("out", "tests/integration/nif.so")
@@ -54,7 +53,6 @@ task test_integration, "run test":
   exec("elixir -r tests/integration/wrapper.ex tests/integration/test.exs")
 
 task build_codec, "build nif":
-  configErlHeaders()
   configNif()
   configTest()
   switch("out", "tests/codec/nif.so")
@@ -64,7 +62,6 @@ task test_codec, "run test":
   exec("elixir -r tests/codec/wrapper.ex tests/codec/test.exs")
 
 task build_resource, "build nif":
-  configErlHeaders()
   configNif()
   configTest()
   switch("out", "tests/resource/nif.so")
@@ -74,7 +71,6 @@ task test_resource, "run test":
   exec("elixir -r tests/resource/wrapper.ex tests/resource/test.exs")
 
 task build_dirty_nif, "build nif":
-  configErlHeaders()
   configNif()
   configTest()
   switch("out", "tests/dirty_nif/nif.so")
@@ -84,7 +80,6 @@ task test_dirty_nif, "run test":
   exec("elixir -r tests/dirty_nif/wrapper.ex tests/dirty_nif/test.exs")
 
 task build_timeslice, "build nif":
-  configErlHeaders()
   configNif()
   configTest()
   switch("out", "tests/timeslice/nif.so")
@@ -94,7 +89,6 @@ task test_timeslice, "run test":
   exec("elixir -r tests/timeslice/wrapper.ex tests/timeslice/test.exs")
 
 task build_init_api, "build nif":
-  configErlHeaders()
   configNif()
   configTest()
   switch("out", "tests/init_api/nif.so")
@@ -104,7 +98,6 @@ task test_init_api, "run test":
   exec("elixir -r tests/init_api/wrapper.ex tests/init_api/test.exs")
 
 task build_mem, "build nif":
-  configErlHeaders()
   configNif()
   configTest()
   switch("out", "tests/mem/nif.so")

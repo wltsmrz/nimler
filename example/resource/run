@@ -1,0 +1,3 @@
+#!/bin/bash
+
+elixir ./Controller.exs

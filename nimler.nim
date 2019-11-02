@@ -1,3 +1,5 @@
+{.passC: "-I" & staticExec("escript ./scripts/get_erl_lib_dir.erl").}
+
 import nimler/bindings/erl_nif
 import nimler/codec
 

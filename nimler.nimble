@@ -1,6 +1,6 @@
 mode = ScriptMode.Verbose
 
-version = "1.0.0"
+version = "1.0.1"
 author = "wltsmrz"
 description = "Erlang/Elixir NIF wrapper"
 license = "MIT"

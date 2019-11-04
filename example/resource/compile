@@ -1,3 +1,3 @@
 #!/bin/bash
 
-nim c --forceBuild --verbosity:3 --hints:off --linetrace:on --stacktrace:on --noMain --app:lib --cincludes:/usr/lib/erlang/erts-10.5/include/ -o:nif.so ./nif.nim
+nim c --opt:speed --define:release --forceBuild --noMain --app:lib --cincludes:/usr/lib/erlang/erts-10.5/include/ -o:nif.so ./nif.nim

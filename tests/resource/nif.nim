@@ -10,7 +10,7 @@ proc on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
   enif_free(priv_data)
 
 proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm): cint =
-  let priv = cast[ptr MyResourcePriv](enif_alloc(sizeof(MyResourcePriv)))
+  let priv = cast[ptr MyResourcePriv](enif_alloc(cast[csize_t](sizeof(MyResourcePriv))))
   var flags_created: ErlNifResourceFlags
   priv.resource_type = enif_open_resource_type(env, "MyResource", ERL_NIF_RT_CREATE, addr(flags_created))
   priv_data[] = priv
@@ -18,7 +18,7 @@ proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm):
 
 proc create_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let priv = cast[ptr MyResourcePriv](enif_priv_data(env))
-  let resource = cast[ptr MyResource](enif_alloc_resource(priv.resource_type, sizeof(MyResource)))
+  let resource = cast[ptr MyResource](enif_alloc_resource(priv.resource_type, cast[csize_t](sizeof(MyResource))))
   var resource_term = enif_make_resource(env, resource)
   enif_release_resource(resource)
   return resource_term

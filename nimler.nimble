@@ -25,6 +25,7 @@ proc configTest() =
 proc configNif() =
   --app:lib
   --noMain
+  # --gc:arc
 
 task test, "dummy":
   quit(0)

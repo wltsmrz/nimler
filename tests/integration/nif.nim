@@ -188,7 +188,7 @@ proc get_list_cell(env, argc, argv): ErlNifTerm =
   return tail
 
 proc get_map_size(env, argc, argv): ErlNifTerm =
-  var map_size: csize
+  var map_size: cuint
 
   if not enif_get_map_size(env, argv[0], addr(map_size)):
     return enif_make_badarg(env)
@@ -286,20 +286,20 @@ proc make_new_map(env, argc, argv): ErlNifTerm =
   return enif_make_new_map(env)
 
 proc make_map_from_arrays(env, argc, argv): ErlNifTerm =
-  let keys = [
+  var keys = [
     enif_make_atom(env, cstring("a")),
     enif_make_atom(env, cstring("b"))
   ]
-  let values = [
+  var values = [
     enif_make_int(env, cint(1)),
     enif_make_int(env, cint(2))
   ]
 
-  let k = cast[ptr ErlNifTerm](unsafeAddr(keys))
-  let v = cast[ptr ErlNifTerm](unsafeAddr(values))
+  let k = cast[ptr ErlNifTerm](addr(keys))
+  let v = cast[ptr ErlNifTerm](addr(values))
   var map_out: ErlNifTerm
 
-  if not enif_make_map_from_arrays(env, k, v, csize(2), addr(map_out)):
+  if not enif_make_map_from_arrays(env, k, v, cuint(2), addr(map_out)):
     return enif_make_badarg(env)
 
   return map_out
@@ -318,7 +318,7 @@ proc make_existing_atom(env, argc, argv): ErlNifTerm =
 proc make_existing_atom_len(env, argc, argv): ErlNifTerm =
   var existing_atom: ErlNifTerm
 
-  if not enif_make_existing_atom_len(env, cstring("test"), csize(4), addr(existing_atom), ERL_NIF_LATIN1):
+  if not enif_make_existing_atom_len(env, cstring("test"), cuint(4), addr(existing_atom), ERL_NIF_LATIN1):
     return enif_make_badarg(env)
 
   return existing_atom
@@ -396,7 +396,7 @@ proc fprintf(env, argc, argv): ErlNifTerm =
   return enif_make_int(env, cint(res))
 
 proc snprintf(env, argc, argv): ErlNifTerm =
-  let slen = 32
+  let slen = 32.cuint
   var b = newString(slen)
   discard enif_snprintf(addr(b[0]), slen, "%T", argv[0])
   doAssert(b.cstring == "\"test\"")
@@ -404,7 +404,7 @@ proc snprintf(env, argc, argv): ErlNifTerm =
 
 proc system_info(env, argc, argv): ErlNifTerm =
   var info: ErlNifSysInfo
-  enif_system_info(addr(info), sizeof(info))
+  enif_system_info(addr(info), cast[csize_t](sizeof(info)))
   return enif_make_int(env, cint(0))
 
 proc term_type(env, argc, argv): ErlNifTerm =

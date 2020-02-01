@@ -6,7 +6,7 @@ proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm):
     return cint(1)
   doAssert(load_data == 123)
 
-  var m = enif_alloc(sizeof(cint))
+  var m = enif_alloc(cast[csize_t](sizeof(cint)))
   var m_a = cast [ptr cint](m)
   priv_data[] = m_a
   m_a[] = 123

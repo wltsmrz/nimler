@@ -17,14 +17,14 @@ proc on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
   enif_free(priv_data)
 
 proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm): cint =
-  let priv = cast[ptr ResourcePriv](enif_alloc(sizeof(ResourcePriv)))
+  let priv = cast[ptr ResourcePriv](enif_alloc(cast[csize_t](sizeof(ResourcePriv))))
   priv.resource_type = enif_open_resource_type(env, "PIController", ERL_NIF_RT_CREATE)
   priv_data[] = priv
   return 0
 
 proc create_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let priv = cast[ptr ResourcePriv](enif_priv_data(env))
-  var controller = cast[ptr PIControl](enif_alloc_resource(priv.resource_type, sizeof(PIControl)))
+  var controller = cast[ptr PIControl](enif_alloc_resource(priv.resource_type, cast[csize_t](sizeof(PIControl))))
 
   init_controller(controller, rate, min, max, kp, ki, kf)
   

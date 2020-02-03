@@ -1,7 +1,5 @@
 # nimler
 
-[Getting started](docs/CREATE_NIF.md) | [Example](./example)
-
 [![Build Status](https://nimble.directory/ci/badges/nimler/nimdevel/status.svg)](https://nimble.directory/ci/badges/nimler/nimdevel/output.html)
 
 nim bindings for [Erlang NIF API](http://erlang.org/doc/man/erl_nif.html).

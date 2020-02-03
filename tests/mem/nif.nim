@@ -1,4 +1,3 @@
-import os
 import ../../nimler
 
 # GC_disableMarkAndSweep()

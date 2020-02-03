@@ -1,6 +1,6 @@
 mode = ScriptMode.Verbose
 
-version = "1.0.1"
+version = "1.0.2"
 author = "wltsmrz"
 description = "Erlang/Elixir NIF wrapper"
 license = "MIT"
@@ -15,17 +15,17 @@ proc configTest() =
   --verbosity:0
   --forceBuild
   --hints:off
-  --warnings:on
   --checks:off
   --stacktrace:on
   --linetrace:on
-  --define:useSysAssert
+  #--define:useSysAssert
   --path:"."
 
 proc configNif() =
   --app:lib
   --noMain
-  # --gc:arc
+  --gc:arc
+  --define:useMalloc
 
 task test, "dummy":
   quit(0)

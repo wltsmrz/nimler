@@ -97,7 +97,7 @@ defmodule NimlerTest do
             assert(1 == NimlerWrapper.enif_is_ref(:test))
         @tag :skip
         test "is_exception()", do:
-            assert(1 == NimlerWrapper.enif_is_exception())
+            assert(1 == NimlerWrapper.enif_is_exception(1))
         @tag :skip
         test "is_fun(fn)", do:
             assert(1 == NimlerWrapper.enif_is_ref(&round/1))

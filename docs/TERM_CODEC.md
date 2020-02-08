@@ -1,6 +1,6 @@
 # Encoding/decoding Erlang terms
 
-Erlang terms are represented in nimler with the type `ErlNifTerm`. All Erlang types appear to NIFs as an opaque "term", which can be decoded into native types using the NIF getter functions. See [codec tests](https://github.com/wltsmrz/nimler/tree/master/tests/codec) for example usage.
+nimler exposes a set of convenience functions for encoding and decoding Erlang terms. Erlang terms are represented in nimler with the type `ErlNifTerm`. All Erlang types appear to NIFs as an opaque "term", which can be decoded into native types using the NIF getter functions. See [codec tests](https://github.com/wltsmrz/nimler/tree/master/tests/codec) for example usage.
 
 See [docs/CODECS](CODECS.md) for available codec types.
 
@@ -10,10 +10,8 @@ See [docs/TERM_MAKERS](TERM_MAKERS.md) for the raw bindings to write terms.
 
 # Encode
 
-nimler exposes functions for encoding some basic types. Example:
-
 ```nim
-let my_val = int32(10)
+let my_val = 10
 let term = encode(my_val, env)
 # ErlNifTerm(10)
 ```
@@ -21,11 +19,11 @@ let term = encode(my_val, env)
 The following is equivalent thanks to [UFCS](https://en.wikipedia.org/wiki/Uniform_Function_Call_Syntax).
 
 ```nim
-let my_val = int32(10)
+let my_val = 10
 let term = my_val.encode(env)
 # ErlNifTerm(10)
 
-let term = 10'i32.encode(env)
+let my_val = 10'i32.encode(env)
 # ErlNifTerm(10)
 ```
 
@@ -33,16 +31,16 @@ let term = 10'i32.encode(env)
 
 nimler ErlAtom become Erlang atoms. They are represented as a 1-arity tuple of string. Nimler exports the following atoms for convenience:
 
-* `AtomOk`: `ErlAtom((val: "ok"))`
-* `AtomErr`: `ErlAtom((val: "error"))`
-* `Atomtrue`: `ErlAtom((val: "true"))`
-* `AtomFalse`: `ErlAtom((val: "false"))`
+* `AtomOk`: `ErlAtom(val: "ok")`
+* `AtomErr`: `ErlAtom(val: "error")`
+* `Atomtrue`: `ErlAtom(val: "true")`
+* `AtomFalse`: `ErlAtom(val: "false")`
 
 ```nim
-let my_atom = encode(ErlAtom((val: "test")), env)
+let my_atom = encode(ErlAtom(val: "test"), env)
 # ErlNifTerm(:test)
 
-let s = ErlAtom((val: "test"))
+let s = ErlAtom(val: "test")
 s.encode(env)
 # ErlNifTerm(:test)
 ```
@@ -52,48 +50,15 @@ s.encode(env)
 nimler ErlString become Erlang strings.
 
 ```nim
-let my_str = encode(ErlString("test"), env)
+let my_str = encode("test", env)
 # ErlNifTerm('test')
 
-let s = ErlString("test")
+let s = "test"
 s.encode(env)
 # ErlNifTerm('test')
 
 "test".encode(env)
 # ErlNifTerm('test')
-```
-
-### Tuple types
-
-nim arrays become Erlang tuples.
-
-```nim
-let my_tuple = encode([
-    1'i32.encode(env),
-    2'i32.encode(env),
-    3'i32.encode(env)
-], env)
-# ErlNifTerm({1,2,3})
-
-let my_tuple = [
-    1'i32.encode(env),
-    2'i32.encode(env),
-    3'i32.encode(env)
-]
-my_tuple.encode(env)
-# ErlNifTerm({1,2,3})
-```
-
-varargs are also tuples.
-
-```nim
-let my_tuple = encode(
-    1'i32.encode(env),
-    2'i32.encode(env),
-    3'i32.encode(env)
-    env
-)
-# ErlNifTerm({1,2,3})
 ```
 
 ### List types
@@ -116,21 +81,6 @@ let l = @[
 
 l.encode(env)
 # ErlNifTerm([1,2,3])
-```
-
-### Map types
-
-nim table of ErlNifTerm: ErlNifTerm  becomes Erlang map. Questionable utility, but it's here. Erlang error is thrown if encoding fails.
-
-```nim
-var o = initTable[ErlNifTerm, ErlNifTerm](4)
-var key: ErlAtom = (val: "test")
-var value = 1'i32
-
-o.add(key.encode(env), value.encode(env))
-
-o.encode(env)
-# %{ :test => 1 }
 ```
 
 ### Object field pairs
@@ -189,7 +139,7 @@ let v = my_val.get()
 # v == 10
 
 # strings
-let str = term.decode(env, ErlString).get()
+let str = term.decode(env, string).get()
 # str == "test"
 
 # atoms

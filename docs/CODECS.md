@@ -8,12 +8,10 @@ See [codec tests](https://github.com/wltsmrz/nimler/tree/master/tests/codec) for
 * `uint32`
 * `uint64`
 * `float64`
+* `string`
 * `ErlAtom` represented in nim as `tuple[val: string]`
-* `ErlTuple` **encode only** represented in nim as either `array` or `varargs`
-* `ErlResult` **encode only** represented in nim as tuple of arity=2 {`AtomOk` , `ErlNifTerm`}
-* `ErlString` represented in nim as `string`
-* `ErlBinary` represented in nim using Erlang's ErlNifBinary struct. Use `enif_make_new_binary()` if necessary
-* `ErlList` **encode only** represented in nim as `seq`
-* `ErlTable` **encode only** represented in nim as `Table[ErlNifTerm, ErlNifTerm]`
+* `ErlResult` **encode only** represented in nim as tuple of arity=2 {`ErlAtom` , `ErlNifTerm`}
+* `ErlList` represented in nim as `seq[ErlNifTerm]`
+* `ErlBinary` represented in nim using Erlang's ErlNifBinary struct. Use `enif_make_new_binary()` to make new binary type
 * `fieldPairs(object)` object fieldpairs are encoded as map of atom => ErlNifTerm
 

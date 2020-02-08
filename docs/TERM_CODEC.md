@@ -66,13 +66,6 @@ s.encode(env)
 nim seq types become Erlang list.
 
 ```nim
-let my_list = encode(@[
-    1'i32.encode(env),
-    2'i32.encode(env),
-    3'i32.encode(env)
-], env)
-# ErlNifTerm([1,2,3])
-
 let l = @[
     1'i32.encode(env),
     2'i32.encode(env),

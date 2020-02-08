@@ -45,8 +45,7 @@ proc codec_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm 
   if a1.isNone():
     return enif_make_badarg(env)
   let a1v = a1.get()
-  doAssert(a1v.size == 5)
-  doAssert(cast[ptr UncheckedArray[char]](a1v.data) == "test".cstring)
+  doAssert(cast[cstring](a1v.data) == "test".cstring)
   return a1v.encode(env)
 
 proc codec_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =

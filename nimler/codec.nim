@@ -117,7 +117,6 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlList]): Option
   return some(@[head, tail])
 
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlList], T2: typedesc): Option[seq[T2]] =
-
   var list_len: cuint
   if not enif_get_list_length(env, term, addr(list_len)):
     return none(seq[T2])
@@ -128,7 +127,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlList], T2: typ
     var head = cell[0].decode(env, T2)
     var tail = cell[1]
     if head.isNone():
-      break
+      return none(seq[T2])
     res.add(head.get())
     list = tail.decode(env, ErlList)
   return some(res)

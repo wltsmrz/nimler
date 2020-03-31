@@ -29,8 +29,6 @@ let my_val = 10'i32.encode(env)
 
 ### Atom types
 
-nimler ErlAtom become Erlang atoms. They are represented as a 1-arity tuple of string. Nimler exports the following atoms for convenience:
-
 * `AtomOk`: `ErlAtom(val: "ok")`
 * `AtomErr`: `ErlAtom(val: "error")`
 * `Atomtrue`: `ErlAtom(val: "true")`
@@ -47,8 +45,6 @@ s.encode(env)
 
 ### String types
 
-nimler ErlString become Erlang strings.
-
 ```nim
 let my_str = encode("test", env)
 # ErlNifTerm('test')
@@ -63,8 +59,6 @@ s.encode(env)
 
 ### List types
 
-nim seq types become Erlang list.
-
 ```nim
 let l = @[
     1'i32.encode(env),
@@ -74,6 +68,26 @@ let l = @[
 
 l.encode(env)
 # ErlNifTerm([1,2,3])
+```
+
+### Tuple types
+
+**Encode**
+
+```nim
+let t = ("test", 1, 3.14)
+
+t.encode(env)
+
+# ErlNifTerm([1,2,3])
+```
+
+**Decode**
+
+```nim
+
+term.decode(env, tuple[a: string, b: int, c: float]).get()
+# ("test", 1, 3.14)
 ```
 
 ### Object field pairs
@@ -95,6 +109,8 @@ obj.encode(env)
 The `ErlResult` codec type represents a tuple of arity=2 whose first element is either an atom `:ok` or `:error`. nimler also exposes `ResultOk` and `ResultErr` functions for creating either.
 
 ```nim
+let my_good_result = ResultOk(1.encode(env)).encode(env)
+
 let my_good_result = ResultOk(1.encode(env)).encode(env)
 # ErlNifTerm({:ok, 1})
 

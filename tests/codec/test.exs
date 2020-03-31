@@ -42,7 +42,12 @@ defmodule NimlerTest do
             assert(<<116, 101, 115, 116, 0>> == NimlerWrapper.codec_binary("test" <> <<0>>))
     end
 
-    describe "codec_tuples" do
+    describe "codec_tuple" do
+        test "codec_tuple()", do:
+            assert({'test', 1, 1.2} == NimlerWrapper.codec_tuple({'test',1, 1.2}))
+    end
+
+    describe "codec_result" do
         test "codec_result()", do:
             assert({:ok, 1} == NimlerWrapper.codec_result_ok(1))
         test "codec_result_err()", do:

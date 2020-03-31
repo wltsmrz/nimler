@@ -1,3 +1,4 @@
+import macros
 import options
 import bindings/erl_nif
 
@@ -5,11 +6,8 @@ export options
 
 type ErlAtom* = object
   val*: string
-type ErlString* = string
 type ErlList* = seq[ErlNifTerm]
-type ErlResult* = object
-  rtype*: ErlAtom
-  rval*: ErlNifTerm
+type ErlResult* = tuple[rtype: ErlAtom, rval: ErlNifTerm]
 type ErlBinary* = ErlNifBinary
 
 const AtomOk* = ErlAtom(val: "ok")
@@ -17,8 +15,8 @@ const AtomErr* = ErlAtom(val: "error")
 const AtomTrue* = ErlAtom(val: "true")
 const AtomFalse* = ErlAtom(val: "false")
 
-proc ResultOk*(rval: ErlNifTerm): ErlResult = cast[ErlResult]((AtomOk, rval))
-proc ResultErr*(rval: ErlNifTerm): ErlResult = cast[ErlResult]((AtomErr, rval))
+proc ResultOk*(rval: ErlNifTerm): ErlResult = (AtomOk, rval)
+proc ResultErr*(rval: ErlNifTerm): ErlResult = (AtomErr, rval)
 
 # int
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int]): Option[T] =
@@ -85,7 +83,7 @@ proc encode*(V: ErlAtom, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_atom(env, V.val)
 
 # string
-proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlString]): Option[T] =
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[string]): Option[T] =
   var string_len: cuint
   if not enif_get_list_length(env, term, addr(string_len)):
     return none(T)
@@ -95,7 +93,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlString]): Opti
     return none(T)
   return some(string_buf)
 
-proc encode*(V: ErlString, env: ptr ErlNifEnv): ErlNifTerm =
+proc encode*(V: string, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_string(env, V, ERL_NIF_LATIN1)
 
 # binary
@@ -135,6 +133,35 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlList], T2: typ
 proc encode*(V: ErlList, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_list_from_array(env, V)
 
+# tuple
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[tuple]): Option[T] =
+  var res: T
+  var tup: ptr UncheckedArray[ErlNifTerm]
+  var arity: cuint
+  if not enif_get_tuple(env, term, addr(arity), addr(tup)):
+    return none(T)
+  var ind = 0
+  for field in res.fields:
+    let val = tup[ind].decode(env, type(field))
+    if val.isNone():
+      return none(T)
+    field = val.get()
+    inc(ind)
+  return some(res)
+
+macro encode_tuple*(env: ptr ErlNifEnv, tup: typed): untyped =
+  let impl = tup.getTypeImpl()
+  let tup_len = impl.len
+  result = newCall(bindSym("enif_make_tuple"))
+  result.add(env)
+  result.add(newLit(tup_len))
+  for i in 0 ..< tup_len:
+    let v = quote do: `tup`[`i`]
+    result.add(newCall(bindSym("encode"), v, env))
+
+proc encode*(V: tuple, env: ptr ErlNifEnv): ErlNifTerm =
+  return encode_tuple(env, V)
+
 # result
 proc encode*(V: ErlResult, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_tuple_from_array(env, [enif_make_atom(env, V.rtype.val), V.rval])
@@ -148,4 +175,3 @@ proc encode*(V: object, env: ptr ErlNifEnv): ErlNifTerm =
     if not enif_make_map_put(env, map, key, value, addr(map)):
       discard enif_raise_exception(env, "nimler: fail to encode map from field pairs".encode(env))
   return map
-

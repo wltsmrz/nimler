@@ -49,14 +49,9 @@ proc codec_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm 
   return a1v.encode(env)
 
 proc codec_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  var l = argv[0].decode(env, ErlList, int).get()
+  var l = argv[0].decode(env, seq[int]).get()
   doAssert(l == @[1,2,3])
-
-  return @[
-    enif_make_int(env, cint(1)),
-    enif_make_int(env, cint(2)),
-    enif_make_int(env, cint(3))
-  ].encode(env)
+  return @[1,2,3].encode(env)
 
 proc codec_result_ok(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return ResultOk(argv[0]).encode(env)

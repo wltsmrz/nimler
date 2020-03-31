@@ -6,7 +6,6 @@ export options
 
 type ErlAtom* = object
   val*: string
-type ErlList* = seq[ErlNifTerm]
 type ErlResult* = tuple[rtype: ErlAtom, rval: ErlNifTerm]
 type ErlBinary* = ErlNifBinary
 
@@ -23,7 +22,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int]): Option[T] 
   var res: clonglong
   if not enif_get_int64(env, term, addr(res)):
     return none(T)
-  return some(cast[int](res))
+  return some(res.int)
 
 proc encode*(V: int, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_int64(env, V)
@@ -33,7 +32,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int32]): Option[T
   var res: clong
   if not enif_get_long(env, term, addr(res)):
     return none(T)
-  return some(cast[int32](res))
+  return some(res.int32)
 
 proc encode*(V: int32, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_long(env, V)
@@ -43,7 +42,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint32]): Option[
   var res: culong
   if not enif_get_ulong(env, term, addr(res)):
     return none(T)
-  return some(cast[uint32](res))
+  return some(res.uint32)
 
 proc encode*(V: uint32, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_ulong(env, V)
@@ -53,19 +52,19 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint64]): Option[
   var res: culonglong
   if not enif_get_uint64(env, term, addr(res)):
     return none(T)
-  return some(cast[uint64](res))
+  return some(res.uint64)
 
 proc encode*(V: uint64, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_uint64(env, V)
 
-# float64
-proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[float64]): Option[T] =
+# float
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[float]): Option[T] =
   var res: cdouble
   if not enif_get_double(env, term, addr(res)):
     return none(T)
-  return some(cast[float64](res))
+  return some(res.float)
 
-proc encode*(V: float64, env: ptr ErlNifEnv): ErlNifTerm =
+proc encode*(V: float, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_double(env, V)
 
 # atom
@@ -107,31 +106,33 @@ proc encode*(V: ErlBinary, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_binary(env, unsafeAddr(V))
 
 # list
-proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlList]): Option[T] =
+proc decode_list_cell*(term: ErlNifTerm, env: ptr ErlNifEnv): Option[seq[ErlNifTerm]] =
   var head: ErlNifTerm
   var tail: ErlNifTerm
-  if not enif_get_list_cell(env, term, addr(head), addr(tail)):
-    return none(T)
-  return some(@[head, tail])
+  if enif_get_list_cell(env, term, addr(head), addr(tail)):
+    return some(@[head, tail])
 
-proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlList], T2: typedesc): Option[seq[T2]] =
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[seq]): Option[T] =
   var list_len: cuint
   if not enif_get_list_length(env, term, addr(list_len)):
-    return none(seq[T2])
-  var res = newSeqOfCap[T2](list_len)
-  var list = term.decode(env, ErlList)
+    return none(T)
+  var res: T
+  res = newSeqOfCap[type(res[0])](list_len)
+  var list = term.decode_list_cell(env)
   while list.isSome():
     var cell = list.get()
-    var head = cell[0].decode(env, T2)
+    var head = cell[0].decode(env, type(res[0]))
     var tail = cell[1]
     if head.isNone():
-      return none(seq[T2])
+      return none(T)
     res.add(head.get())
-    list = tail.decode(env, ErlList)
+    list = tail.decode_list_cell(env)
   return some(res)
 
-proc encode*(V: ErlList, env: ptr ErlNifEnv): ErlNifTerm =
-  return enif_make_list_from_array(env, V)
+proc encode*(V: seq, env: ptr ErlNifEnv): ErlNifTerm =
+  var v = newSeq[ErlNifTerm](V.len)
+  for i, el in V: v[i] = el.encode(env)
+  return enif_make_list_from_array(env, v)
 
 # tuple
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[tuple]): Option[T] =
@@ -152,12 +153,10 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[tuple]): Option[T
 macro encode_tuple*(env: ptr ErlNifEnv, tup: typed): untyped =
   let impl = tup.getTypeImpl()
   let tup_len = impl.len
-  result = newCall(bindSym("enif_make_tuple"))
-  result.add(env)
-  result.add(newLit(tup_len))
+  result = newCall("enif_make_tuple", env, newLit(tup_len))
   for i in 0 ..< tup_len:
     let v = quote do: `tup`[`i`]
-    result.add(newCall(bindSym("encode"), v, env))
+    result.add(newCall("encode", v, env))
 
 proc encode*(V: tuple, env: ptr ErlNifEnv): ErlNifTerm =
   return encode_tuple(env, V)

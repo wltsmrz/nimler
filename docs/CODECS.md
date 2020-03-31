@@ -5,7 +5,7 @@ See [codec tests](https://github.com/wltsmrz/nimler/tree/master/tests/codec) for
 | Erlang/Elixir     | nim                                       | Encode    | Decode    |
 |---------------    |-----------------------------------------  |--------   |--------   |
 | Integer           | int, int32, int64, uint, uint32, uint64   | Y         | Y         |
-| Float             | float, float32, float64                   | Y         | Y         |
+| Float             | float                                     | Y         | Y         |
 | Atom              | type ErlAtom = object<br>  val: string    | Y         | Y         |
 | List              | seq                                       | Y         | Y         |
 | Tuple             | tuple                                     | Y         | Y         |

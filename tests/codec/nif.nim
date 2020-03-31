@@ -53,11 +53,10 @@ proc codec_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   doAssert(l == @[1,2,3])
   return @[1,2,3].encode(env)
 
-proc codec_result_ok(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  return ResultOk(argv[0]).encode(env)
-
-proc codec_result_error(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  return ResultErr(argv[0]).encode(env)
+proc codec_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  var a1 = argv[0].decode(env, tuple[a: string, b: int, c: float]).get()
+  doAssert(a1 == ("test", 1, 1.2))
+  return ("test", 1, 1.2).encode(env)
 
 proc codec_fieldpairs(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   type O = object
@@ -66,10 +65,11 @@ proc codec_fieldpairs(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifT
   var o = O(test: 1, test_other: 2)
   return o.encode(env)
 
-proc codec_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  var a1 = argv[0].decode(env, tuple[a: string, b: int, c: float]).get()
-  doAssert(a1 == ("test", 1, 1.2))
-  return ("test", 1, 1.2).encode(env)
+proc codec_result_ok(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  return ok(env, argv[0])
+
+proc codec_result_error(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  return error(env, argv[0])
 
 export_nifs("Elixir.NimlerWrapper", @[
   ("codec_int32", 2, codec_int32),

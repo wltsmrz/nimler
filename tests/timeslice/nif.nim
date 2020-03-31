@@ -14,9 +14,7 @@ proc test_consume_timeslice(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): E
     os.sleep(1)
     inc(it)
 
-  let res = enif_make_tuple_from_array(env, [it.encode(env), invocations.encode(env)])
-
-  return ResultOk(res).encode(env) # {:ok, {1000, 932}}
+  return ok(env, (it, invocations).encode(env)) # {:ok, {1000, 932}}
 
 export_nifs("Elixir.NimlerWrapper", @[
   ("test_consume_timeslice", 2, test_consume_timeslice)

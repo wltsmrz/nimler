@@ -6,16 +6,12 @@ export options
 
 type ErlAtom* = object
   val*: string
-type ErlResult* = tuple[rtype: ErlAtom, rval: ErlNifTerm]
 type ErlBinary* = ErlNifBinary
 
 const AtomOk* = ErlAtom(val: "ok")
 const AtomErr* = ErlAtom(val: "error")
 const AtomTrue* = ErlAtom(val: "true")
 const AtomFalse* = ErlAtom(val: "false")
-
-proc ResultOk*(rval: ErlNifTerm): ErlResult = (AtomOk, rval)
-proc ResultErr*(rval: ErlNifTerm): ErlResult = (AtomErr, rval)
 
 # int
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int]): Option[T] =
@@ -161,10 +157,6 @@ macro encode_tuple*(env: ptr ErlNifEnv, tup: typed): untyped =
 proc encode*(V: tuple, env: ptr ErlNifEnv): ErlNifTerm =
   return encode_tuple(env, V)
 
-# result
-proc encode*(V: ErlResult, env: ptr ErlNifEnv): ErlNifTerm =
-  return enif_make_tuple_from_array(env, [enif_make_atom(env, V.rtype.val), V.rval])
-
 # object field pairs:map
 proc encode*(V: object, env: ptr ErlNifEnv): ErlNifTerm =
   var map = enif_make_new_map(env)
@@ -174,3 +166,10 @@ proc encode*(V: object, env: ptr ErlNifEnv): ErlNifTerm =
     if not enif_make_map_put(env, map, key, value, addr(map)):
       discard enif_raise_exception(env, "nimler: fail to encode map from field pairs".encode(env))
   return map
+
+# result
+proc ok*(env: ptr ErlNifEnv, rterm: ErlNifTerm): ErlNifTerm =
+  return enif_make_tuple(env, 2, AtomOk.encode(env), rterm)
+
+proc error*(env: ptr ErlNifEnv, rterm: ErlNifTerm): ErlNifTerm =
+  return enif_make_tuple(env, 2, AtomErr.encode(env), rterm)

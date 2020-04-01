@@ -47,7 +47,6 @@ defmodule NimlerTest do
             assert([1,2,3] == NimlerWrapper.codec_list([1,2,3]))
     end
 
-
     describe "codec_tuple" do
         test "codec_tuple()", do:
             assert({'test', 1, 1.2} == NimlerWrapper.codec_tuple({'test',1, 1.2}))
@@ -63,6 +62,10 @@ defmodule NimlerTest do
     describe "codec_fieldpairs" do
         test "codec_fieldpairs()", do:
             assert(%{:test => 1, :test_other => 2} == NimlerWrapper.codec_fieldpairs())
+    end
+    describe "codec_map" do
+        test "codec_map()", do:
+            assert(%{'test' => 1, 'test_other' => 2} == NimlerWrapper.codec_map(%{'test' => 1, 'test_other' => 2}))
     end
 end
 

@@ -9,4 +9,5 @@ See [codec tests](https://github.com/wltsmrz/nimler/tree/master/tests/codec) for
 | Atom              | type ErlAtom = object<br>  val: string    | Y         | Y         |
 | List              | seq                                       | Y         | Y         |
 | Tuple             | tuple                                     | Y         | Y         |
+| Map               | table                                     | Y         | Y         |
 | Charlist          | string                                    | Y         | Y         |

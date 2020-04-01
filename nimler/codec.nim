@@ -1,5 +1,7 @@
 import macros
+import typetraits
 import options
+import tables
 import bindings/erl_nif
 
 export options
@@ -165,6 +167,31 @@ proc encode*(V: object, env: ptr ErlNifEnv): ErlNifTerm =
     var value: ErlNifTerm = v.encode(env)
     if not enif_make_map_put(env, map, key, value, addr(map)):
       discard enif_raise_exception(env, "nimler: fail to encode map from field pairs".encode(env))
+  return map
+
+# map/table
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[Table]): Option[T] =
+  var type_tup: genericParams(T)
+  var res = initTable[type(type_tup[0]), type(type_tup[1])](4)
+  var iter: ErlNifMapIterator
+  var key: ErlNifTerm
+  var val: ErlNifTerm
+  if not enif_map_iterator_create(env, term, addr(iter), ERL_NIF_MAP_ITERATOR_FIRST):
+    return none(T)
+  while enif_map_iterator_get_pair(env, addr(iter), addr(key), addr(val)):
+    let key_d = key.decode(env, type(type_tup[0])).get()
+    let val_d = val.decode(env, type(type_tup[1])).get()
+    res[key_d] = val_d
+    discard enif_map_iterator_next(env, addr(iter))
+  enif_map_iterator_destroy(env, addr(iter))
+  return some(res)
+
+proc encode*(V: Table, env: ptr ErlNifEnv): ErlNifTerm =
+  var map = enif_make_new_map(env)
+  for k, v in V:
+    let key = k.encode(env)
+    let value = v.encode(env)
+    discard enif_make_map_put(env, map, key, value, addr(map))
   return map
 
 # result

@@ -86,7 +86,32 @@ type
     data*: ptr byte
     ref_bin*: pointer
     spare*: array[2, pointer]
+  ErlNifMapIteratorEntry* = enum
+    ERL_NIF_MAP_ITERATOR_FIRST = 1,
+    ERL_NIF_MAP_ITERATOR_LAST = 2
+  ErlNifMapIteratorFlat* = object
+    ks*: ErlNifTerm
+    vs*: ErlNifTerm
+  ErlNifMapIteratorHash* = object
+    wstack*: pointer
+    kv*: ErlNifTerm
+  ErlNifMapIteratorU* {.union.} = object
+      flat*: ErlNifMapIteratorFlat
+      hash*: ErlNifMapIteratorHash
+  ErlNifMapIterator* {.importc: "ErlNifMapIterator", header: "erl_nif.h", bycopy.} = object
+    map*: ErlNifTerm
+    size*: cuint
+    idx*: cuint
+    u*: ErlNifMapIteratorU
+    spare*: array[2, pointer]
 
+proc enif_map_iterator_create*(a1: ptr ErlNifEnv, a2: ErlNifTerm, a3: ptr ErlNifMapIterator, a4: ErlNifMapIteratorEntry): bool {.importc: "enif_map_iterator_create", header: "erl_nif.h".}
+proc enif_map_iterator_destroy*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator): void {.importc: "enif_map_iterator_destroy", header: "erl_nif.h".}
+proc enif_map_iterator_next*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_next", header: "erl_nif.h".}
+proc enif_map_iterator_prev*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_prev", header: "erl_nif.h".}
+proc enif_map_iterator_get_pair*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator, a3: ptr ErlNifTerm, a4: ptr ErlNifTerm): bool {.importc: "enif_map_iterator_get_pair", header: "erl_nif.h".}
+proc enif_map_iterator_is_head*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_is_head", header: "erl_nif.h".}
+proc enif_map_iterator_is_tail*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_is_tail", header: "erl_nif.h".}
 proc enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, importc: "enif_snprintf", header: "erl_nif.h".}
 proc enif_fprintf*(a1: File, a2: cstring): bool {.varargs, importc: "enif_fprintf", header: "erl_nif.h".}
 proc enif_alloc*(a1: csize_t): pointer {.importc: "enif_alloc", header: "erl_nif.h".}
@@ -196,4 +221,5 @@ proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: NifFunc; a
   return enif_schedule_nif(a1, a2, a3, a4, len(a5).cint, cast[ErlNifArgs](a5))
 proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: NifFunc; a3: openArray[ErlNifTerm]): ErlNifTerm =
   return enif_schedule_nif(a1, astToStr(a2), cint(0), a2, len(a3).cint, cast[ErlNifArgs](a3))
+
 

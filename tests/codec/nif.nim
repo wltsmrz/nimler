@@ -1,4 +1,5 @@
 import ../../nimler
+import tables
 
 proc codec_int32(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let a1 = argv[0].decode(env, int32).get(0)
@@ -65,6 +66,12 @@ proc codec_fieldpairs(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifT
   var o = O(test: 1, test_other: 2)
   return o.encode(env)
 
+proc codec_map(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  var a1 = argv[0].decode(env, Table[string, int]).get()
+  doAssert(a1["test"] == 1)
+  doAssert(a1["test_other"] == 2)
+  return a1.encode(env)
+
 proc codec_result_ok(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return ok(env, argv[0])
 
@@ -79,6 +86,7 @@ export_nifs("Elixir.NimlerWrapper", @[
   ("codec_binary", 1, codec_binary),
   ("codec_tuple", 1, codec_tuple),
   ("codec_list", 1, codec_list),
+  ("codec_map", 1, codec_map),
   ("codec_result_ok", 1, codec_result_ok),
   ("codec_result_error", 1, codec_result_error),
   ("codec_double", 1, codec_double),

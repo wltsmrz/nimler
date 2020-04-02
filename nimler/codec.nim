@@ -114,8 +114,8 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlCharlist]): Op
   return some(string_buf)
 
 proc encode*(V: ErlCharlist, env: ptr ErlNifEnv): ErlNifTerm =
-  var s = newStringOfCap(V.len)
-  for c in V: s.add(c)
+  var s = newString(V.len)
+  for i, c in V: s[i] = c
   return enif_make_string(env, s, ERL_NIF_LATIN1)
 
 # binary
@@ -174,8 +174,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[tuple]): Option[T
   return some(res)
 
 macro encode_tuple*(env: ptr ErlNifEnv, tup: typed): untyped =
-  let impl = tup.getTypeImpl()
-  let tup_len = impl.len
+  let tup_len = tup.getTypeImpl().len
   result = newCall("enif_make_tuple", env, newLit(tup_len))
   for i in 0 ..< tup_len:
     let v = quote do: `tup`[`i`]
@@ -189,8 +188,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[Table]): Option[T
   var type_tup: genericParams(T)
   var res = initTable[type(type_tup[0]), type(type_tup[1])](4)
   var iter: ErlNifMapIterator
-  var key: ErlNifTerm
-  var val: ErlNifTerm
+  var key, val: ErlNifTerm
   if not enif_map_iterator_create(env, term, addr(iter), ERL_NIF_MAP_ITERATOR_FIRST):
     return none(T)
   while enif_map_iterator_get_pair(env, addr(iter), addr(key), addr(val)):

@@ -35,8 +35,8 @@ defmodule NimlerTest do
     describe "codec_strings" do
         test "codec_charlist()", do:
             assert('test' == NimlerWrapper.codec_charlist('test'))
-        # test "codec_string()", do:
-            # assert("testϴ" == NimlerWrapper.codec_string("testϴ"))
+        test "codec_string()", do:
+            assert("testϴ" == NimlerWrapper.codec_string("testϴ"))
     end
 
     describe "codec_binary" do

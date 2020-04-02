@@ -2,18 +2,26 @@ import options
 import macros
 import typetraits
 import tables
+import sequtils
+import hashes
 import ./bindings/erl_nif
 
 export options
 
 type ErlAtom* = object
   val*: string
+type ErlCharlist* = seq[char]
 type ErlBinary* = ErlNifBinary
+
+proc hash*(a: ErlAtom): Hash =
+  result = a.val.hash
+  result = !$result
 
 const AtomOk* = ErlAtom(val: "ok")
 const AtomErr* = ErlAtom(val: "error")
 const AtomTrue* = ErlAtom(val: "true")
 const AtomFalse* = ErlAtom(val: "false")
+const ExceptionMapEncode*: ErlCharlist = "nimler: fail to encode map".toSeq()
 
 # int
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int]): Option[T] =
@@ -81,17 +89,34 @@ proc encode*(V: ErlAtom, env: ptr ErlNifEnv): ErlNifTerm =
 
 # string
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[string]): Option[T] =
+  var bin: ErlNifBinary
+  if not enif_inspect_binary(env, term, addr(bin)):
+    return none(T)
+  var res = newString(bin.size)
+  copyMem(addr(res[0]), bin.data, bin.size)
+  return some(res)
+
+proc encode*(V: string, env: ptr ErlNifEnv): ErlNifTerm =
+  var term: ErlNifTerm
+  var bin = enif_make_new_binary(env, cast[csize_t](V.len), addr(term))
+  copyMem(bin, unsafeAddr(V[0]), V.len)
+  return term
+
+# charlist
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlCharlist]): Option[T] =
   var string_len: cuint
   if not enif_get_list_length(env, term, addr(string_len)):
     return none(T)
-  var string_buf = newString(string_len)
-  var buf_len = string_len + 1
+  let buf_len = string_len + 1
+  var string_buf = newSeq[char](string_len)
   if not enif_get_string(env, term, addr(string_buf[0]), buf_len, ERL_NIF_LATIN1) == cint(buf_len):
     return none(T)
   return some(string_buf)
 
-proc encode*(V: string, env: ptr ErlNifEnv): ErlNifTerm =
-  return enif_make_string(env, V, ERL_NIF_LATIN1)
+proc encode*(V: ErlCharlist, env: ptr ErlNifEnv): ErlNifTerm =
+  var s = newStringOfCap(V.len)
+  for c in V: s.add(c)
+  return enif_make_string(env, s, ERL_NIF_LATIN1)
 
 # binary
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlBinary]): Option[T] =
@@ -159,16 +184,6 @@ macro encode_tuple*(env: ptr ErlNifEnv, tup: typed): untyped =
 proc encode*(V: tuple, env: ptr ErlNifEnv): ErlNifTerm =
   return encode_tuple(env, V)
 
-# object field pairs:map
-proc encode*(V: object, env: ptr ErlNifEnv): ErlNifTerm =
-  var map = enif_make_new_map(env)
-  for k, v in fieldPairs(V):
-    var key: ErlNifTerm = enif_make_atom(env, $k)
-    var value: ErlNifTerm = v.encode(env)
-    if not enif_make_map_put(env, map, key, value, addr(map)):
-      discard enif_raise_exception(env, "nimler: fail to encode map from field pairs".encode(env))
-  return map
-
 # map/table
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[Table]): Option[T] =
   var type_tup: genericParams(T)
@@ -191,7 +206,8 @@ proc encode*(V: Table, env: ptr ErlNifEnv): ErlNifTerm =
   for k, v in V:
     let key = k.encode(env)
     let value = v.encode(env)
-    discard enif_make_map_put(env, map, key, value, addr(map))
+    if not enif_make_map_put(env, map, key, value, addr(map)):
+      discard enif_raise_exception(env, ExceptionMapEncode.encode(env))
   return map
 
 # result

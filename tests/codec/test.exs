@@ -33,8 +33,10 @@ defmodule NimlerTest do
     end
 
     describe "codec_strings" do
-        test "codec_strings()", do:
-            assert('test' == NimlerWrapper.codec_string('test'))
+        test "codec_charlist()", do:
+            assert('test' == NimlerWrapper.codec_charlist('test'))
+        # test "codec_string()", do:
+            # assert("testϴ" == NimlerWrapper.codec_string("testϴ"))
     end
 
     describe "codec_binary" do
@@ -49,7 +51,19 @@ defmodule NimlerTest do
 
     describe "codec_tuple" do
         test "codec_tuple()", do:
-            assert({'test', 1, 1.2} == NimlerWrapper.codec_tuple({'test',1, 1.2}))
+            assert({"test", 1, 1.2} == NimlerWrapper.codec_tuple({"test",1, 1.2}))
+    end
+
+    describe "codec_map" do
+        test "codec_map()" do
+            a1 = %{'test' => 1, 'test_other' => 2}
+            a2 = %{"test" => 1, "test_other" => 2}
+            a3 = %{:atom1 => "test1", :atom2=> "test2"}
+            {v1, v2, v3} = NimlerWrapper.codec_map(a1, a2, a3)
+            assert(a1 == v1)
+            assert(a2 == v2)
+            assert(a3 == v3)
+        end
     end
 
     describe "codec_result" do
@@ -57,15 +71,6 @@ defmodule NimlerTest do
             assert({:ok, 1} == NimlerWrapper.codec_result_ok(1))
         test "codec_result_err()", do:
             assert({:error, 1} == NimlerWrapper.codec_result_error(1))
-    end
-
-    describe "codec_fieldpairs" do
-        test "codec_fieldpairs()", do:
-            assert(%{:test => 1, :test_other => 2} == NimlerWrapper.codec_fieldpairs())
-    end
-    describe "codec_map" do
-        test "codec_map()", do:
-            assert(%{'test' => 1, 'test_other' => 2} == NimlerWrapper.codec_map(%{'test' => 1, 'test_other' => 2}))
     end
 end
 

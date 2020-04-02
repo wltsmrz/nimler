@@ -1,4 +1,5 @@
 import ../../nimler
+import sequtils
 import tables
 
 proc codec_int32(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
@@ -35,10 +36,19 @@ proc codec_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
 proc codec_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let a1 = argv[0].decode(env, string).get()
   let a2 = argv[1].decode(env, string).get("default")
-  doAssert(a1 == "test")
+  doAssert(a1 == "testϴ")
   doAssert(a2 == "default")
   let a3 = "test".encode(env)
   doAssert(a3.decode(env, string).get() == "test")
+  return a1.encode(env)
+
+proc codec_charlist(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+  let a1 = argv[0].decode(env, ErlCharlist).get()
+  let a2 = argv[1].decode(env, ErlCharlist).get("default".toSeq())
+  doAssert(a1 == "test".toSeq())
+  doAssert(a2 == "default".toSeq())
+  let a3 = "test".toSeq().encode(env)
+  doAssert(a3.decode(env, ErlCharlist).get() == "test".toSeq())
   return a1.encode(env)
 
 proc codec_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
@@ -59,21 +69,15 @@ proc codec_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   doAssert(a1 == ("test", 1, 1.2))
   return ("test", 1, 1.2).encode(env)
 
-proc codec_fieldpairs(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  type O = object
-    test: int
-    test_other: int
-  var o = O(test: 1, test_other: 2)
-  return o.encode(env)
-
 proc codec_map(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  var a1 = argv[0].decode(env, Table[string, int]).get()
-  doAssert(a1["test"] == 1)
-  doAssert(a1["test_other"] == 2)
-  return a1.encode(env)
+  var a1 = argv[0].decode(env, Table[ErlCharlist, int]).get()
+  var a2 = argv[1].decode(env, Table[string, int]).get()
+  var a3 = argv[2].decode(env, Table[ErlAtom, string]).get()
+
+  return (a1, a2, a3).encode(env)
 
 proc codec_result_ok(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  return ok(env, argv[0])
+  return argv[0].ok(env)
 
 proc codec_result_error(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return error(env, argv[0])
@@ -83,14 +87,14 @@ export_nifs("Elixir.NimlerWrapper", @[
   ("codec_uint32", 2, codec_uint32),
   ("codec_atom", 1, codec_atom),
   ("codec_string", 1, codec_string),
+  ("codec_charlist", 1, codec_charlist),
   ("codec_binary", 1, codec_binary),
   ("codec_tuple", 1, codec_tuple),
   ("codec_list", 1, codec_list),
-  ("codec_map", 1, codec_map),
+  ("codec_map", 3, codec_map),
   ("codec_result_ok", 1, codec_result_ok),
   ("codec_result_error", 1, codec_result_error),
   ("codec_double", 1, codec_double),
-  ("codec_uint64", 1, codec_uint64),
-  ("codec_fieldpairs", 0, codec_fieldpairs)
+  ("codec_uint64", 1, codec_uint64)
 ])
 

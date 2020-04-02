@@ -105,13 +105,13 @@ type
     u*: ErlNifMapIteratorU
     spare*: array[2, pointer]
 
-proc enif_map_iterator_create*(a1: ptr ErlNifEnv, a2: ErlNifTerm, a3: ptr ErlNifMapIterator, a4: ErlNifMapIteratorEntry): bool {.importc: "enif_map_iterator_create", header: "erl_nif.h".}
-proc enif_map_iterator_destroy*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator): void {.importc: "enif_map_iterator_destroy", header: "erl_nif.h".}
-proc enif_map_iterator_next*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_next", header: "erl_nif.h".}
-proc enif_map_iterator_prev*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_prev", header: "erl_nif.h".}
-proc enif_map_iterator_get_pair*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator, a3: ptr ErlNifTerm, a4: ptr ErlNifTerm): bool {.importc: "enif_map_iterator_get_pair", header: "erl_nif.h".}
-proc enif_map_iterator_is_head*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_is_head", header: "erl_nif.h".}
-proc enif_map_iterator_is_tail*(a1: ptr ErlNifEnv, a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_is_tail", header: "erl_nif.h".}
+proc enif_map_iterator_create*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifMapIterator; a4: ErlNifMapIteratorEntry): bool {.importc: "enif_map_iterator_create", header: "erl_nif.h".}
+proc enif_map_iterator_destroy*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): void {.importc: "enif_map_iterator_destroy", header: "erl_nif.h".}
+proc enif_map_iterator_next*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_next", header: "erl_nif.h".}
+proc enif_map_iterator_prev*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_prev", header: "erl_nif.h".}
+proc enif_map_iterator_get_pair*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator; a3: ptr ErlNifTerm; a4: ptr ErlNifTerm): bool {.importc: "enif_map_iterator_get_pair", header: "erl_nif.h".}
+proc enif_map_iterator_is_head*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_is_head", header: "erl_nif.h".}
+proc enif_map_iterator_is_tail*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_is_tail", header: "erl_nif.h".}
 proc enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, importc: "enif_snprintf", header: "erl_nif.h".}
 proc enif_fprintf*(a1: File, a2: cstring): bool {.varargs, importc: "enif_fprintf", header: "erl_nif.h".}
 proc enif_alloc*(a1: csize_t): pointer {.importc: "enif_alloc", header: "erl_nif.h".}

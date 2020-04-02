@@ -2,12 +2,12 @@
 
 nim bindings for [Erlang NIF API](http://erlang.org/doc/man/erl_nif.html).
 
-### Installation
+## Installation
 
 ```
 $ nimble install nimler
 ```
 
-### Documentation
+## Documentation
 
 [Docs site](https://wltsmrz.github.io/nimler/)

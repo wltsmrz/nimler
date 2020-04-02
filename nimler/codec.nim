@@ -1,8 +1,8 @@
+import options
 import macros
 import typetraits
-import options
 import tables
-import bindings/erl_nif
+import ./bindings/erl_nif
 
 export options
 
@@ -197,6 +197,10 @@ proc encode*(V: Table, env: ptr ErlNifEnv): ErlNifTerm =
 # result
 proc ok*(env: ptr ErlNifEnv, rterm: ErlNifTerm): ErlNifTerm =
   return enif_make_tuple(env, 2, AtomOk.encode(env), rterm)
+proc ok*(rterm: ErlNifTerm, env: ptr ErlNifEnv): ErlNifTerm =
+  return enif_make_tuple(env, 2, AtomOk.encode(env), rterm)
 
 proc error*(env: ptr ErlNifEnv, rterm: ErlNifTerm): ErlNifTerm =
+  return enif_make_tuple(env, 2, AtomErr.encode(env), rterm)
+proc error*(rterm: ErlNifTerm, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_tuple(env, 2, AtomErr.encode(env), rterm)

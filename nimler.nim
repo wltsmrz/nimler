@@ -1,14 +1,16 @@
-{.passC: "-I" & staticExec("escript ./scripts/get_erl_lib_dir.erl").}
+import ./erl_sys_info
+
+{.passC: "-I" & ertsPath.}
 
 import nimler/bindings/erl_nif
-import nimler/codec
-
 export erl_nif
+
+import nimler/codec
 export codec
 
 type
-  NifSpec* = tuple[name: string, arity: int, fptr: NifFunc]
-  NifSpecDirty* = tuple[name: string, arity: int, fptr: NifFunc, flags: ErlNifFlags]
+  NifSpec* = tuple[name: string, arity: int, fptr: ErlNifFptr]
+  NifSpecDirty* = tuple[name: string, arity: int, fptr: ErlNifFptr, flags: ErlNifFlags]
   NifOptions* = object
     name*: string
     funcs*: seq[NifSpec]
@@ -18,51 +20,50 @@ type
     upgrade*: ErlNifEntryUpgrade
     unload*: ErlNifEntryUnload
 
-template export_nifs*(module_name: string, funcs_seq: openArray[NifSpec]) =
-  proc NimMain() {.gensym, importc: "NimMain".}
+template export_nifs*(module_name: string, funcs_seq: openArray[NifSpec|NifSpecDirty]) =
+  var funcs {.gensym.}: seq[ErlNifFunc]
+
+  for spec in funcs_seq:
+    var nifFunc = ErlNifFunc(name: cstring(spec[0]), arity: cuint(spec[1]), fptr: spec[2])
+    when spec is NifSpecDirty:
+      nifFunc.flags = spec[3]
+    funcs.add(nifFunc)
 
   var entry {.gensym.}: ErlNifEntry
-  var funcs {.gensym.}: seq[ErlNifFunc] = @[]
-
-  for (name, arity, fptr) in funcs_seq:
-    funcs.add(ErlNifFunc(name: cstring(name), arity: cuint(arity), fptr: fptr))
-
-  entry.major = cint(2)
-  entry.minor = cint(15)
+  entry.major = cint(nifMajor)
+  entry.minor = cint(nifMinor)
   entry.name = cstring(module_name)
   entry.num_of_funcs = cint(len(funcs))
-  entry.funcs = cast[NifFuncArr](addr(funcs[0]))
-  entry.load = nil
-  entry.reload = nil
-  entry.upgrade = nil
-  entry.unload = nil
+  entry.funcs = cast [ptr UncheckedArray[ErlNifFunc]](addr(funcs[0]))
   entry.vm_variant = cstring("beam.vanilla")
+
+  proc NimMain() {.gensym, importc: "NimMain".}
 
   proc nif_init(): ptr ErlNifEntry {.dynlib, exportc.} =
     NimMain()
     result = addr(entry)
 
 template export_nifs*(module_name: string, options: NifOptions) =
-  proc NimMain() {.gensym, importc: "NimMain".}
-
-  var funcs {.gensym.}: seq[ErlNifFunc] = @[]
-  var entry {.gensym.}: ErlNifEntry
+  var funcs {.gensym.}: seq[ErlnifFunc]
 
   for (name, arity, fptr) in options.funcs:
     funcs.add(ErlNifFunc(name: cstring(name), arity: cuint(arity), fptr: fptr))
   for (name, arity, fptr, flags) in options.dirty_funcs:
-    funcs.add(ErlNifFunc(name: cstring(name), arity: cuint(arity), fptr: fptr, flags: cuint(flags)))
+    funcs.add(ErlNifFunc(name: cstring(name), arity: cuint(arity), fptr: fptr, flags: flags))
 
-  entry.major = cint(2)
-  entry.minor = cint(15)
+  var entry {.gensym.}: ErlNifEntry
+  entry.major = cint(nifMajor)
+  entry.minor = cint(nifMinor)
   entry.name = cstring(module_name)
   entry.num_of_funcs = cint(len(funcs))
-  entry.funcs = cast[NifFuncArr](addr(funcs[0]))
+  entry.funcs = cast [ptr UncheckedArray[ErlNifFunc]](addr(funcs[0]))
   entry.load = options.load
   entry.reload = options.reload
   entry.upgrade = options.upgrade
   entry.unload = options.unload
   entry.vm_variant = cstring("beam.vanilla")
+
+  proc NimMain() {.gensym, importc: "NimMain".}
 
   proc nif_init(): ptr ErlNifEntry {.dynlib, exportc.} =
     NimMain()

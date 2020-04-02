@@ -1,20 +1,22 @@
+import ../../erl_sys_info
+
 when not declared(csize_t):
-    type csize_t* {.importc: "size_t", nodecl.} = uint
+  type csize_t* {.importc: "size_t", nodecl.} = uint
 
 type
   ErlNifEnv* = object
   ErlNifTerm* = culonglong
   ErlNifArgs* = ptr UncheckedArray[ErlNifTerm]
-  NifFunc* = proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm {.nimcall.}
+  ErlNifFptr* = proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm {.nimcall.}
+  ErlNifFlags* {.size: sizeof(cint).} = enum
+    ERL_NIF_REGULAR = 0,
+    ERL_NIF_DIRTY_CPU = 1,
+    ERL_NIF_DIRTY_IO = 2
   ErlNifFunc* = object
     name*: cstring
-    arity*: csize_t
-    fptr*: NifFunc
-    flags*: csize_t
-  NifFuncArr* = ptr UncheckedArray[ErlNifFunc]
-  ErlNifFlags* {.size: sizeof(cint).} = enum
-    ERL_NIF_DIRTY_CPU,
-    ERL_NIF_DIRTY_IO
+    arity*: cuint
+    fptr*: ErlNifFptr
+    flags*: ErlNifFlags
   ErlNifTermType* = enum
     ERL_NIF_TERM_TYPE_ATOM = 1
     ERL_NIF_TERM_TYPE_BITSTRING = 2
@@ -61,7 +63,7 @@ type
     minor*: cint
     name*: cstring
     num_of_funcs*: cint
-    funcs*: NifFuncArr
+    funcs*: ptr UncheckedArray[ErlNifFunc]
     load*: pointer
     reload*: pointer
     upgrade*: pointer
@@ -216,10 +218,9 @@ proc enif_release_resource*(a1: pointer): void {.importc: "enif_release_resource
 proc enif_make_resource*(a1: ptr ErlNifEnv; a2: pointer): ErlNifTerm {.importc: "enif_make_resource", header: "erl_nif.h".}
 proc enif_get_resource*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: pointer; a4: pointer): bool {.importc: "enif_get_resource", header: "erl_nif.h".}
 proc enif_consume_timeslice*(a1: ptr ErlNifEnv; a2: cint): bool {.importc: "enif_consume_timeslice", header: "erl_nif.h".}
-proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: NifFunc; a5: cint; a6: ErlNifArgs): ErlNifTerm {.importc: "enif_schedule_nif", header: "erl_nif.h".}
-proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: NifFunc; a5: openArray[ErlNifTerm]): ErlNifTerm =
+proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ErlNifFptr; a5: cint; a6: ErlNifArgs): ErlNifTerm {.importc: "enif_schedule_nif", header: "erl_nif.h".}
+proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ErlNifFptr; a5: openArray[ErlNifTerm]): ErlNifTerm =
   return enif_schedule_nif(a1, a2, a3, a4, len(a5).cint, cast[ErlNifArgs](a5))
-proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: NifFunc; a3: openArray[ErlNifTerm]): ErlNifTerm =
+proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: ErlNifFptr; a3: openArray[ErlNifTerm]): ErlNifTerm =
   return enif_schedule_nif(a1, astToStr(a2), cint(0), a2, len(a3).cint, cast[ErlNifArgs](a3))
-
 

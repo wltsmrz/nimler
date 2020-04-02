@@ -43,9 +43,9 @@ proc update_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
 
   let sp = argv[1].decode(env, float).get()
   let pv = argv[2].decode(env, float).get()
-  let res = controller.update(sp, pv)
+  let res = controller.update(sp, pv).encode(env)
 
-  return ResultOk(res.encode(env)).encode(env)
+  return res.ok(env)
 
 export_nifs("Elixir.PIController", NifOptions(
   funcs: @[

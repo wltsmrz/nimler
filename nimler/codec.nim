@@ -4,7 +4,7 @@ import typetraits
 import tables
 import sequtils
 import hashes
-import ./bindings/erl_nif
+import bindings/erl_nif
 
 export options
 
@@ -26,9 +26,8 @@ const ExceptionMapEncode*: ErlCharlist = "nimler: fail to encode map".toSeq()
 # int
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int]): Option[T] =
   var res: clonglong
-  if not enif_get_int64(env, term, addr(res)):
-    return none(T)
-  return some(res.int)
+  if enif_get_int64(env, term, addr(res)):
+    return some(res.int)
 
 proc encode*(V: int, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_int64(env, V)
@@ -36,9 +35,8 @@ proc encode*(V: int, env: ptr ErlNifEnv): ErlNifTerm =
 # int32
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int32]): Option[T] =
   var res: clong
-  if not enif_get_long(env, term, addr(res)):
-    return none(T)
-  return some(res.int32)
+  if enif_get_long(env, term, addr(res)):
+    return some(res.int32)
 
 proc encode*(V: int32, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_long(env, V)
@@ -46,9 +44,8 @@ proc encode*(V: int32, env: ptr ErlNifEnv): ErlNifTerm =
 # uint32
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint32]): Option[T] =
   var res: culong
-  if not enif_get_ulong(env, term, addr(res)):
-    return none(T)
-  return some(res.uint32)
+  if enif_get_ulong(env, term, addr(res)):
+    return some(res.uint32)
 
 proc encode*(V: uint32, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_ulong(env, V)
@@ -56,9 +53,8 @@ proc encode*(V: uint32, env: ptr ErlNifEnv): ErlNifTerm =
 # uint64
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint64]): Option[T] =
   var res: culonglong
-  if not enif_get_uint64(env, term, addr(res)):
-    return none(T)
-  return some(res.uint64)
+  if enif_get_uint64(env, term, addr(res)):
+    return some(res.uint64)
 
 proc encode*(V: uint64, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_uint64(env, V)
@@ -66,9 +62,8 @@ proc encode*(V: uint64, env: ptr ErlNifEnv): ErlNifTerm =
 # float
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[float]): Option[T] =
   var res: cdouble
-  if not enif_get_double(env, term, addr(res)):
-    return none(T)
-  return some(res.float)
+  if enif_get_double(env, term, addr(res)):
+    return some(res.float)
 
 proc encode*(V: float, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_double(env, V)
@@ -80,9 +75,8 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlAtom]): Option
     return none(T)
   var atom = ErlAtom(val: newString(atom_len))
   let buf_len = atom_len + 1
-  if not enif_get_atom(env, term, addr(atom.val[0]), buf_len, ERL_NIF_LATIN1) == cint(buf_len):
-    return none(T)
-  return some(atom)
+  if enif_get_atom(env, term, addr(atom.val[0]), buf_len, ERL_NIF_LATIN1) == cint(buf_len):
+    return some(atom)
 
 proc encode*(V: ErlAtom, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_atom(env, V.val)
@@ -90,11 +84,10 @@ proc encode*(V: ErlAtom, env: ptr ErlNifEnv): ErlNifTerm =
 # string
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[string]): Option[T] =
   var bin: ErlNifBinary
-  if not enif_inspect_binary(env, term, addr(bin)):
-    return none(T)
-  var res = newString(bin.size)
-  copyMem(addr(res[0]), bin.data, bin.size)
-  return some(res)
+  if enif_inspect_binary(env, term, addr(bin)):
+    var res = newString(bin.size)
+    copyMem(addr(res[0]), bin.data, bin.size)
+    return some(res)
 
 proc encode*(V: string, env: ptr ErlNifEnv): ErlNifTerm =
   var term: ErlNifTerm
@@ -109,9 +102,8 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlCharlist]): Op
     return none(T)
   let buf_len = string_len + 1
   var string_buf = newSeq[char](string_len)
-  if not enif_get_string(env, term, addr(string_buf[0]), buf_len, ERL_NIF_LATIN1) == cint(buf_len):
-    return none(T)
-  return some(string_buf)
+  if enif_get_string(env, term, addr(string_buf[0]), buf_len, ERL_NIF_LATIN1) == cint(buf_len):
+    return some(string_buf)
 
 proc encode*(V: ErlCharlist, env: ptr ErlNifEnv): ErlNifTerm =
   var s = newString(V.len)
@@ -121,26 +113,24 @@ proc encode*(V: ErlCharlist, env: ptr ErlNifEnv): ErlNifTerm =
 # binary
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlBinary]): Option[T] =
   var bin: ErlNifBinary
-  if not enif_inspect_binary(env, term, addr(bin)):
-    return none(T)
-  return some(bin)
+  if enif_inspect_binary(env, term, addr(bin)):
+    return some(bin)
 
 proc encode*(V: ErlBinary, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_binary(env, unsafeAddr(V))
 
 # list
-proc decode_list_cell*(term: ErlNifTerm, env: ptr ErlNifEnv): Option[seq[ErlNifTerm]] =
+proc decode_list_cell*(term: ErlNifTerm, env: ptr ErlNifEnv): Option[tuple[head: ErlNifTerm, tail:ErlNifTerm]] =
   var head: ErlNifTerm
   var tail: ErlNifTerm
   if enif_get_list_cell(env, term, addr(head), addr(tail)):
-    return some(@[head, tail])
+    return some((head, tail))
 
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[seq]): Option[T] =
   var list_len: cuint
   if not enif_get_list_length(env, term, addr(list_len)):
     return none(T)
   var res: T
-  res = newSeqOfCap[type(res[0])](list_len)
   var list = term.decode_list_cell(env)
   while list.isSome():
     var cell = list.get()
@@ -164,6 +154,8 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[tuple]): Option[T
   var arity: cuint
   if not enif_get_tuple(env, term, addr(arity), addr(tup)):
     return none(T)
+  if arity.int < T.arity:
+    return none(T)
   var ind = 0
   for field in res.fields:
     let val = tup[ind].decode(env, type(field))
@@ -180,21 +172,25 @@ macro encode_tuple*(env: ptr ErlNifEnv, tup: typed): untyped =
     let v = quote do: `tup`[`i`]
     result.add(newCall("encode", v, env))
 
-proc encode*(V: tuple, env: ptr ErlNifEnv): ErlNifTerm =
-  return encode_tuple(env, V)
+proc encode*(V: tuple, env: ptr ErlNifEnv): ErlNifTerm = encode_tuple(env, V)
 
 # map/table
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[Table]): Option[T] =
   var type_tup: genericParams(T)
-  var res = initTable[type(type_tup[0]), type(type_tup[1])](4)
+  let key_type = type_tup[0]
+  let val_type = type_tup[1]
+  var res = initTable[type(key_type), type(val_type)](4)
   var iter: ErlNifMapIterator
   var key, val: ErlNifTerm
   if not enif_map_iterator_create(env, term, addr(iter), ERL_NIF_MAP_ITERATOR_FIRST):
     return none(T)
   while enif_map_iterator_get_pair(env, addr(iter), addr(key), addr(val)):
-    let key_d = key.decode(env, type(type_tup[0])).get()
-    let val_d = val.decode(env, type(type_tup[1])).get()
-    res[key_d] = val_d
+    let key_d = key.decode(env, type(key_type))
+    let val_d = val.decode(env, type(val_type))
+    if key_d.isNone() or val_d.isNone():
+      enif_map_iterator_destroy(env, addr(iter))
+      return none(T)
+    res[key_d.get()] = val_d.get()
     discard enif_map_iterator_next(env, addr(iter))
   enif_map_iterator_destroy(env, addr(iter))
   return some(res)

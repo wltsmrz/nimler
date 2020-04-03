@@ -1,8 +1,6 @@
 import ../../nimler
 import ./controller
 
-GC_disableMarkAndSweep()
-
 const rate = 100.0
 const min = -10.0
 const max = 10.0

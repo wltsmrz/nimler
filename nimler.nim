@@ -25,15 +25,12 @@ template export_nifs*(module_name: string, funcs_seq: openArray[ErlNifFunc]) =
 
 template export_nifs*(module_name: string, funcs_seq: openArray[NifSpec|NifSpecDirty]) =
   var funcs: seq[ErlNifFunc]
-
   for spec in funcs_seq:
     funcs.add(
       when spec is NifSpec:
-        toNif(fptr=spec[2], name=spec[0], arity=spec[1])
+        toNif(name=spec[0], arity=spec[1], fptr=spec[2])
       elif spec is NifSpecDirty:
-        toNif(fptr=spec[2], name=spec[0], arity=spec[1], flags=spec[3])
-    )
-
+        toNif(name=spec[0], arity=spec[1], fptr=spec[2], flags=spec[3]))
   export_nifs(module_name, funcs)
 
 template export_nifs*(options: NifOptions) =

@@ -12,7 +12,6 @@ installFiles = @["nimler.nim"]
 requires "nim >= 1.0.0"
 
 proc configNif() =
-  --define:"moduleOut=./mod.exs"
   --app:lib
   --noMain
   --gc:arc

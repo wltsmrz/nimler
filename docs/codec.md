@@ -1,28 +1,28 @@
 # Encoding and decoding Erlang terms
 
-nimler exposes a set of convenience functions for encoding and decoding Erlang terms. Erlang terms are represented in nimler with the opaque type `ErlNifTerm`.
+nimler exposes a set of functions for encoding and decoding Erlang terms. Erlang terms are represented in nimler with the opaque type `ErlNifTerm`.
 
 ## Available types for codec functions
 
-| Erlang/Elixir     | nim                                       | Encode    | Decode    |
-|---------------    |-----------------------------------------  |--------   |--------   |
-| Integer           | int, int32, int64, uint, uint32, uint64   | ✓         | ✓         |
-| Float             | float                                     | ✓         | ✓         |
-| Atom              | type ErlAtom = object<br>&nbsp;val: string| ✓         | ✓         |
-| List              | seq                                       | ✓         | ✓         |
-| Tuple             | tuple                                     | ✓         | ✓         |
-| Map               | table                                     | ✓         | ✓         |
-| Charlist          | string                                    | ✓         | ✓         |
+| Erlang  	| Elixir   	| nim                                     	| Encode 	| Decode 	|
+|---------	|----------	|-----------------------------------------	|--------	|--------	|
+| Integer 	| Integer  	| int, int32, int64, uint, uint32, uint64 	| ✓      	| ✓      	|
+| Float   	| Float    	| float, float32, float64                 	| ✓      	| ✓      	|
+| Atom    	| Atom     	| ErlAtom                                 	| ✓      	| ✓      	|
+| String  	| Charlist 	| ErlCharlist                             	| ✓      	| ✓      	|
+| Binary  	| String   	| string                                  	| ✓      	| ✓      	|
+| Binary  	| Binary   	| ErlBinary                               	| ✓      	| ✓      	|
+| List    	| List     	| seq                                     	| ✓      	| ✓      	|
+| Tuple   	| Tuple    	| tuple                                   	| ✓      	| ✓      	|
+| Map     	| Map      	| Table                                   	| ✓      	| ✓      	|
 
 ## Encoding
 
 Encode nim type to `ErlNifTerm`
 
 ```nim
-let val = 10
-var encoded = encode(val, env)
-
-encoded = val.encode(env)
+let i = 10
+var encoded = val.encode(env)
 
 encoded = 10'i32.encode(env)
 # ErlNifTerm(10)
@@ -33,14 +33,12 @@ encoded = 10'i32.encode(env)
 Decode `ErlNifTerm` to nim type.
 
 ```nim
-let my_val = term.decode(env, int32)
+let i_option = encoded.decode(env, int32)
 
-if isNone(my_val):
+if i_option.isNone():
   # The term was not successfully decoded into an int32
-  return do_something()
-
-let v = my_val.get()
-# v == 10
+else:
+  let i = i_option.get() # i == 10
 ```
 
 !!! note
@@ -61,7 +59,7 @@ let decoded = encoded.decode(env, ErlAtom).get()
 
     * `AtomOk`: `ErlAtom(val: "ok")`
     * `AtomErr`: `ErlAtom(val: "error")`
-    * `Atomtrue`: `ErlAtom(val: "true")`
+    * `AtomTrue`: `ErlAtom(val: "true")`
     * `AtomFalse`: `ErlAtom(val: "false")`
 
 ## Strings

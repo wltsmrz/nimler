@@ -1,11 +1,11 @@
 
 # Cooperating with Erlang scheduler
 
-NIFs should perform some unit of work quickly and return as soon as possible. The threshold for not-quick is around 1ms--although in reality this figure is dynamic. Erlang supports NIFs that take longer to execute--"dirty" NIFs--in multiple ways.
+NIFs should return as soon as possible. The threshold for not-quick is around 1ms--although in reality this figure is dynamic. Erlang supports NIFs that take longer to execute--"dirty" NIFs--in multiple ways.
 
-## Explicitly identifying NIFs as dirty
+## Identifying NIFs as dirty
 
-If a NIF identifies as dirty, Erlang will schedule it separately from normal NIFs. This is somewhat consequential, so [the documentation](http://erlang.org/doc/man/erl_nif.html) should be consulted. In nimler, dirty functions are passed as in the following example.
+If a NIF identifies as dirty, Erlang will schedule it separately from normal NIFs. In nimler, dirty functions are specified as in the following example:
 
 ```nim
 import nimler
@@ -22,21 +22,19 @@ proc dirty_io(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
 
   return AtomOk.encode(env)
 
-export_nifs("Elixir.NimlerWrapper", NifOptions(
-  dirty_funcs: @[
-    ("dirty_cpu", 0, dirty_cpu, ERL_NIF_DIRTY_CPU),
-    ("dirty_io", 0, dirty_io, ERL_NIF_DIRTY_IO)
+export_nifs("Elixir.NimlerWrapper", @[
+    ("dirty_cpu", 0, dirty_cpu, ERL_NIF_DIRTY_CPU), # dirty CPU flag
+    ("dirty_io", 0, dirty_io, ERL_NIF_DIRTY_IO) # dirty IO flag
   ]
 ))
 ```
 
 !!! note
-    * `dirty_funcs` rather than `funcs` allow to specify NIF flags
     * `ERL_NIF_DIRTY_CPU` and `ERL_NIF_DIRTY_IO` flags specify whether the function is CPU or IO bound. It's important to classify these right. Per documentation: If you should classify CPU bound jobs as I/O bound jobs, dirty I/O schedulers might starve ordinary schedulers
 
 ## Separating work into multiple NIF calls
 
-If work can be reasonably iterated, NIFs can reschedule subsequent invocations if they consume too much time. The following function counts to 1000 in 1ms increments. It reschedules itself after it has consumed approximately 10% of a timeslice. In reality this NIF will invoke itself hundreds of times without the calling module's knowledge. This is the preferred way to handle potentially long-running NIF.
+NIFs can schedule subsequent invocations on the basis of consumed-time. The following function counts to 1000 in 1ms increments. It reschedules itself after it has consumed approximately 10% of a timeslice. 
 
 ```nim
 proc test_consume_timeslice(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
@@ -47,19 +45,15 @@ proc test_consume_timeslice(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): E
 
   while i < 1000:
     if enif_consume_timeslice(env, cint(10)):
-      let next_args = [
+      return enif_schedule_nif(env, test_consume_timeslice, [
         i.encode(env),
         schedule_count.encode(env)
-      ]
-
-      return enif_schedule_nif(env, test_consume_timeslice, next_args)
+      ])
 
     os.sleep(1)
     inc(i)
 
-  let result = (i, schedule_count)
-
-  return result.ok(env) # {:ok, {1000, 932}}
+  return (i, schedule_count).ok(env) # {:ok, {1000, 932}}
 ```
 
 !!! note

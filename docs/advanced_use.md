@@ -58,14 +58,15 @@ proc update_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
 
   return ok(res, env)
 
-export_nifs("Elixir.PIController", NifOptions(
+const exports = NifOptions(
   funcs: @[
-    ("create_resource", 0, create_resource),
-    ("update_resource", 3, update_resource)
+    create_resource.toNif("create_resource", arity=0),
+    update_resource.toNif("update_resource", arity=3)
   ],
   load: on_load,
   unload: on_unload
-))
+)
+export_nifs(exports)
 ```
 
 ```nim tab="pi_controller.nim"

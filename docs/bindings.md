@@ -1,9 +1,9 @@
 
 # erl_nif API bindings
 
-The following [nim bindings](https://github.com/wltsmrz/nimler/blob/develop/nimler/bindings/erl_nif.nim) to `erl_nif.h` are available to nimler NIFs.
+The following bindings are available to nimler NIFs.
 
-For more details, see the [erl_nif docs](https://erlang.org/doc/man/erl_nif.html).
+For more details, see the [<ins>erl_nif docs</ins>](https://erlang.org/doc/man/erl_nif.html).
 
 ## enif_map_iterator_create
 proc enif_map_iterator_create*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifMapIterator; a4: ErlNifMapIteratorEntry): bool 

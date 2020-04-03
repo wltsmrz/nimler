@@ -114,7 +114,6 @@ proc enif_map_iterator_prev*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool
 proc enif_map_iterator_get_pair*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator; a3: ptr ErlNifTerm; a4: ptr ErlNifTerm): bool {.importc: "enif_map_iterator_get_pair", header: "erl_nif.h".}
 proc enif_map_iterator_is_head*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_is_head", header: "erl_nif.h".}
 proc enif_map_iterator_is_tail*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_is_tail", header: "erl_nif.h".}
-proc enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, importc: "enif_snprintf", header: "erl_nif.h".}
 proc enif_fprintf*(a1: File, a2: cstring): bool {.varargs, importc: "enif_fprintf", header: "erl_nif.h".}
 proc enif_alloc*(a1: csize_t): pointer {.importc: "enif_alloc", header: "erl_nif.h".}
 proc enif_free*(a1: pointer) {.importc: "enif_free", header: "erl_nif.h".}
@@ -187,9 +186,6 @@ proc enif_system_info*(): ErlNifSysInfo =
   enif_system_info(addr(info), cast[csize_t](sizeof(info)))
   return info
 proc enif_raise_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.importc: "enif_raise_exception", header: "erl_nif.h".}
-proc enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.importc: "enif_has_pending_exception", header: "erl_nif.h".}
-proc enif_has_pending_exception*(a1: ptr ErlNifEnv): bool =
-  return enif_has_pending_exception(a1, nil)
 proc enif_term_to_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifBinary): cint {.importc: "enif_term_to_binary", header: "erl_nif.h".}
 proc enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize_t; a4: ptr ErlNifTerm; a5: csize_t): csize_t {.importc: "enif_binary_to_term", header: "erl_nif.h".}
 proc enif_hash*(a1: ErlNifHash; term: ErlNifTerm; salt: culonglong = 0): culonglong {.importc: "enif_hash", header: "erl_nif.h".}
@@ -224,3 +220,11 @@ proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ErlNifFptr
 proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: ErlNifFptr; a3: openArray[ErlNifTerm]): ErlNifTerm =
   return enif_schedule_nif(a1, astToStr(a2), cint(0), a2, len(a3).cint, cast[ErlNifArgs](a3))
 
+
+when (nifMajor, nifMinor) >= (2, 8):
+  proc enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.importc: "enif_has_pending_exception", header: "erl_nif.h".}
+  proc enif_has_pending_exception*(a1: ptr ErlNifEnv): bool =
+    return enif_has_pending_exception(a1, nil)
+
+when (nifMajor, nifMinor) >= (2, 11):
+  proc enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, importc: "enif_snprintf", header: "erl_nif.h".}

@@ -17,10 +17,10 @@ proc on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
   enif_free(priv_data)
 
 proc test(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  return enif_make_int(env, 1)
+  enif_make_int(env, 1)
 
 proc test_dirty(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  return enif_make_int(env, 1)
+  enif_make_int(env, 1)
 
 proc test_priv_data(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var ptr_priv = enif_priv_data(env)
@@ -30,15 +30,15 @@ proc test_priv_data(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTer
   doAssert(vv[] == 123)
   return enif_make_int(env, 1)
 
-export_nifs("Elixir.NimlerWrapper", NifOptions(
+const nif_options = NifOptions(
+  name: "Elixir.NimlerWrapper",
   funcs: @[
-    ("test", 0, test),
-    ("test_priv", 0, test_priv_data)
-  ],
-  dirty_funcs: @[
-    ("test_dirty", 0, test_dirty, ERL_NIF_DIRTY_IO)
+    test.toNif("test", 0),
+    test_priv_data.toNif(name="test_priv", arity=0),
+    test_dirty.toNif("test_dirty", 0, flags=ERL_NIF_DIRTY_IO)
   ],
   load: on_load,
   unload: on_unload
-))
+)
+export_nifs(nif_options)
 

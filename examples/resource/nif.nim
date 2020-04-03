@@ -47,10 +47,11 @@ proc update_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
 
   return res.ok(env)
 
-export_nifs("Elixir.PIController", NifOptions(
+export_nifs(NifOptions(
+  name: "Elixir.PIController",
   funcs: @[
-    ("create_resource", 0, create_resource),
-    ("update_resource", 3, update_resource)
+    create_resource.toNif(name="create_resource", arity=0),
+    update_resource.toNif(name="update_resource", arity=3)
   ],
   load: on_load,
   unload: on_unload

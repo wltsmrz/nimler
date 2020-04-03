@@ -1,4 +1,4 @@
-import ../../erl_sys_info
+import ../erl_sys_info
 
 when not declared(csize_t):
   type csize_t* {.importc: "size_t", nodecl.} = uint
@@ -17,6 +17,24 @@ type
     arity*: cuint
     fptr*: ErlNifFptr
     flags*: ErlNifFlags
+  ErlNifEntryLoad* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
+  ErlNifEntryReload* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
+  ErlNifEntryUpgrade* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; old_priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
+  ErlNifEntryUnload* = proc (a1: ptr ErlNifEnv; priv_data: pointer) {.nimcall.}
+  ErlNifEntry* = object
+    major*: cint
+    minor*: cint
+    name*: cstring
+    num_of_funcs*: cint
+    funcs*: ptr ErlNifFunc
+    load*: pointer
+    reload*: pointer
+    upgrade*: pointer
+    unload*: pointer
+    vm_variant*: cstring
+    options*: cint
+    sizeof_ErlNifResourceTypeInit*: csize_t
+    min_erts*: cstring
   ErlNifTermType* = enum
     ERL_NIF_TERM_TYPE_ATOM = 1
     ERL_NIF_TERM_TYPE_BITSTRING = 2
@@ -54,24 +72,6 @@ type
   ErlNifEvent* = cint
   ErlNifMonitor* = object
     data: array[4, csize_t]
-  ErlNifEntryLoad* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
-  ErlNifEntryReload* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
-  ErlNifEntryUpgrade* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; old_priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
-  ErlNifEntryUnload* = proc (a1: ptr ErlNifEnv; priv_data: pointer) {.nimcall.}
-  ErlNifEntry* = object
-    major*: cint
-    minor*: cint
-    name*: cstring
-    num_of_funcs*: cint
-    funcs*: ptr UncheckedArray[ErlNifFunc]
-    load*: pointer
-    reload*: pointer
-    upgrade*: pointer
-    unload*: pointer
-    vm_variant*: cstring
-    options*: cint
-    sizeof_ErlNifResourceTypeInit*: csize_t
-    min_erts*: cstring
   ErlNifResourceType* = object
   ErlNifResourceFlags* {.size: sizeof(cint).} = enum
     ERL_NIF_RT_CREATE = (1 shl 0),

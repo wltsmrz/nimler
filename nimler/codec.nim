@@ -107,10 +107,11 @@ proc encode*(V: ErlAtom, env: ptr ErlNifEnv): ErlNifTerm =
 # string
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[string]): Option[T] =
   var bin: ErlNifBinary
-  if enif_inspect_binary(env, term, addr(bin)):
-    var res = newString(bin.size)
-    copyMem(addr(res[0]), bin.data, bin.size)
-    return some(res)
+  if not enif_inspect_binary(env, term, addr(bin)):
+    return none(T)
+  var res = newString(bin.size)
+  copyMem(addr(res[0]), bin.data, bin.size)
+  return some(res)
 
 proc encode*(V: string, env: ptr ErlNifEnv): ErlNifTerm =
   var term: ErlNifTerm
@@ -129,9 +130,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlCharlist]): Op
     return some(string_buf)
 
 proc encode*(V: ErlCharlist, env: ptr ErlNifEnv): ErlNifTerm =
-  var s = newString(V.len)
-  for i, c in V: s[i] = c
-  return enif_make_string(env, s, ERL_NIF_LATIN1)
+  return enif_make_string(env, cast[string](V), ERL_NIF_LATIN1)
 
 # binary
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlBinary]): Option[T] =
@@ -144,20 +143,17 @@ proc encode*(V: ErlBinary, env: ptr ErlNifEnv): ErlNifTerm =
 
 # list
 proc decode_list_cell*(term: ErlNifTerm, env: ptr ErlNifEnv): Option[tuple[head: ErlNifTerm, tail:ErlNifTerm]] =
-  var head: ErlNifTerm
-  var tail: ErlNifTerm
+  var head, tail: ErlNifTerm
   if enif_get_list_cell(env, term, addr(head), addr(tail)):
     return some((head, tail))
 
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[seq]): Option[T] =
-  var list_len: cuint
-  if not enif_get_list_length(env, term, addr(list_len)):
-    return none(T)
   var res: T
+  type el_type = type(res[0])
   var list = term.decode_list_cell(env)
   while list.isSome():
     var cell = list.get()
-    var head = cell[0].decode(env, type(res[0]))
+    var head = cell[0].decode(env, el_type)
     var tail = cell[1]
     if head.isNone():
       return none(T)
@@ -172,13 +168,13 @@ proc encode*(V: seq, env: ptr ErlNifEnv): ErlNifTerm =
 
 # tuple
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[tuple]): Option[T] =
-  var res: T
   var tup: ptr UncheckedArray[ErlNifTerm]
   var arity: cuint
   if not enif_get_tuple(env, term, addr(arity), addr(tup)):
     return none(T)
   if arity.int < T.arity:
     return none(T)
+  var res: T
   var ind = 0
   for field in res.fields:
     let val = tup[ind].decode(env, type(field))
@@ -188,14 +184,12 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[tuple]): Option[T
     inc(ind)
   return some(res)
 
-macro encode_tuple*(env: ptr ErlNifEnv, tup: typed): untyped =
-  let tup_len = tup.getTypeImpl().len
+macro encode*(V: tuple, env: ptr ErlNifEnv): untyped =
+  let tup_len = V.getTypeImpl().len
   result = newCall("enif_make_tuple", env, newLit(tup_len))
   for i in 0 ..< tup_len:
-    let v = quote do: `tup`[`i`]
+    let v = quote do: `V`[`i`]
     result.add(newCall("encode", v, env))
-
-proc encode*(V: tuple, env: ptr ErlNifEnv): ErlNifTerm = encode_tuple(env, V)
 
 # map/table
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[Table]): Option[T] =

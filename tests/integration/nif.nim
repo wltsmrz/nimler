@@ -44,12 +44,6 @@ proc is_pid_undefined(env, argc, argv): ErlNifTerm =
     return enif_make_badarg(env)
   return enif_make_int(env, cast[cint](enif_is_pid_undefined(addr(pid))))
 
-# proc is_port(env, argc, argv): ErlNifTerm =
-#   return enif_make_int(env, cast[cint](enif_is_port(env, argv[0])))
-# 
-# proc is_port_alive(env, argc, argv): ErlNifTerm =
-#   return enif_make_int(env, cast[cint](enif_is_port_alive(env, argv[0])))
-
 proc is_process_alive(env, argc, argv): ErlNifTerm =
   var pid: ErlNifPid
 
@@ -355,6 +349,7 @@ proc make_reverse_list(env, argc, argv): ErlNifTerm =
 proc make_copy(env, argc, argv): ErlNifTerm =
   let v = enif_make_int(env, cint(1))
   let c = enif_make_copy(env, v)
+  doAssert(v == c)
   return c
 
 proc make_pid(env, argc, argv): ErlNifTerm =
@@ -364,27 +359,8 @@ proc make_pid(env, argc, argv): ErlNifTerm =
 proc make_ref(env, argc, argv): ErlNifTerm =
   return enif_make_ref(env)
 
-# proc make_resource(env, argc, argv): ErlNifTerm =
-#   var res: pointer
-#   return enif_make_resource(env, addr(res))
-
 proc make_unique_integer(env, argc, argv): ErlNifTerm =
   return enif_make_unique_integer(env, ERL_NIF_UNIQUE_POSITIVE)
-
-# proc make_sub_binary(env, argc: cuint, argv): ErlNifTerm =
-#   var bin_term: ErlNifTerm
-#   let bin_ptr = enif_make_new_binary(env, sizeof(cchar) * 2, addr(bin_term))
-#   let bin_buf = cast[Buffer](bin_ptr)
-#   bin_buf[0] = 'o'
-#   bin_buf[1] = 'k'
-# 
-#   # let bin_buf = cast[Buffer](bin_ptr)
-#   # for i in 0..len(bin_buf): bin_buf[i] = chr(48 + i)
-#   # let sub_bin = enif_make_sub_binary(env, bin_term, csize(0), csize(2))
-#   # let sub_bin_buf = cast[Buffer](sub_bin)
-#   # echo cast[cstring](sub_bin_buf)
-# 
-#   return bin_term
 
 proc raise_exception(env, argc, argv): ErlNifTerm =
   let ex = enif_raise_exception(env, argv[0])

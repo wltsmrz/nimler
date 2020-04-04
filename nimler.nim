@@ -1,3 +1,4 @@
+import macros
 import nimler/erl_sys_info
 import nimler/bindings/erl_nif
 export erl_nif
@@ -17,8 +18,11 @@ type
     upgrade*: ErlNifEntryUpgrade
     unload*: ErlNifEntryUnload
 
-proc tonif*(fptr: ErlNifFptr, name: string, arity: int, flags: ErlNifFlags = ERL_NIF_REGULAR): ErlNifFunc =
-  ErlNifFunc(name: cstring(name), arity: cuint(arity), fptr: fptr, flags: flags)
+macro tonif*(fptr: ErlNifFptr, name: string, arity: int, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
+  result = quote do:
+    ErlNifFunc(name: cstring(`name`), arity: cuint(`arity`), fptr: `fptr`, flags: `flags`)
+
+proc NimMain() {.gensym, importc: "NimMain".}
 
 template export_nifs*(options: NifOptions) =
   var funcs = options.funcs
@@ -34,8 +38,6 @@ template export_nifs*(options: NifOptions) =
   entry.upgrade = options.upgrade
   entry.unload = options.unload
   entry.vm_variant = cstring("beam.vanilla")
-
-  proc NimMain() {.gensym, importc: "NimMain".}
 
   proc nif_init(): ptr ErlNifEntry {.dynlib, exportc.} =
     NimMain()

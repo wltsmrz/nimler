@@ -20,27 +20,15 @@ type
 proc tonif*(fptr: ErlNifFptr, name: string, arity: int, flags: ErlNifFlags = ERL_NIF_REGULAR): ErlNifFunc =
   ErlNifFunc(name: cstring(name), arity: cuint(arity), fptr: fptr, flags: flags)
 
-template export_nifs*(module_name: string, funcs_seq: openArray[ErlNifFunc]) =
-  export_nifs(NifOptions(name: module_name, funcs: funcs_seq))
-
-template export_nifs*(module_name: string, funcs_seq: openArray[NifSpec|NifSpecDirty]) =
-  var funcs: seq[ErlNifFunc]
-  for spec in funcs_seq:
-    funcs.add(
-      when spec is NifSpec:
-        toNif(name=spec[0], arity=spec[1], fptr=spec[2])
-      elif spec is NifSpecDirty:
-        toNif(name=spec[0], arity=spec[1], fptr=spec[2], flags=spec[3]))
-  export_nifs(module_name, funcs)
-
 template export_nifs*(options: NifOptions) =
   var funcs = options.funcs
   var entry: ErlNifEntry
-  entry.major = cint(nifMajor)
-  entry.minor = cint(nifMinor)
   entry.name = cstring(options.name)
   entry.num_of_funcs = cint(len(funcs))
-  entry.funcs = addr(funcs[0])
+  if funcs.len > 0:
+    entry.funcs = addr(funcs[0])
+  entry.major = cint(nifMajor)
+  entry.minor = cint(nifMinor)
   entry.load = options.load
   entry.reload = options.reload
   entry.upgrade = options.upgrade
@@ -52,4 +40,17 @@ template export_nifs*(options: NifOptions) =
   proc nif_init(): ptr ErlNifEntry {.dynlib, exportc.} =
     NimMain()
     result = addr(entry)
+
+template export_nifs*(module_name: string, funcs_seq: openArray[ErlNifFunc]) =
+  export_nifs(NifOptions(name: module_name, funcs: funcs_seq))
+
+template export_nifs*(module_name: string, funcs_seq: openArray[NifSpec|NifSpecDirty]) =
+  var funcs: seq[ErlNifFunc]
+  for spec in funcs_seq:
+    funcs.add(
+      when spec is NifSpec:
+        toNif(name=spec[0], arity=spec[1], fptr=spec[2])
+      elif spec is NifSpecDirty:
+        toNif(name=spec[0], arity=spec[1], fptr=spec[2], flags=spec[3]))
+  export_nifs(module_name, move(funcs))
 

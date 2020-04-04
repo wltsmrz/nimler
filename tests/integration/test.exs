@@ -29,12 +29,6 @@ defmodule NimlerTest do
             NimlerWrapper.enif_system_info()
     end
 
-    describe "fprintf" do
-        @tag :skip # skipping by default as output is jarring
-        test "fprintf()", do:
-            NimlerWrapper.enif_fprintf(%{a: ["testing", "fprintf", {1,2,3}]})
-    end
-
     describe "snprintf" do
         test "snprintf()", do:
             NimlerWrapper.enif_snprintf('test')

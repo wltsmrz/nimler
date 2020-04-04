@@ -1,4 +1,3 @@
-import options
 import macros
 import typetraits
 import tables
@@ -6,6 +5,7 @@ import sequtils
 import hashes
 import bindings/erl_nif
 
+import options
 export options
 
 type ErlAtom* = object
@@ -22,6 +22,26 @@ const AtomErr* = ErlAtom(val: "error")
 const AtomTrue* = ErlAtom(val: "true")
 const AtomFalse* = ErlAtom(val: "false")
 const ExceptionMapEncode*: ErlCharlist = "nimler: fail to encode map".toSeq()
+
+macro oldGenericParams*(T: typedesc): untyped =
+  result = newNimNode(nnkTupleConstr)
+  var impl = getTypeImpl(T)
+  expectKind(impl, nnkBracketExpr)
+  impl = impl[1]
+  while true:
+    case impl.kind
+      of nnkSym:
+        impl = impl.getImpl
+        continue
+      of nnkTypeDef:
+        impl = impl[2]
+        continue
+      of nnkBracketExpr:
+        for i in 1..<impl.len:
+          result.add impl[i]
+        break
+      else:
+        error "wrong kind: " & $impl.kind
 
 # int
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[int]): Option[T] =
@@ -176,17 +196,16 @@ proc encode*(V: tuple, env: ptr ErlNifEnv): ErlNifTerm = encode_tuple(env, V)
 
 # map/table
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[Table]): Option[T] =
-  var type_tup: genericParams(T)
-  let key_type = type_tup[0]
-  let val_type = type_tup[1]
-  var res = initTable[type(key_type), type(val_type)](4)
+  type key_type = oldGenericParams(T).get(0)
+  type val_type = oldGenericParams(T).get(1)
+  var res: Table[key_type, val_type]
   var iter: ErlNifMapIterator
   var key, val: ErlNifTerm
   if not enif_map_iterator_create(env, term, addr(iter), ERL_NIF_MAP_ITERATOR_FIRST):
     return none(T)
   while enif_map_iterator_get_pair(env, addr(iter), addr(key), addr(val)):
-    let key_d = key.decode(env, type(key_type))
-    let val_d = val.decode(env, type(val_type))
+    let key_d = key.decode(env, key_type)
+    let val_d = val.decode(env, val_type)
     if key_d.isNone() or val_d.isNone():
       enif_map_iterator_destroy(env, addr(iter))
       return none(T)

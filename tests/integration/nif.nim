@@ -391,10 +391,6 @@ proc raise_exception(env, argc, argv): ErlNifTerm =
   doAssert(true == enif_has_pending_exception(env))
   return ex
 
-proc fprintf(env, argc, argv): ErlNifTerm =
-  let res = enif_fprintf(stdout, "%T", argv[0])
-  return enif_make_int(env, cint(res))
-
 proc snprintf(env, argc, argv): ErlNifTerm =
   let slen = 32.cuint
   var b = newString(slen)
@@ -425,7 +421,6 @@ export_nifs("Elixir.NimlerWrapper", @[
   ("enif_term_type", 6, term_type),
   ("enif_system_info", 0, system_info),
   ("enif_snprintf", 1, snprintf),
-  ("enif_fprintf", 1, fprintf),
   ("enif_raise_exception", 1, raise_exception),
   ("enif_is_atom", 1, is_atom),
   ("enif_is_binary", 1, is_binary),

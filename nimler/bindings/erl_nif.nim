@@ -220,7 +220,6 @@ proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ErlNifFptr
 proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: ErlNifFptr; a3: openArray[ErlNifTerm]): ErlNifTerm =
   return enif_schedule_nif(a1, astToStr(a2), cint(0), a2, len(a3).cint, cast[ErlNifArgs](a3))
 
-
 when (nifMajor, nifMinor) >= (2, 8):
   proc enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.importc: "enif_has_pending_exception", header: "erl_nif.h".}
   proc enif_has_pending_exception*(a1: ptr ErlNifEnv): bool =

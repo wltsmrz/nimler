@@ -23,7 +23,7 @@ const AtomTrue* = ErlAtom(val: "true")
 const AtomFalse* = ErlAtom(val: "false")
 const ExceptionMapEncode*: ErlCharlist = "nimler: fail to encode map".toSeq()
 
-macro oldGenericParams*(T: typedesc): untyped =
+macro generic_params*(T: typedesc): untyped =
   result = newNimNode(nnkTupleConstr)
   var impl = getTypeImpl(T)
   expectKind(impl, nnkBracketExpr)
@@ -99,7 +99,10 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlAtom]): Option
     return some(atom)
 
 proc encode*(V: ErlAtom, env: ptr ErlNifEnv): ErlNifTerm =
-  return enif_make_atom(env, V.val)
+  var res: ErlNifTerm
+  if not enif_make_existing_atom(env, V.val, addr(res), ERL_NIF_LATIN1):
+    return enif_make_atom(env, V.val)
+  return res
 
 # string
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[string]): Option[T] =
@@ -196,8 +199,8 @@ proc encode*(V: tuple, env: ptr ErlNifEnv): ErlNifTerm = encode_tuple(env, V)
 
 # map/table
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[Table]): Option[T] =
-  type key_type = oldGenericParams(T).get(0)
-  type val_type = oldGenericParams(T).get(1)
+  type key_type = codec.generic_params(T).get(0)
+  type val_type = codec.generic_params(T).get(1)
   var res: Table[key_type, val_type]
   var iter: ErlNifMapIterator
   var key, val: ErlNifTerm

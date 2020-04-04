@@ -123,12 +123,12 @@ let decoded = encoded.decode(env, Table[string, int]).get()
 The `ErlResult` codec type represents a tuple of arity=2 whose first element is either an atom `:ok` or `:error`. nimler also exposes `ok()` and `error()` functions for creating terms from either.
 
 ```nim
-let ok_term = ok(1, env)
-# equivalent: let ok_term = 1.ok(env) 
+let term = 1.encode(env)
+let ok_term = term.ok(env)
 # {:ok, 1}
 
-let err_term = error("bad_thing", env)
-# {:error, 'bad_thing'}
+let err_term = term.error(env)
+# {:error, 2}
 ```
 
 Example proxying first argument within a result tuple

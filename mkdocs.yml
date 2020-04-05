@@ -1,0 +1,29 @@
+site_name: 'nimler'
+site_description: 'Erlang/Elixir NIFs in nim'
+site_author: 'wltsmrz'
+site_url: 'https://wltsmrz.github.io/nimler'
+
+repo_name: 'wltsmrz/nimler'
+repo_url: 'https://github.com/wltsmrz/nimler'
+
+nav:
+    - Introduction: index.md
+    - Getting started: getting_started.md
+    - Encoding and decoding Erlang terms: codec.md
+    - Advanced example: advanced_use.md
+    - Cooperating with Erlang scheduler: timeslice.md
+    - erl_nif API: bindings.md
+
+theme:
+  name: material
+  palette:
+    primary: 'blue grey'
+    accent: 'blue grey'
+  logo:
+    icon: 'code'
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.superfences
+

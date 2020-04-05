@@ -1,5 +1,6 @@
 # import os
 import ../../nimler
+import ../../nimler/codec
 
 proc fib(n: uint64): uint64 =
   if n > 2.uint64:

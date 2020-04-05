@@ -13,5 +13,7 @@ defmodule PIController do
         # :erlang.garbage_collect()
         IO.inspect(update_resource(ctrl, 10.0, 5.0), label: 'PIControl update')
         IO.inspect(update_resource(ctrl, 10.0, 8.0), label: 'PIControl update')
+
+        :ok
     end
 end

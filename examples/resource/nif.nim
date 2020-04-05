@@ -1,4 +1,5 @@
 import ../../nimler
+import ../../nimler/codec
 import ./controller
 
 const rate = 100.0

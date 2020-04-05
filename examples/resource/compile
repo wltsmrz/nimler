@@ -1,3 +1,0 @@
-#!/bin/bash
-
-nim c --opt:speed --define:release --forceBuild --noMain --app:lib --cincludes:/usr/lib/erlang/erts-10.5/include/ -o:nif.so ./nif.nim

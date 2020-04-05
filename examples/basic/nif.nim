@@ -1,4 +1,5 @@
 import ../../nimler
+import ../../nimler/codec
 
 proc add_numbers(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let a1 = argv[0].decode(env, uint32).get(0)

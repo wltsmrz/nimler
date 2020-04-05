@@ -1,9 +1,10 @@
 import macros
+
 import nimler/erl_sys_info
+export erl_sys_info
+
 import nimler/bindings/erl_nif
 export erl_nif
-import nimler/codec
-export codec
 
 {.passC: "-I" & ertsPath.}
 
@@ -20,7 +21,7 @@ type
 
 macro tonif*(fptr: ErlNifFptr, name: string, arity: int, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
   result = quote do:
-    ErlNifFunc(name: cstring(`name`), arity: cuint(`arity`), fptr: `fptr`, flags: `flags`)
+    ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fptr`, flags: `flags`)
 
 proc NimMain() {.gensym, importc: "NimMain".}
 

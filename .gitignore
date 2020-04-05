@@ -1,3 +1,4 @@
 *.so
+*.swp
 **/erl_crash.dump
 **/.formatter.exs

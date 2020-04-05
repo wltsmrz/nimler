@@ -1,4 +1,5 @@
 import ../../nimler
+import ../../nimler/codec
 
 type MyResource = object
   thing: int32

@@ -1,4 +1,5 @@
 import ../../nimler
+import ../../nimler/codec
 import sequtils
 import tables
 

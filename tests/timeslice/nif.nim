@@ -1,10 +1,10 @@
 import os
 import ../../nimler
+import ../../nimler/codec
 
 proc test_consume_timeslice(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   var it = argv[0].decode(env, int32).get(0)
   var invocations = argv[1].decode(env, int32).get(0)
-
   inc(invocations)
 
   while it < 1000:

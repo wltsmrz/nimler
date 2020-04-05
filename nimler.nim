@@ -10,7 +10,6 @@ export erl_nif
 
 type
   NifSpec* = tuple[name: string, arity: int, fptr: ErlNifFptr]
-  NifSpecDirty* = tuple[name: string, arity: int, fptr: ErlNifFptr, flags: ErlNifFlags]
   NifOptions* = object
     name*: string
     funcs*: seq[ErlNifFunc]
@@ -22,6 +21,10 @@ type
 macro tonif*(fptr: ErlNifFptr, name: string, arity: int, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
   result = quote do:
     ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fptr`, flags: `flags`)
+
+macro tonif*(spec: NifSpec, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
+  result = quote do:
+    ErlNifFunc(name: `spec`[0], arity: cuint(`spec`[1]), fptr: `spec`[2], flags: `flags`)
 
 proc NimMain() {.gensym, importc: "NimMain".}
 
@@ -45,15 +48,23 @@ template export_nifs*(options: NifOptions) =
     result = addr(entry)
 
 template export_nifs*(module_name: string, funcs_seq: openArray[ErlNifFunc]) =
-  export_nifs(NifOptions(name: module_name, funcs: funcs_seq))
+  var funcs = funcs_seq
+  var entry: ErlNifEntry
+  entry.name = cstring(module_name)
+  entry.num_of_funcs = cint(len(funcs))
+  if funcs.len > 0:
+    entry.funcs = addr(funcs[0])
+  entry.major = cint(nifMajor)
+  entry.minor = cint(nifMinor)
+  entry.vm_variant = cstring("beam.vanilla")
 
-template export_nifs*(module_name: string, funcs_seq: openArray[NifSpec|NifSpecDirty]) =
-  var funcs: seq[ErlNifFunc]
-  for spec in funcs_seq:
-    funcs.add(
-      when spec is NifSpec:
-        toNif(name=spec[0], arity=spec[1], fptr=spec[2])
-      elif spec is NifSpecDirty:
-        toNif(name=spec[0], arity=spec[1], fptr=spec[2], flags=spec[3]))
+  proc nif_init(): ptr ErlNifEntry {.dynlib, exportc.} =
+    NimMain()
+    result = addr(entry)
+
+template export_nifs*(module_name: string, specs_seq: openArray[NifSpec]) =
+  var funcs: array[len(specs_seq), ErlNifFunc]
+  for i, spec in pairs(specs_seq):
+    funcs[i] = spec.toNif()
   export_nifs(module_name, move(funcs))
 

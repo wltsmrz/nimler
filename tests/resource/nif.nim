@@ -1,5 +1,4 @@
 import ../../nimler
-import ../../nimler/codec
 
 type MyResource = object
   thing: int32
@@ -44,9 +43,9 @@ proc check_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTer
 export_nifs(NifOptions(
   name: "Elixir.NimlerWrapper",
   funcs: @[
-    toNif(create_resource, "create_resource", 0),
-    toNif(update_resource, "update_resource", 1),
-    toNif(check_resource, "check_resource", 1)
+    ("create_resource", 0, create_resource).to_nif(),
+    ("update_resource", 1, update_resource).to_nif(),
+    ("check_resource", 1, check_resource).to_nif()
   ],
   load: on_load,
   unload: on_unload

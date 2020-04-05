@@ -1,0 +1,4 @@
+set -e
+
+nim c --app:lib --noMain --gc:arc --out=./nif.so ./nif.nim
+elixir ./Controller.exs

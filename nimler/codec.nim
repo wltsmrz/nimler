@@ -22,6 +22,7 @@ const AtomErr* = ErlAtom(val: "error")
 const AtomTrue* = ErlAtom(val: "true")
 const AtomFalse* = ErlAtom(val: "false")
 const ExceptionMapEncode*: ErlCharlist = "nimler: fail to encode map".toSeq()
+const ExceptionStringEncode*: ErlCharlist = "nimler: fail to encode string".toSeq()
 
 macro generic_params*(T: typedesc): untyped =
   result = newNimNode(nnkTupleConstr)
@@ -93,8 +94,8 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlAtom]): Option
   var atom_len: cuint
   if not enif_get_atom_length(env, term, addr(atom_len), ERL_NIF_LATIN1):
     return none(T)
-  var atom = ErlAtom(val: newString(atom_len))
   let buf_len = atom_len + 1
+  var atom = ErlAtom(val: newString(atom_len))
   if enif_get_atom(env, term, addr(atom.val[0]), buf_len, ERL_NIF_LATIN1) == cint(buf_len):
     return some(atom)
 
@@ -103,21 +104,6 @@ proc encode*(V: ErlAtom, env: ptr ErlNifEnv): ErlNifTerm =
   if not enif_make_existing_atom(env, V.val, addr(res), ERL_NIF_LATIN1):
     return enif_make_atom(env, V.val)
   return res
-
-# string
-proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[string]): Option[T] =
-  var bin: ErlNifBinary
-  if not enif_inspect_binary(env, term, addr(bin)):
-    return none(T)
-  var res = newString(bin.size)
-  copyMem(addr(res[0]), bin.data, bin.size)
-  return some(res)
-
-proc encode*(V: string, env: ptr ErlNifEnv): ErlNifTerm =
-  var term: ErlNifTerm
-  var bin = enif_make_new_binary(env, cast[csize_t](V.len), addr(term))
-  copyMem(bin, unsafeAddr(V[0]), V.len)
-  return term
 
 # charlist
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlCharlist]): Option[T] =
@@ -131,6 +117,24 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlCharlist]): Op
 
 proc encode*(V: ErlCharlist, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_string(env, cast[string](V), ERL_NIF_LATIN1)
+
+proc bin_to_str(bin: ErlNifBinary): string =
+  result = newString(bin.size)
+  copyMem(addr(result[0]), bin.data, bin.size)
+proc str_to_bin(str: string): ErlNifBinary =
+  result.size = cast[csize_t](str.len)
+  result.data = cast[ptr cuchar](unsafeAddr(str[0]))
+
+# string
+proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[string]): Option[T] =
+  var bin: ErlNifBinary
+  if not enif_inspect_binary(env, term, addr(bin)):
+    return none(T)
+  return some(bin_to_str(bin))
+
+proc encode*(V: string, env: ptr ErlNifEnv): ErlNifTerm =
+  var bin = str_to_bin(V)
+  return enif_make_binary(env, addr(bin))
 
 # binary
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlBinary]): Option[T] =

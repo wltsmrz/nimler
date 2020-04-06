@@ -74,8 +74,8 @@ type
     data: array[4, csize_t]
   ErlNifResourceType* = object
   ErlNifResourceFlags* {.size: sizeof(cint).} = enum
-    ERL_NIF_RT_CREATE = (1 shl 0),
-    ERL_NIF_RT_TAKEOVER = (1 shl 1)
+    ERL_NIF_RT_CREATE = 1
+    ERL_NIF_RT_TAKEOVER = 2
   ErlNifResourceDtor* = proc (a1: ptr ErlNifEnv; a2: pointer): void
   ErlNifResourceStop* = proc (a1: ptr ErlNifEnv; a2: pointer; a3: ErlNifEvent; is_direct_call: cint): void
   ErlNifResourceDown* = proc (a1: ptr ErlNifEnv; a2: pointer; a3: ptr ErlNifPid; a4: ptr ErlNifMonitor): void
@@ -83,9 +83,11 @@ type
     dtor*: ptr ErlNifResourceDtor
     stop*: ptr ErlNifResourceStop
     down*: ptr ErlNifResourceDown
+  ErlNifBinaryToTerm* {.size: sizeof(cint).} = enum
+    ERL_NIF_BIN2TERM_SAFE = 0x20000000
   ErlNifBinary* {.importc: "ErlNifBinary", header: "erl_nif.h", bycopy.} = object
     size*: csize_t
-    data*: ptr byte
+    data*: ptr cuchar
     ref_bin*: pointer
     spare*: array[2, pointer]
   ErlNifMapIteratorEntry* = enum
@@ -181,13 +183,15 @@ proc enif_make_tuple_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): 
 proc enif_make_list_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): ErlNifTerm {.importc: "enif_make_list_from_array", header: "erl_nif.h".}
 proc enif_make_new_binary*(a1: ptr ErlNifEnv; a2: csize_t; a3: ptr ErlNifTerm): ptr cuchar {.importc: "enif_make_new_binary", header: "erl_nif.h".}
 proc enif_system_info*(a1: ptr ErlNifSysInfo; a2: csize_t): void {.importc: "enif_system_info", header: "erl_nif.h".}
-proc enif_system_info*(): ErlNifSysInfo =
+template enif_system_info*(): ErlNifSysInfo =
   var info: ErlNifSysInfo
   enif_system_info(addr(info), cast[csize_t](sizeof(info)))
   return info
 proc enif_raise_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.importc: "enif_raise_exception", header: "erl_nif.h".}
 proc enif_term_to_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifBinary): cint {.importc: "enif_term_to_binary", header: "erl_nif.h".}
-proc enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize_t; a4: ptr ErlNifTerm; a5: csize_t): csize_t {.importc: "enif_binary_to_term", header: "erl_nif.h".}
+proc enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize_t; a4: ptr ErlNifTerm; a5: ErlNifBinaryToTerm): csize_t {.importc: "enif_binary_to_term", header: "erl_nif.h".}
+template enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize_t; a4: ptr ErlNifTerm): csize_t =
+  enif_binary_to_term(a1, a2, a3, a4, ERL_NIF_BIN2TERM_SAFE)
 proc enif_hash*(a1: ErlNifHash; term: ErlNifTerm; salt: culonglong = 0): culonglong {.importc: "enif_hash", header: "erl_nif.h".}
 proc enif_alloc_env*(): ptr ErlNifEnv {.importc: "enif_alloc_env", header: "erl_nif.h".}
 proc enif_free_env*(a1: ptr ErlNifEnv) {.importc: "enif_free_env", header: "erl_nif.h".}
@@ -215,10 +219,10 @@ proc enif_make_resource*(a1: ptr ErlNifEnv; a2: pointer): ErlNifTerm {.importc: 
 proc enif_get_resource*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: pointer; a4: pointer): bool {.importc: "enif_get_resource", header: "erl_nif.h".}
 proc enif_consume_timeslice*(a1: ptr ErlNifEnv; a2: cint): bool {.importc: "enif_consume_timeslice", header: "erl_nif.h".}
 proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ErlNifFptr; a5: cint; a6: ErlNifArgs): ErlNifTerm {.importc: "enif_schedule_nif", header: "erl_nif.h".}
-proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ErlNifFptr; a5: openArray[ErlNifTerm]): ErlNifTerm =
-  return enif_schedule_nif(a1, a2, a3, a4, len(a5).cint, cast[ErlNifArgs](a5))
-proc enif_schedule_nif*(a1: ptr ErlNifEnv; a2: ErlNifFptr; a3: openArray[ErlNifTerm]): ErlNifTerm =
-  return enif_schedule_nif(a1, astToStr(a2), cint(0), a2, len(a3).cint, cast[ErlNifArgs](a3))
+template enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ErlNifFptr; a5: openArray[ErlNifTerm]): untyped =
+  enif_schedule_nif(a1, a2, a3, a4, len(a5).cint, cast[ErlNifArgs](unsafeAddr(a5[0])))
+template enif_schedule_nif*(a1: ptr ErlNifEnv; a2: ErlNifFptr; a3: openArray[ErlNifTerm]): untyped =
+  enif_schedule_nif(a1, astToStr(a2), cint(0), a2, len(a3).cint, cast[ErlNifArgs](unsafeAddr(a3[0])))
 
 when (nifMajor, nifMinor) >= (2, 8):
   proc enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.importc: "enif_has_pending_exception", header: "erl_nif.h".}

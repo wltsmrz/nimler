@@ -4,7 +4,7 @@ when not declared(csize_t):
   type csize_t* {.importc: "size_t", nodecl.} = uint
 
 type
-  ErlNifEnv* = object
+  ErlNifEnv* {.importc: "ErlNifEnv", header: "erl_nif.h".} = object
   ErlNifTerm* = culonglong
   ErlNifArgs* = ptr UncheckedArray[ErlNifTerm]
   ErlNifFptr* = proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm {.nimcall.}
@@ -12,7 +12,7 @@ type
     ERL_NIF_REGULAR = 0,
     ERL_NIF_DIRTY_CPU = 1,
     ERL_NIF_DIRTY_IO = 2
-  ErlNifFunc* = object
+  ErlNifFunc* {.importc: "ErlNifFunc", header: "erl_nif.h"} = object
     name*: cstring
     arity*: cuint
     fptr*: ErlNifFptr
@@ -21,7 +21,7 @@ type
   ErlNifEntryReload* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
   ErlNifEntryUpgrade* = proc (a1: ptr ErlNifEnv; priv_data: ptr pointer; old_priv_data: ptr pointer; load_info: ErlNifTerm): cint {.nimcall.}
   ErlNifEntryUnload* = proc (a1: ptr ErlNifEnv; priv_data: pointer) {.nimcall.}
-  ErlNifEntry* = object
+  ErlNifEntry* {.importc: "ErlNifEntry", header: "erl_nif.h"} = object
     major*: cint
     minor*: cint
     name*: cstring
@@ -35,7 +35,7 @@ type
     options*: cint
     sizeof_ErlNifResourceTypeInit*: csize_t
     min_erts*: cstring
-  ErlNifTermType* = enum
+  ErlNifTermType* {.size: sizeof(cint), importc: "ErlNifTermType", header: "erl_nif.h".} = enum
     ERL_NIF_TERM_TYPE_ATOM = 1
     ERL_NIF_TERM_TYPE_BITSTRING = 2
     ERL_NIF_TERM_TYPE_FLOAT = 3
@@ -47,10 +47,10 @@ type
     ERL_NIF_TERM_TYPE_PORT = 9
     ERL_NIF_TERM_TYPE_REFERENCE = 10
     ERL_NIF_TERM_TYPE_TUPLE = 11
-  ErlNifUniqueInteger* {.size: sizeof(cint).} = enum
+  ErlNifUniqueInteger* {.size: sizeof(cint), importc: "ErlNifUniqueInteger", header: "erl_nif.h".} = enum
     ERL_NIF_UNIQUE_POSITIVE = (1 shl 0),
     ERL_NIF_UNIQUE_MONOTONIC = (1 shl 1)
-  ErlNifSysInfo* = object
+  ErlNifSysInfo* {.importc: "ErlNifSysInfo", header: "erl_nif.h"} = object
     driver_major_version*: cint
     driver_minor_version*: cint
     erts_version*: cstring
@@ -62,35 +62,35 @@ type
     nif_major_version*: cint
     nif_minor_version*: cint
     dirty_scheduler_support*: cint
-  ErlNifPid* = object
+  ErlNifPid* {.importc: "ErlNifPid", header: "erl_nif.h"} = object
     pid*: ErlNifTerm
-  ErlNifHash* {.size: sizeof(cint).} = enum
+  ErlNifHash* {.size: sizeof(cint), importc: "ErlNifHash", header: "erl_nif.h".} = enum
     ERL_NIF_INTERNAL_HASH = 1,
     ERL_NIF_PHASH2 = 2
-  ErlNifCharEncoding* {.size: sizeof(cint).} = enum
+  ErlNifCharEncoding* {.size: sizeof(cint), importc: "ErlNifCharEncoding", header: "erl_nif.h".} = enum
     ERL_NIF_LATIN1 = 1
-  ErlNifEvent* = cint
-  ErlNifMonitor* = object
+  ErlNifEvent* {.importc: "ErlNifEvent", header: "erl_nif.h"} = cint
+  ErlNifMonitor* {.importc: "ErlNifMonitor", header: "erl_nif.h".} = object
     data: array[4, csize_t]
   ErlNifResourceType* = object
-  ErlNifResourceFlags* {.size: sizeof(cint).} = enum
+  ErlNifResourceFlags* {.size: sizeof(cint), importc: "ErlNifResourceFlags", header: "erl_nif.h".} = enum
     ERL_NIF_RT_CREATE = 1
     ERL_NIF_RT_TAKEOVER = 2
   ErlNifResourceDtor* = proc (a1: ptr ErlNifEnv; a2: pointer): void
   ErlNifResourceStop* = proc (a1: ptr ErlNifEnv; a2: pointer; a3: ErlNifEvent; is_direct_call: cint): void
   ErlNifResourceDown* = proc (a1: ptr ErlNifEnv; a2: pointer; a3: ptr ErlNifPid; a4: ptr ErlNifMonitor): void
-  ErlNifResourceTypeInit* = object
+  ErlNifResourceTypeInit* {.importc: "ErlNifResourceTypeInit", header: "erl_nif.h"} = object
     dtor*: ptr ErlNifResourceDtor
     stop*: ptr ErlNifResourceStop
     down*: ptr ErlNifResourceDown
-  ErlNifBinaryToTerm* {.size: sizeof(cint).} = enum
+  ErlNifBinaryToTerm* {.size: sizeof(cint), importc: "ErlNifBinaryToTerm", header: "erl_nif.h".} = enum
     ERL_NIF_BIN2TERM_SAFE = 0x20000000
-  ErlNifBinary* {.importc: "ErlNifBinary", header: "erl_nif.h", bycopy.} = object
+  ErlNifBinary* {.importc: "ErlNifBinary", header: "erl_nif.h".} = object
     size*: csize_t
     data*: ptr cuchar
     ref_bin*: pointer
     spare*: array[2, pointer]
-  ErlNifMapIteratorEntry* = enum
+  ErlNifMapIteratorEntry* {.size: sizeof(cint), importc: "ErlNifMapIteratorEntry", header: "erl_nif.h".} = enum
     ERL_NIF_MAP_ITERATOR_FIRST = 1,
     ERL_NIF_MAP_ITERATOR_LAST = 2
   ErlNifMapIteratorFlat* = object
@@ -102,7 +102,7 @@ type
   ErlNifMapIteratorU* {.union.} = object
       flat*: ErlNifMapIteratorFlat
       hash*: ErlNifMapIteratorHash
-  ErlNifMapIterator* {.importc: "ErlNifMapIterator", header: "erl_nif.h", bycopy.} = object
+  ErlNifMapIterator* {.importc: "ErlNifMapIterator", header: "erl_nif.h".} = object
     map*: ErlNifTerm
     size*: cuint
     idx*: cuint
@@ -116,7 +116,6 @@ proc enif_map_iterator_prev*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool
 proc enif_map_iterator_get_pair*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator; a3: ptr ErlNifTerm; a4: ptr ErlNifTerm): bool {.importc: "enif_map_iterator_get_pair", header: "erl_nif.h".}
 proc enif_map_iterator_is_head*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_is_head", header: "erl_nif.h".}
 proc enif_map_iterator_is_tail*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_is_tail", header: "erl_nif.h".}
-proc enif_fprintf*(a1: File, a2: cstring): bool {.varargs, importc: "enif_fprintf", header: "erl_nif.h".}
 proc enif_alloc*(a1: csize_t): pointer {.importc: "enif_alloc", header: "erl_nif.h".}
 proc enif_free*(a1: pointer) {.importc: "enif_free", header: "erl_nif.h".}
 proc enif_realloc*(a1: pointer; a2: csize_t): pointer {.importc: "enif_realloc", header: "erl_nif.h".}
@@ -183,7 +182,7 @@ proc enif_make_tuple_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): 
 proc enif_make_list_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): ErlNifTerm {.importc: "enif_make_list_from_array", header: "erl_nif.h".}
 proc enif_make_new_binary*(a1: ptr ErlNifEnv; a2: csize_t; a3: ptr ErlNifTerm): ptr cuchar {.importc: "enif_make_new_binary", header: "erl_nif.h".}
 proc enif_system_info*(a1: ptr ErlNifSysInfo; a2: csize_t): void {.importc: "enif_system_info", header: "erl_nif.h".}
-template enif_system_info*(): ErlNifSysInfo =
+proc enif_system_info*(): ErlNifSysInfo =
   var info: ErlNifSysInfo
   enif_system_info(addr(info), cast[csize_t](sizeof(info)))
   return info
@@ -209,10 +208,10 @@ proc enif_get_map_value*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: 
 proc enif_make_map_update*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ErlNifTerm; a5: ptr ErlNifTerm): bool {.importc: "enif_make_map_update", header: "erl_nif.h".}
 proc enif_make_map_remove*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ptr ErlNifTerm): bool {.importc: "enif_make_map_remove", header: "erl_nif.h".}
 proc enif_open_resource_type*(a1: ptr ErlNifEnv, a2: typeof(nil); a3: cstring, a4: pointer; a5: ErlNifResourceFlags; a6: ptr ErlNifResourceFlags): ptr ErlNifResourceType {.importc: "enif_open_resource_type", header: "erl_nif.h".}
-proc enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifResourceFlags; a4: ptr ErlNifResourceFlags): ptr ErlNifResourceType =
-  return enif_open_resource_type(a1, nil, a2, nil, a3, a4)
-proc enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifResourceFlags): ptr ErlNifResourceType =
-  return enif_open_resource_type(a1, nil, a2, nil, a3, nil)
+template enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifResourceFlags; a4: ptr ErlNifResourceFlags): ptr ErlNifResourceType =
+  enif_open_resource_type(a1, nil, a2, nil, a3, a4)
+template enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifResourceFlags): ptr ErlNifResourceType =
+  enif_open_resource_type(a1, nil, a2, nil, a3, nil)
 proc enif_alloc_resource*(a1: pointer; a2: csize_t): pointer {.importc: "enif_alloc_resource", header: "erl_nif.h".}
 proc enif_release_resource*(a1: pointer): void {.importc: "enif_release_resource", header: "erl_nif.h".}
 proc enif_make_resource*(a1: ptr ErlNifEnv; a2: pointer): ErlNifTerm {.importc: "enif_make_resource", header: "erl_nif.h".}

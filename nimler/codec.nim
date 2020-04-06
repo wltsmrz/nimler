@@ -121,6 +121,7 @@ proc encode*(V: ErlCharlist, env: ptr ErlNifEnv): ErlNifTerm =
 proc bin_to_str(bin: ErlNifBinary): string =
   result = newString(bin.size)
   copyMem(addr(result[0]), bin.data, bin.size)
+
 proc str_to_bin(str: string): ErlNifBinary =
   result.size = cast[csize_t](str.len)
   result.data = cast[ptr cuchar](unsafeAddr(str[0]))

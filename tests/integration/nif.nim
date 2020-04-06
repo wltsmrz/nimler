@@ -375,8 +375,12 @@ proc snprintf(env, argc, argv): ErlNifTerm =
   return enif_make_int(env, cint(0))
 
 proc system_info(env, argc, argv): ErlNifTerm =
-  var info: ErlNifSysInfo
-  enif_system_info(addr(info), cast[csize_t](sizeof(info)))
+  # var info: ErlNifSysInfo
+  # enif_system_info(addr(info), cast[csize_t](sizeof(info)))
+  var info = enif_system_info()
+  doAssert(info.nif_major_version == nifMajor)
+  doAssert(info.nif_minor_version == nifMinor)
+
   return enif_make_int(env, cint(0))
 
 proc term_type(env, argc, argv): ErlNifTerm =
@@ -392,7 +396,7 @@ proc compare(env, argc, argv): ErlNifTerm =
   let v = enif_compare(argv[0], argv[1])
   return enif_make_int(env, v)
 
-export_nifs("Elixir.NimlerWrapper", @[
+export_nifs("Elixir.NimlerWrapper", [
   ("enif_compare", 2, compare),
   ("enif_term_type", 6, term_type),
   ("enif_system_info", 0, system_info),

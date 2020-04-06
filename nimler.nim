@@ -14,10 +14,6 @@ macro tonif*(fptr: ErlNifFptr, name: string, arity: int, flags: ErlNifFlags = ER
   result = quote do:
     ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fptr`, flags: `flags`)
 
-macro tonif*(spec: NifSpec, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
-  result = quote do:
-    ErlNifFunc(name: `spec`[0], arity: cuint(`spec`[1]), fptr: `spec`[2], flags: `flags`)
-
 proc NimMain() {.gensym, importc: "NimMain".}
 
 template export_nifs*(
@@ -46,9 +42,9 @@ template export_nifs*(
     NimMain()
     result = addr(entry)
 
-template export_nifs*(name: string, specs_seq: openArray[NifSpec]) =
+template export_nifs*(module_name: string, specs_seq: openArray[NifSpec]) =
   var funcs: array[len(specs_seq), ErlNifFunc]
-  for i, spec in pairs(specs_seq):
-    funcs[i] = spec.toNif()
-  export_nifs(name, move(funcs))
+  for i, (name, arity, fptr) in pairs(specs_seq):
+    funcs[i] = fptr.to_nif(name, arity)
+  export_nifs(module_name, move(funcs))
 

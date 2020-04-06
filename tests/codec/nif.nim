@@ -83,7 +83,7 @@ proc codec_result_ok(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
 proc codec_result_error(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return error(env, argv[0])
 
-export_nifs("Elixir.NimlerWrapper", @[
+export_nifs("Elixir.NimlerWrapper", [
   ("codec_int32", 2, codec_int32),
   ("codec_uint32", 2, codec_uint32),
   ("codec_atom", 1, codec_atom),

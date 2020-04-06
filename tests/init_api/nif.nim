@@ -31,8 +31,9 @@ proc test_priv_data(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTer
   return enif_make_int(env, 1)
 
 var funcs = [
-  test.to_nif("test", 0),
-  test_priv_data.to_nif("test_priv", 0),
-  test_dirty.to_nif("test_dirty", 0, flags=ERL_NIF_DIRTY_IO)
+  to_nif(test, "test", 0),
+  to_nif(test_priv_data, "test_priv", 0),
+  to_nif(test_dirty, "test_dirty", 0, flags=ERL_NIF_DIRTY_IO)
 ]
+
 export_nifs("Elixir.NimlerWrapper", funcs, on_load=on_load)

@@ -234,3 +234,4 @@ proc error*(env: ptr ErlNifEnv, rterm: ErlNifTerm): ErlNifTerm =
   return enif_make_tuple(env, 2, AtomErr.encode(env), rterm)
 proc error*(rterm: ErlNifTerm, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_tuple(env, 2, AtomErr.encode(env), rterm)
+

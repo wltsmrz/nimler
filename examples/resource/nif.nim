@@ -21,7 +21,7 @@ proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm):
   priv_data[] = priv
   return 0
 
-proc create_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+proc create_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.raises: [].}  =
   let priv = cast[ptr ResourcePriv](enif_priv_data(env))
   var controller = cast[ptr PIControl](enif_alloc_resource(priv.resource_type, cast[csize_t](sizeof(PIControl))))
 
@@ -33,26 +33,29 @@ proc create_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTe
   return resource_term
 
 
-proc update_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+proc update_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.raises: [].}  =
   let priv = cast[ptr ResourcePriv](enif_priv_data(env))
   var controller: ptr PIControl
 
   if not enif_get_resource(env, argv[0], priv.resource_type, addr(controller)):
     return enif_make_badarg(env)
 
-  let sp = argv[1].decode(env, float).get()
-  let pv = argv[2].decode(env, float).get()
-  let res = controller.update(sp, pv).encode(env)
+  let sp = argv[1].decode(env, float)
+  let pv = argv[2].decode(env, float)
+  
+  if sp.isNone() or pv.isNone():
+    return enif_make_badarg(env)
 
-  return res.ok(env)
+  let res = controller.update(sp.get(1.0), pv.get(1.0))
+  return ok(env, res.encode(env))
 
-export_nifs(NifOptions(
-  name: "Elixir.PIController",
-  funcs: @[
-    create_resource.toNif(name="create_resource", arity=0),
-    update_resource.toNif(name="update_resource", arity=3)
+export_nifs(
+  "Elixir.PIController",
+  [
+    create_resource.to_nif(name="create_resource", arity=0),
+    update_resource.to_nif(name="update_resource", arity=3)
   ],
-  load: on_load,
-  unload: on_unload
-))
+  on_load=on_load,
+  on_unload=on_unload
+)
 

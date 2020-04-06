@@ -8,15 +8,7 @@ export erl_nif
 
 {.passC: "-I" & ertsPath.}
 
-type
-  NifSpec* = tuple[name: string, arity: int, fptr: ErlNifFptr]
-  NifOptions* = object
-    name*: string
-    funcs*: seq[ErlNifFunc]
-    load*: ErlNifEntryLoad
-    reload*: ErlNifEntryReload
-    upgrade*: ErlNifEntryUpgrade
-    unload*: ErlNifEntryUnload
+type NifSpec* = tuple[name: string, arity: int, fptr: ErlNifFptr]
 
 macro tonif*(fptr: ErlNifFptr, name: string, arity: int, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
   result = quote do:
@@ -28,27 +20,15 @@ macro tonif*(spec: NifSpec, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
 
 proc NimMain() {.gensym, importc: "NimMain".}
 
-template export_nifs*(options: NifOptions) =
-  var funcs = options.funcs
-  var entry: ErlNifEntry
-  entry.name = cstring(options.name)
-  entry.num_of_funcs = cint(len(funcs))
-  if funcs.len > 0:
-    entry.funcs = addr(funcs[0])
-  entry.major = cint(nifMajor)
-  entry.minor = cint(nifMinor)
-  entry.load = options.load
-  entry.reload = options.reload
-  entry.upgrade = options.upgrade
-  entry.unload = options.unload
-  entry.vm_variant = cstring("beam.vanilla")
-
-  proc nif_init(): ptr ErlNifEntry {.dynlib, exportc.} =
-    NimMain()
-    result = addr(entry)
-
-template export_nifs*(module_name: string, funcs_seq: openArray[ErlNifFunc]) =
-  var funcs = funcs_seq
+template export_nifs*(
+    module_name: string,
+    nifs: openArray[ErlNifFunc],
+    on_load: ErlNifEntryLoad = nil,
+    on_reload: ErlNifEntryReload = nil,
+    on_upgrade: ErlNifEntryUpgrade = nil,
+    on_unload: ErlNifEntryUnload = nil
+) =
+  var funcs = nifs
   var entry: ErlNifEntry
   entry.name = cstring(module_name)
   entry.num_of_funcs = cint(len(funcs))
@@ -57,14 +37,18 @@ template export_nifs*(module_name: string, funcs_seq: openArray[ErlNifFunc]) =
   entry.major = cint(nifMajor)
   entry.minor = cint(nifMinor)
   entry.vm_variant = cstring("beam.vanilla")
+  entry.load = on_load
+  entry.reload = on_reload
+  entry.upgrade = on_upgrade
+  entry.unload = on_unload
 
   proc nif_init(): ptr ErlNifEntry {.dynlib, exportc.} =
     NimMain()
     result = addr(entry)
 
-template export_nifs*(module_name: string, specs_seq: openArray[NifSpec]) =
+template export_nifs*(name: string, specs_seq: openArray[NifSpec]) =
   var funcs: array[len(specs_seq), ErlNifFunc]
   for i, spec in pairs(specs_seq):
     funcs[i] = spec.toNif()
-  export_nifs(module_name, move(funcs))
+  export_nifs(name, move(funcs))
 

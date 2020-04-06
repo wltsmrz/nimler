@@ -39,15 +39,10 @@ proc check_resource(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTer
   doAssert(resource_ptr.thing == 1234)
   return argv[0]
 
-
-export_nifs(NifOptions(
-  name: "Elixir.NimlerWrapper",
-  funcs: @[
-    ("create_resource", 0, create_resource).to_nif(),
-    ("update_resource", 1, update_resource).to_nif(),
-    ("check_resource", 1, check_resource).to_nif()
-  ],
-  load: on_load,
-  unload: on_unload
-))
+var funcs = [
+  create_resource.to_nif("create_resource", 0),
+  update_resource.to_nif("update_resource", 1),
+  check_resource.to_nif("check_resource", 1)
+]
+export_nifs(module_name="Elixir.NimlerWrapper", funcs, on_load=on_load, on_unload=on_unload)
 

@@ -30,15 +30,9 @@ proc test_priv_data(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTer
   doAssert(vv[] == 123)
   return enif_make_int(env, 1)
 
-const nif_options = NifOptions(
-  name: "Elixir.NimlerWrapper",
-  funcs: @[
-    test.toNif("test", 0),
-    test_priv_data.toNif(name="test_priv", arity=0),
-    test_dirty.toNif("test_dirty", 0, flags=ERL_NIF_DIRTY_IO)
-  ],
-  load: on_load,
-  unload: on_unload
-)
-export_nifs(nif_options)
-
+var funcs = [
+  test.to_nif("test", 0),
+  test_priv_data.to_nif("test_priv", 0),
+  test_dirty.to_nif("test_dirty", 0, flags=ERL_NIF_DIRTY_IO)
+]
+export_nifs("Elixir.NimlerWrapper", funcs, on_load=on_load)

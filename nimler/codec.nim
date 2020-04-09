@@ -21,8 +21,9 @@ const AtomOk* = ErlAtom(val: "ok")
 const AtomErr* = ErlAtom(val: "error")
 const AtomTrue* = ErlAtom(val: "true")
 const AtomFalse* = ErlAtom(val: "false")
-const ExceptionMapEncode*: ErlCharlist = "nimler: fail to encode map".toSeq()
-const ExceptionStringEncode*: ErlCharlist = "nimler: fail to encode string".toSeq()
+
+const ExceptionMapEncode* = "nimler: fail to encode map".toSeq()
+const ExceptionStringEncode* = "nimler: fail to encode string".toSeq()
 
 macro generic_params*(T: typedesc): untyped =
   result = newNimNode(nnkTupleConstr)
@@ -67,6 +68,7 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint32]): Option[
     return some(res.uint32)
 proc encode*(V: uint32, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_ulong(env, V)
+
 # uint64
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[uint64]): Option[T] =
   var res: culonglong
@@ -109,10 +111,6 @@ proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[ErlCharlist]): Op
     return some(string_buf)
 proc encode*(V: ErlCharlist, env: ptr ErlNifEnv): ErlNifTerm =
   return enif_make_string(env, cast[string](V), ERL_NIF_LATIN1)
-template decode*(env: ptr ErlNifEnv, term: ErlNifTerm, T: typedesc[ErlCharlist]): Option[T] =
-  decode(term, env, T)
-template encode*(env: ptr ErlNifEnv, V: ErlCharlist): ErlNifTerm =
-  encode(V, env)
 
 # string
 proc bin_to_str(bin: ErlNifBinary): string =
@@ -184,6 +182,7 @@ macro encode*(V: tuple, env: ptr ErlNifEnv): untyped =
   for i in 0 ..< tup_len:
     let v = quote do: `V`[`i`]
     result.add(newCall("encode", v, env))
+
 # map/table
 proc decode*(term: ErlNifTerm, env: ptr ErlNifEnv, T: typedesc[Table]): Option[T] =
   type key_type = codec.generic_params(T).get(0)
@@ -218,6 +217,11 @@ proc ok*(env: ptr ErlNifEnv, rterm: ErlNifTerm): ErlNifTerm =
 proc error*(env: ptr ErlNifEnv, rterm: ErlNifTerm): ErlNifTerm =
   return enif_make_tuple(env, 2, AtomErr.encode(env), rterm)
 
+proc ok*(env: ptr ErlNifEnv): ErlNifTerm =
+  return AtomOk.encode(env)
+proc error*(env: ptr ErlNifEnv): ErlNifTerm =
+  return AtomErr.encode(env)
+
 template decode*(env: ptr ErlNifEnv, term: ErlNifTerm, T: typedesc[int]): Option[T] =
   decode(term, env, T)
 template encode*(env: ptr ErlNifEnv, V: int): ErlNifTerm =
@@ -241,6 +245,10 @@ template encode*(env: ptr ErlNifEnv, V: float): ErlNifTerm =
 template decode*(env: ptr ErlNifEnv, term: ErlNifTerm, T: typedesc[ErlAtom]): Option[T] =
   decode(term, env, T)
 template encode*(env: ptr ErlNifEnv, V: ErlAtom): ErlNifTerm =
+  encode(V, env)
+template decode*(env: ptr ErlNifEnv, term: ErlNifTerm, T: typedesc[ErlCharlist]): Option[T] =
+  decode(term, env, T)
+template encode*(env: ptr ErlNifEnv, V: ErlCharlist): ErlNifTerm =
   encode(V, env)
 template decode*(env: ptr ErlNifEnv, term: ErlNifTerm, T: typedesc[string]): Option[T] =
   decode(term, env, T)
@@ -266,4 +274,8 @@ template ok*(rterm: ErlNifTerm, env: ptr ErlNifEnv): ErlNifTerm =
   ok(env, rterm)
 template error*(rterm: ErlNifTerm, env: ptr ErlNifEnv): ErlNifTerm =
   error(env, rterm)
+template ok*(env: ptr ErlNifEnv): ErlNifTerm =
+  ok(env)
+template error*(env: ptr ErlNifEnv): ErlNifTerm =
+  error(env)
 

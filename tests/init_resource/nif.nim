@@ -2,17 +2,22 @@ import ../../nimler
 import ../../nimler/codec
 import ../../nimler/resources
 
+using
+  env: ptr ErlNifEnv
+  argc: cint
+  argv: ErlNifArgs
+
 type MyResource {.packed.} = object
   thing: int32
 
-proc new_res(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+func new_res(env, argc, argv): ErlNifTerm {.nif(arity=0, name="new").} =
   let res = env.new(MyResource)
   if res.isNone():
     return env.error(env.encode("fail to allocate new resource"))
   res.get().thing = 0
   return env.ok(env.release(res.get()))
 
-proc set_res(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+func set_res(env, argc, argv): ErlNifTerm {.nif(arity=2, name="set").} =
   let resource = env.get(argv[0], MyResource)
   let newval = env.decode(argv[1], int32).get(-1)
   
@@ -23,7 +28,7 @@ proc set_res(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
 
   return AtomOk.encode(env)
     
-proc check_res(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
+func check_res(env, argc, argv): ErlNifTerm {.nif(arity=2, name="check").} =
   let resource = env.get(argv[0], MyResource)
   let comp = env.decode(argv[1], int32)
 
@@ -36,8 +41,8 @@ proc check_res(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return AtomErr.encode(env)
 
 resources.export_nifs("Elixir.NimlerWrapper", [
-  to_nif(new_res, "new", 0),
-  to_nif(set_res, "set", 2),
-  to_nif(check_res, "check", 2)
+  new_res,
+  set_res,
+  check_res
 ])
 

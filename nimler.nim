@@ -8,9 +8,10 @@ export erl_nif
 
 {.passC: "-I" & ertsPath.}
 
-type NifSpec* = tuple[name: string, arity: int, fptr: ErlNifFptr]
-
 macro tonif*(fptr: ErlNifFptr, name: string, arity: int, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
+  result = quote do:
+    ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fptr`, flags: `flags`)
+macro tonif*(name: string, arity: int, fptr: ErlNifFptr, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
   result = quote do:
     ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fptr`, flags: `flags`)
 
@@ -28,7 +29,6 @@ macro nif* (name: string, arity: int, fn: untyped): untyped =
       result = quote do:
         let `fn_name` = ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fn_node`)
     of nnkIdent:
-      let fn_name_lit = newLit(repr(fn))
       result = quote do:
         ErlNifFunc(name: `name`, arity: `arity`, fn: `fn`)
     else:
@@ -76,10 +76,4 @@ template export_nifs*(
   proc nif_init(): ptr ErlNifEntry {.dynlib, exportc.} =
     NimMain()
     result = addr(entry)
-
-template export_nifs*(module_name: string, specs_seq: openArray[NifSpec]) =
-  var funcs: array[len(specs_seq), ErlNifFunc]
-  for i, (name, arity, fptr) in pairs(specs_seq):
-    funcs[i] = fptr.to_nif(name, arity)
-  export_nifs(module_name, move(funcs))
 

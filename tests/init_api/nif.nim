@@ -21,7 +21,7 @@ proc on_load(env, priv_data, load_info): cint =
 
   return cint(0)
 
-proc on_unload(env, priv_data): void =
+proc on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
   enif_free(priv_data)
 
 proc test(env, argc, argv): ErlNifTerm {.nif(arity=0).} =
@@ -44,4 +44,4 @@ var funcs = [
   to_nif(test_dirty, "test_dirty", 0, flags=ERL_NIF_DIRTY_IO)
 ]
 
-export_nifs("Elixir.NimlerWrapper", funcs, on_load=on_load)
+export_nifs("Elixir.NimlerWrapper", funcs, on_load=on_load, on_unload=on_unload)

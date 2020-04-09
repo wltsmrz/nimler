@@ -207,7 +207,12 @@ proc enif_make_map_put*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: E
 proc enif_get_map_value*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ptr ErlNifTerm): bool {.importc: "enif_get_map_value", header: "erl_nif.h".}
 proc enif_make_map_update*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ErlNifTerm; a5: ptr ErlNifTerm): bool {.importc: "enif_make_map_update", header: "erl_nif.h".}
 proc enif_make_map_remove*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ptr ErlNifTerm): bool {.importc: "enif_make_map_remove", header: "erl_nif.h".}
-proc enif_open_resource_type*(a1: ptr ErlNifEnv, a2: typeof(nil); a3: cstring, a4: pointer; a5: ErlNifResourceFlags; a6: ptr ErlNifResourceFlags): ptr ErlNifResourceType {.importc: "enif_open_resource_type", header: "erl_nif.h".}
+proc enif_open_resource_type*(a1: ptr ErlNifEnv, a2: pointer; a3: cstring, a4: pointer; a5: ErlNifResourceFlags; a6: ptr ErlNifResourceFlags): ptr ErlNifResourceType {.importc: "enif_open_resource_type", header: "erl_nif.h".}
+proc enif_open_resource_type*(a1: ptr ErlNifEnv, a2: pointer; a3: cstring, a4: pointer; a5: cint; a6: ptr cint): ptr ErlNifResourceType {.importc: "enif_open_resource_type", header: "erl_nif.h".}
+template enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ptr cint): ptr ErlNifResourceType =
+  enif_open_resource_type(a1, nil, a2, nil, a3, a4)
+template enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: cint): ptr ErlNifResourceType =
+  enif_open_resource_type(a1, nil, a2, nil, a3, nil)
 template enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifResourceFlags; a4: ptr ErlNifResourceFlags): ptr ErlNifResourceType =
   enif_open_resource_type(a1, nil, a2, nil, a3, a4)
 template enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifResourceFlags): ptr ErlNifResourceType =

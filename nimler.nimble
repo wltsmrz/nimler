@@ -2,9 +2,9 @@ mode = ScriptMode.Verbose
 
 version = "2.0.0"
 author = "wltsmrz"
-description = "Erlang/Elixir NIF wrapper"
+description = "Erlang/Elixir NIFs"
 license = "MIT"
-skipDirs = @["tests", "docs", "example"]
+skipDirs = @["tests", "docs", "examples"]
 skipFiles = @["README.md"]
 installDirs = @["nimler", "scripts"]
 installFiles = @["nimler.nim"]
@@ -30,10 +30,11 @@ task test, "dummy":
 
 task test_all, "build and run tests":
   exec("nimble test_init_api")
+  exec("nimble test_dirty_nif")
   exec("nimble test_integration")
   exec("nimble test_codec")
   exec("nimble test_resource")
-  exec("nimble test_dirty_nif")
+  exec("nimble test_init_resource")
   exec("nimble test_timeslice")
 
 task build_init_api, "build nif":
@@ -71,6 +72,15 @@ task build_resource, "build nif":
 task test_resource, "run test":
   exec("nimble build_resource")
   exec("elixir -r tests/resource/wrapper.ex tests/resource/test.exs")
+
+task build_init_resource, "build nif":
+  configTest()
+  switch("out", "tests/init_resource/nif.so")
+  setCommand("compile", "tests/init_resource/nif")
+
+task test_init_resource, "run test":
+  exec("nimble build_init_resource")
+  exec("elixir -r tests/init_resource/wrapper.ex tests/init_resource/test.exs")
 
 task build_dirty_nif, "build nif":
   configTest()

@@ -6,7 +6,7 @@ export erl_sys_info
 import nimler/bindings/erl_nif
 export erl_nif
 
-{.passC: "-I" & ertsPath.}
+{.passc: "-I" & ertsPath.}
 
 macro tonif*(fptr: ErlNifFptr, name: string, arity: int, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
   result = quote do:
@@ -25,7 +25,7 @@ macro nif* (name: string, arity: int, fn: untyped): untyped =
   case fn.kind:
     of nnkProcDef, nnkFuncDef:
       let fn_name = fn[0]
-      let fn_node = to_proc(fn)
+      let fn_node = toproc(fn)
       result = quote do:
         let `fn_name` = ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fn_node`)
     of nnkIdent:
@@ -38,8 +38,8 @@ macro nif*(arity: int, fn: untyped): untyped =
   case fn.kind:
     of nnkProcDef, nnkFuncDef:
       let fn_name = fn[0]
-      let fn_name_lit = fnName.toStrLit()
-      let fn_node = to_proc(fn)
+      let fn_name_lit = fn_name.toStrLit()
+      let fn_node = toproc(fn)
       result = quote do:
         let `fn_name` = ErlNifFunc(name: `fn_name_lit`, arity: cuint(`arity`), fptr: `fn_node`)
     of nnkIdent:

@@ -30,7 +30,7 @@ proc new*(env: ptr ErlNifEnv, V: object): Option[ptr type(V)] =
   let res = new(env, type(V))
   if res.isSome():
     var resv = res.get()
-    copy_mem(resv, unsafe_addr(V), sizeof(resv[]))
+    copyMem(resv, unsafeAddr(V), sizeof(resv[]))
     return some(resv)
 
 proc new_default*(env: ptr ErlNifEnv, T: typedesc): Option[ptr T] =
@@ -38,7 +38,7 @@ proc new_default*(env: ptr ErlNifEnv, T: typedesc): Option[ptr T] =
   if privdata.isSome():
     var V = default(T)
     let res = cast[ptr T](enif_alloc_resource(privdata.get().resource_type, cast[csize_t](sizeof(V))))
-    copy_mem(res, addr(V), sizeof(res))
+    copyMem(res, addr(V), sizeof(res))
     return some(res)
 
 template export_nifs*(module_name: string, funcs: openArray[ErlNifFunc]) =

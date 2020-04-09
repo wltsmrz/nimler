@@ -2,11 +2,15 @@ import ../../nimler
 import ../../nimler/codec
 import ../../nimler/resources
 
-type MyResource = object
+type MyResource {.packed.} = object
   thing: int32
 
 proc new_res(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  env.new_default(MyResource)
+  let res = env.new(MyResource)
+  if res.isNone():
+    return env.error(env.encode("fail to allocate new resource"))
+  res.get().thing = 0
+  return env.ok(env.release(res.get()))
 
 proc set_res(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   let resource = env.get(argv[0], MyResource)
@@ -20,10 +24,13 @@ proc set_res(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
   return AtomOk.encode(env)
     
 proc check_res(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm =
-  let resource = env.get(argv[0], MyResource).get()
-  let comp = env.decode(argv[1], int32).get()
+  let resource = env.get(argv[0], MyResource)
+  let comp = env.decode(argv[1], int32)
 
-  if resource.thing == comp:
+  if resource.isNone() and comp.isNone():
+    return AtomErr.encode(env)
+
+  if resource.get().thing == comp.get():
     return AtomOk.encode(env)
 
   return AtomErr.encode(env)

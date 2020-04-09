@@ -9,7 +9,7 @@ defmodule NimlerTest do
     end
 
     test "resource wrapper" do
-        res = NimlerWrapper.new()
+        {:ok, res} = NimlerWrapper.new()
         assert(is_reference(res))
         assert(:ok == NimlerWrapper.check(res, 0))
         assert(:ok == NimlerWrapper.set(res, 123))

@@ -1,35 +1,45 @@
 import options
 import ../nimler
 
-type ErlNifResource* = object
+type ErlNifResource* {.packed.} = object
   resource_type: ptr ErlNifResourceType
 
-proc priv_data*(env: ptr ErlNifEnv): ptr ErlNifResource  =
-  return cast[ptr ErlNifResource](enif_priv_data(env))
-
-proc get*(env: ptr ErlNifEnv, term: ErlNifTerm, T: typedesc[object]): Option[ptr T] =
+proc priv_data*(env: ptr ErlNifEnv): Option[ptr ErlNifResource] =
   let priv = cast[ptr ErlNifResource](enif_priv_data(env))
+  if priv != nil:
+    return some(priv)
+
+proc get*(env: ptr ErlNifEnv, term: ErlNifTerm, T: typedesc): Option[ptr T] =
+  let privdata = priv_data(env)
   var res: ptr T
-  if enif_get_resource(env, term, priv.resource_type, addr(res)):
+  if privdata.isSome() and enif_get_resource(env, term, privdata.get().resource_type, addr(res)):
     return some(res)
 
 proc release*(env: ptr ErlNifEnv, V: ptr): ErlNifTerm =
-  var term = enif_make_resource(env, V)
+  let term = enif_make_resource(env, V)
   enif_release_resource(V)
   return term
 
-proc new*(env: ptr ErlNifEnv, T: typedesc[object]): ptr T =
-  let priv = cast[ptr ErlNifResource](enif_priv_data(env))
-  let res = cast[ptr T](enif_alloc_resource(priv.resource_type, cast[csize_t](sizeof(T))))
-  return res
+proc new*(env: ptr ErlNifEnv, T: typedesc): Option[ptr T] =
+  let privdata = priv_data(env)
+  if privdata.isSome():
+    let res = cast[ptr T](enif_alloc_resource(privdata.get().resource_type, cast[csize_t](sizeof(T))))
+    return some(res)
 
-proc new*(env: ptr ErlNifEnv, V: object): ptr type(V) =
+proc new*(env: ptr ErlNifEnv, V: object): Option[ptr type(V)] =
   let res = new(env, type(V))
-  copy_mem(res, unsafe_addr(V), sizeof(res))
-  return res
+  if res.isSome():
+    var resv = res.get()
+    copy_mem(resv, unsafe_addr(V), sizeof(resv[]))
+    return some(resv)
 
-proc new_default*(env: ptr ErlNifEnv, T: typedesc): ErlNifTerm =
-  return release(env, new(env, default(T)))
+proc new_default*(env: ptr ErlNifEnv, T: typedesc): Option[ptr T] =
+  let privdata = priv_data(env)
+  if privdata.isSome():
+    var V = default(T)
+    let res = cast[ptr T](enif_alloc_resource(privdata.get().resource_type, cast[csize_t](sizeof(V))))
+    copy_mem(res, addr(V), sizeof(res))
+    return some(res)
 
 template export_nifs*(module_name: string, funcs: openArray[ErlNifFunc]) =
   proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm): cint =

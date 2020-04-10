@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-elixir@v1.1.0
+      with:
+          otp-version: 22.x
+          elixir-version: 1.10.x
     - uses: jiro4989/setup-nim-action@v1.0.2
       with:
           nim-version: '1.2.0'

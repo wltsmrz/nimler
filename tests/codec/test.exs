@@ -8,7 +8,18 @@ defmodule NimlerTest do
         NimlerWrapper.load_nif()
     end
 
+    describe "codec_options" do
+        @tag :skip
+        test "codec_options() type check", do:
+            assert(:bad_type == NimlerWrapper.codec_int("asdf", 1))
+        @tag :skip
+        test "codec_options() default", do:
+            assert(-1 == NimlerWrapper.codec_int(1, "asdf"))
+    end
+
     describe "codec_numbers" do
+        test "codec_int()", do:
+            assert(3 == NimlerWrapper.codec_int(1, 2))
         test "codec_int32(max)", do:
             assert(2147483647 == NimlerWrapper.codec_int32(2147483646, 1))
         test "codec_int32(max+1)", do:
@@ -32,9 +43,12 @@ defmodule NimlerTest do
             assert(:test == NimlerWrapper.codec_atom(:test))
     end
 
-    describe "codec_strings" do
+    describe "codec_charlist" do
         test "codec_charlist()", do:
             assert('test' == NimlerWrapper.codec_charlist('test'))
+    end
+
+    describe "codec_strings" do
         test "codec_string()", do:
             assert("testϴ" == NimlerWrapper.codec_string("testϴ"))
     end
@@ -45,13 +59,15 @@ defmodule NimlerTest do
     end
 
     describe "codec_list" do
-        test "codec_list()", do:
-            assert([1,2,3] == NimlerWrapper.codec_list([1,2,3]))
+        test "codec_list_int()", do:
+            assert([1,2,3] == NimlerWrapper.codec_list_int([1,2,3]))
+        test "codec_list_string()", do:
+            assert(["a","b","c"] == NimlerWrapper.codec_list_string(["a","b","c"]))
     end
 
     describe "codec_tuple" do
         test "codec_tuple()", do:
-            assert({"test", 1, 1.2} == NimlerWrapper.codec_tuple({"test",1, 1.2}))
+            assert({"test",1,1.2} == NimlerWrapper.codec_tuple({"test",1,1.2}))
     end
 
     describe "codec_map" do
@@ -59,7 +75,7 @@ defmodule NimlerTest do
             a1 = %{'test' => 1, 'test_other' => 2}
             a2 = %{"test" => 1, "test_other" => 2}
             a3 = %{:atom1 => "test1", :atom2=> "test2"}
-            {v1, v2, v3} = NimlerWrapper.codec_map(a1, a2, a3)
+            {v1,v2,v3} = NimlerWrapper.codec_map(a1,a2,a3)
             assert(a1 == v1)
             assert(a2 == v2)
             assert(a3 == v3)
@@ -67,10 +83,10 @@ defmodule NimlerTest do
     end
 
     describe "codec_result" do
-        test "codec_result()", do:
-            assert({:ok, 1} == NimlerWrapper.codec_result_ok(1))
-        test "codec_result_err()", do:
-            assert({:error, 1} == NimlerWrapper.codec_result_error(1))
+        test "codec_result_ok()", do:
+            assert({:ok,1,2} == NimlerWrapper.codec_result_ok(1,2))
+        test "codec_result_error()", do:
+            assert({:error,1,2} == NimlerWrapper.codec_result_error(1,2))
     end
 end
 

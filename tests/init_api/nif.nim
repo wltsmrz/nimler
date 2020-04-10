@@ -38,10 +38,8 @@ proc test_priv_data(env, argc, argv): ErlNifTerm {.nif(name="test_priv", arity=0
   doAssert(vv[] == 123)
   return enif_make_int(env, 1)
 
-var funcs = [
+export_nifs("Elixir.NimlerWrapper", [
   test,
   test_priv_data,
   tonif(test_dirty, "test_dirty", 0, flags=ERL_NIF_DIRTY_IO)
-]
-
-export_nifs("Elixir.NimlerWrapper", funcs, on_load=on_load, on_unload=on_unload)
+], on_load=on_load, on_unload=on_unload)

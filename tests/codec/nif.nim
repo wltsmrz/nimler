@@ -1,99 +1,109 @@
 import ../../nimler
 import ../../nimler/codec
-import sequtils
 import tables
 
-proc codec_int32(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=2).} =
-  let a1 = argv[0].decode(env, int32).get(0)
-  let a2 = argv[1].decode(env, int32).get(0)
-  let r = a1 + a2
-  doAssert(decode(1'i32.encode(env), env, int32).get() == 1)
-  return r.encode(env)
+using
+  env: ptr ErlNifEnv
+  argc: cint
+  argv: ErlNifArgs
 
-proc codec_uint32(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=2).} =
-  let a1 = argv[0].decode(env, uint32).get(0)
-  let a2 = argv[1].decode(env, uint32).get(0)
-  let r = a1 + a2
-  doAssert(decode(1'u32.encode(env), env, uint32).get() == 1)
-  return r.encode(env)
+proc codec_options(env; argc; argv): ErlNifTerm {.nif(arity=2).} =
+  if env.from_term(argv[0], int).isNone():
+    return enif_make_atom(env, "bad_type")
+  let a2 = env.from_term(argv[1], int).get(-1)
+  return env.to_term(a2)
 
-proc codec_double(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=1).} =
-  let v = argv[0].decode(env, float64).get()
-  doAssert(decode(1.0'f64.encode(env), env, float64).get() == 1.0)
-  return v.encode(env)
+proc codec_int(env; argc; argv): ErlNifTerm {.nif(arity=2).} =
+  let a1 = env.from_term(argv[0], int).get()
+  let a2 = env.from_term(argv[1], int).get()
+  doAssert(env.from_term(env.to_term(1), int).get() == 1)
+  return env.to_term(a1 + a2)
 
-proc codec_uint64(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=1).} =
-  let v = argv[0].decode(env, uint64).get()
-  discard 1'u64.encode(env)
-  doAssert(decode(1'u64.encode(env), env, uint64).get() == 1)
-  return v.encode(env)
+proc codec_int32(env; argc; argv): ErlNifTerm {.nif(arity=2).} =
+  let a1 = env.from_term(argv[0], int32).get()
+  let a2 = env.from_term(argv[1], int32).get()
+  doAssert(env.from_term(env.to_term(1'i32), int32).get() == 1)
+  return env.to_term(a1 + a2)
 
-proc codec_atom(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=1).} =
-  let a1 = argv[0].decode(env, ErlAtom).get()
-  doAssert(a1.val == "test")
+proc codec_uint32(env; argc; argv): ErlNifTerm {.nif(arity=2).} =
+  let a1 = env.from_term(argv[0], uint32).get()
+  let a2 = env.from_term(argv[1], uint32).get()
+  doAssert(env.from_term(env.to_term(1'u32), uint32).get() == 1)
+  return env.to_term(a1 + a2)
+
+proc codec_uint64(env; argc; argv): ErlNifTerm {.nif(arity=1).} =
+  let a1 = env.from_term(argv[0], uint64).get()
+  doAssert(env.from_term(env.to_term(1'u64), uint64).get() == 1)
+  return env.to_term(a1)
+
+proc codec_double(env; argc; argv): ErlNifTerm {.nif(arity=1).} =
+  let a1 = env.from_term(argv[0], float).get()
+  doAssert(env.from_term(env.to_term(1.0'f64), float).get() == 1.0)
+  return env.to_term(a1)
+
+proc codec_atom(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
+  let a1 = env.from_term(argv[0], ErlAtom).get()
   doAssert(a1 == ErlAtom(val: "test"))
-  return a1.encode(env)
+  return env.to_term(a1)
 
-proc codec_string(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=1).} =
-  let a1 = argv[0].decode(env, string).get()
-  let a2 = argv[1].decode(env, string).get("default")
+proc codec_charlist(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
+  let a1 = env.from_term(argv[0], ErlCharlist).get()
+  doAssert(a1 == @"test")
+  doAssert(env.from_term(env.to_term(@"test2"), ErlCharlist).get() == @"test2")
+  return env.to_term(a1)
+
+proc codec_string(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
+  let a1 = env.from_term(argv[0], string).get()
   doAssert(a1 == "testϴ")
-  doAssert(a2 == "default")
-  let a3 = "test".encode(env)
-  doAssert(a3.decode(env, string).get() == "test")
-  return a1.encode(env)
+  doAssert(env.from_term(env.to_term("test2"), string).get() == "test2")
+  return env.to_term(a1)
 
-proc codec_charlist(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=1).} =
-  let a1 = argv[0].decode(env, ErlCharlist).get()
-  let a2 = argv[1].decode(env, ErlCharlist).get("default".toSeq())
-  doAssert(a1 == "test".toSeq())
-  doAssert(a2 == "default".toSeq())
-  let a3 = "test".toSeq().encode(env)
-  doAssert(a3.decode(env, ErlCharlist).get() == "test".toSeq())
-  return a1.encode(env)
+proc codec_binary(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
+  let a1 = env.from_term(argv[0], ErlBinary).get()
+  doAssert(cast[cstring](a1.data) == "test".cstring)
+  return env.to_term(a1)
 
-proc codec_binary(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=1).} =
-  let a1 = argv[0].decode(env, ErlBinary)
-  if a1.isNone():
-    return enif_make_badarg(env)
-  let a1v = a1.get()
-  doAssert(cast[cstring](a1v.data) == "test".cstring)
-  return a1v.encode(env)
+proc codec_list_int(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
+  var a1 = env.from_term(argv[0], seq[int]).get()
+  doAssert(a1 == @[1,2,3])
+  return env.to_term(a1)
 
-proc codec_list(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=1).} =
-  var l = argv[0].decode(env, seq[int]).get()
-  doAssert(l == @[1,2,3])
-  return @[1,2,3].encode(env)
+proc codec_list_string(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
+  var a1 = env.from_term(argv[0], seq[string]).get()
+  doAssert(a1 == @["a","b","c"])
+  return env.to_term(a1)
 
-proc codec_tuple(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=1).} =
-  var a1 = argv[0].decode(env, tuple[a: string, b: int, c: float]).get()
+proc codec_tuple(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
+  var a1 = env.from_term(argv[0], tuple[a: string, b: int, c: float]).get()
   doAssert(a1 == ("test", 1, 1.2))
-  return ("test", 1, 1.2).encode(env)
+  return env.to_term(a1)
 
-proc codec_map(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=3).} =
-  var a1 = argv[0].decode(env, Table[ErlCharlist, int]).get()
-  var a2 = argv[1].decode(env, Table[string, int]).get()
-  var a3 = argv[2].decode(env, Table[ErlAtom, string]).get()
+proc codec_map(env, argc, argv): ErlNifTerm {.nif(arity=3).} =
+  var a1 = env.from_term(argv[0], Table[ErlCharlist, int]).get()
+  var a2 = env.from_term(argv[1], Table[string, int]).get()
+  var a3 = env.from_term(argv[2], Table[ErlAtom, string]).get()
+  return env.to_term((a1, a2, a3))
 
-  return (a1, a2, a3).encode(env)
+proc codec_result_ok(env, argc, argv): ErlNifTerm {.nif(arity=2).} =
+  return env.ok(argv[0], argv[1])
 
-proc codec_result_ok(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=1).} =
-  return argv[0].ok(env)
-
-proc codec_result_error(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.nif(arity=1).} =
-  return error(env, argv[0])
+proc codec_result_error(env, argc, argv): ErlNifTerm {.nif(arity=2).} =
+  return env.error(argv[0], argv[1])
 
 export_nifs("Elixir.NimlerWrapper", [
+  codec_options,
+  codec_int,
   codec_int32,
   codec_uint32,
   codec_uint64,
   codec_double,
   codec_atom,
-  codec_string,
   codec_charlist,
+  codec_string,
   codec_binary,
+  codec_list_int,
+  codec_list_string,
   codec_tuple,
-  codec_list,
   codec_map,
   codec_result_ok,
   codec_result_error

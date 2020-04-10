@@ -11,6 +11,7 @@ export erl_nif
 macro tonif*(fptr: ErlNifFptr, name: string, arity: int, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
   result = quote do:
     ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fptr`, flags: `flags`)
+
 macro tonif*(name: string, arity: int, fptr: ErlNifFptr, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
   result = quote do:
     ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fptr`, flags: `flags`)
@@ -27,7 +28,7 @@ macro nif* (name: string, arity: int, fn: untyped): untyped =
       let fn_name = fn[0]
       let fn_node = toproc(fn)
       result = quote do:
-        let `fn_name` = ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fn_node`)
+        const `fn_name` = ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fn_node`)
     of nnkIdent:
       result = quote do:
         ErlNifFunc(name: `name`, arity: `arity`, fn: `fn`)
@@ -41,7 +42,7 @@ macro nif*(arity: int, fn: untyped): untyped =
       let fn_name_lit = fn_name.toStrLit()
       let fn_node = toproc(fn)
       result = quote do:
-        let `fn_name` = ErlNifFunc(name: `fn_name_lit`, arity: cuint(`arity`), fptr: `fn_node`)
+        const `fn_name` = ErlNifFunc(name: `fn_name_lit`, arity: cuint(`arity`), fptr: `fn_node`)
     of nnkIdent:
       let fn_name_lit = newLit(repr(fn))
       result = quote do:
@@ -53,7 +54,7 @@ proc NimMain() {.gensym, importc: "NimMain".}
 
 template export_nifs*(
     module_name: string,
-    nifs: openArray[ErlNifFunc],
+    nifs: static openArray[ErlNifFunc],
     on_load: ErlNifEntryLoad = nil,
     on_reload: ErlNifEntryReload = nil,
     on_upgrade: ErlNifEntryUpgrade = nil,

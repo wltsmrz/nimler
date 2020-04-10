@@ -1,5 +1,6 @@
 import ../../nimler
 import ../../nimler/codec
+import options
 import tables
 
 using
@@ -8,7 +9,8 @@ using
   argv: ErlNifArgs
 
 proc codec_options(env; argc; argv): ErlNifTerm {.nif(arity=2).} =
-  if env.from_term(argv[0], int).isNone():
+  let a1 = env.from_term(argv[0], int)
+  if a1.isNone():
     return enif_make_atom(env, "bad_type")
   let a2 = env.from_term(argv[1], int).get(-1)
   return env.to_term(a2)

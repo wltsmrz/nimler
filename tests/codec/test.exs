@@ -9,12 +9,10 @@ defmodule NimlerTest do
     end
 
     describe "codec_options" do
-        @tag :skip
         test "codec_options() type check", do:
-            assert(:bad_type == NimlerWrapper.codec_int("asdf", 1))
-        @tag :skip
+            assert(:bad_type == NimlerWrapper.codec_options("asdf", 1))
         test "codec_options() default", do:
-            assert(-1 == NimlerWrapper.codec_int(1, "asdf"))
+            assert(-1 == NimlerWrapper.codec_options(1, "asdf"))
     end
 
     describe "codec_numbers" do

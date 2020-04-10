@@ -1,8 +1,5 @@
 import ../erl_sys_info
 
-when not declared(csize_t):
-  type csize_t* {.importc: "size_t", nodecl.} = uint
-
 type
   ErlNifEnv* {.importc: "ErlNifEnv", header: "erl_nif.h".} = object
   ErlNifTerm* = culonglong

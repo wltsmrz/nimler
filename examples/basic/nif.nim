@@ -1,12 +1,16 @@
 import ../../nimler
 import ../../nimler/codec
 
-proc add_numbers(env: ptr ErlNifEnv, argc: cint, argv: ErlNifArgs): ErlNifTerm {.raises: [].} =
-  let a1 = argv[0].decode(env, uint32).get(0)
-  let a2 = argv[1].decode(env, uint32).get(0)
-  return (a1 + a2).encode(env)
+using
+  env: ptr ErlNifEnv
+  argc: cint
+  argv: ErlNifArgs
 
-export_nifs("Elixir.NumberAdder", [
-  ("add_numbers", 2, add_numbers)
-])
+func add_numbers(env; argc; argv): ErlNifTerm {.nif(arity=2), raises: [].} =
+  let a1 = env.from_term(argv[0], int32).get(0)
+  let a2 = env.from_term(argv[1], int32).get(0)
+  let r = a1 + a2
+  return env.to_term(r)
+
+export_nifs("Elixir.NumberAdder", [add_numbers])
 

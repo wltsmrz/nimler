@@ -1,28 +1,5 @@
 
-# Getting started
-
-This example will create a NIF for Elixir to add two signed 32-bit ints.
-
-## Setup
-
-Install [<ins>nim</ins>](https://nim-lang.org/install.html) and [<ins>elixir</ins>](https://elixir-lang.org/install.html])
-
-```bash
-$ nim --version
-# Nim Compiler Version 1.0.6 [Linux: amd64]
-
-$ elixir --version
-# Elixir 1.10.2 (compiled with Erlang/OTP 22)
-```
-
-Install nimler
-
-```bash
-$ nimble install nimler
-```
-
-
-## Write NIF in nim
+# NumberAdder
 
 ```nim tab="nif.nim"
 import nimler
@@ -67,13 +44,3 @@ end
     * `add_numbers(_a, _b)` Placeholder functions must exist when NIF is loaded. The arity of placeholder functions must also match the arity of functions exported from NIF
     * `'./nif'` path to shared library; in this case `nif.so`
 
-
-## More examples
-
-nimler tests are also nifs. For more examples, see:
-
-* [init API](https://github.com/wltsmrz/nimler/blob/develop/tests/init_api/nif.nim)
-* [codec](https://github.com/wltsmrz/nimler/blob/develop/tests/codec/nif.nim)
-* [erl_nif API coverage](https://github.com/wltsmrz/nimler/blob/develop/tests/integration/nif.nim)
-* [dirty NIFs](https://github.com/wltsmrz/nimler/blob/develop/tests/dirty_nif/nif.nim)
-* [consume_timeslice() test](https://github.com/wltsmrz/nimler/blob/develop/tests/timeslice/nif.nim)

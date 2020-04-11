@@ -1,6 +1,5 @@
 import os
 import ../../nimler
-import ../../nimler/codec
 
 using
   env: ptr ErlNifEnv

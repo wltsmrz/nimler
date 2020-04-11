@@ -152,7 +152,7 @@ proc from_term*(env; term; T: typedesc[seq]): Option[T] =
     var tail = cell[1]
     if head.isNone():
       return none(T)
-    res.add(head.get())
+    res.add(move(head.get()))
     list = env.from_term_list(tail)
   result = some(res)
 proc to_term*(env; V: seq): ErlNifTerm =

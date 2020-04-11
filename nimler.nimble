@@ -1,4 +1,4 @@
-mode = ScriptMode.Verbose
+mode = ScriptMode.Silent
 
 version = "2.0.0"
 author = "wltsmrz"
@@ -17,11 +17,15 @@ proc configNif() =
   --gc:arc
 
 proc configTest() =
-  --verbosity:0
-  --hints:off
+  --verbosity:2
+  --hint[Conf]:off
+  --hint[Processing]:off
+  --hint[Exec]:off
+  --hint[Link]:off
+  --hint[GCStats]:off
+  --hint[GlobalVar]:off
+  --hint[SuccessX]:off
   --checks:off
-  --stacktrace:on
-  --linetrace:on
   --path:"."
   configNif()
 

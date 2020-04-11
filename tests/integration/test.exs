@@ -8,37 +8,6 @@ defmodule NimlerTest do
         NimlerWrapper.load_nif()
     end
 
-    describe "compare" do
-        test "enif_compare(<)", do:
-            assert(-1 == NimlerWrapper.enif_compare(1, 2))
-        test "enif_compare(>)", do:
-            assert(1 == NimlerWrapper.enif_compare(2, 1))
-        test "enif_compare(=)", do:
-            assert(0 == NimlerWrapper.enif_compare(2, 2))
-        test "enif_compare(char)", do:
-            assert(1 == NimlerWrapper.enif_compare('x', 'b'))
-    end
-
-    describe "term_type" do
-        test "term_type()", do:
-            NimlerWrapper.enif_term_type( 1, 'test', {1}, "test", %{}, self())
-    end
-
-    describe "system_info" do
-        test "system_info()", do:
-            NimlerWrapper.enif_system_info()
-    end
-
-    describe "snprintf" do
-        test "snprintf()", do:
-            NimlerWrapper.enif_snprintf('test')
-    end
-
-    describe "raise_exception" do
-        test "raise_exception()", do:
-            assert_raise(ErlangError, ~s(Erlang error: "test"), fn -> NimlerWrapper.enif_raise_exception("test") end)
-    end
-
     describe "type_checkers" do
         test "is_atom(:test)", do:
             assert(1 == NimlerWrapper.enif_is_atom(:test))
@@ -189,5 +158,37 @@ defmodule NimlerTest do
         test "get_map_value()", do:
             assert(1 == NimlerWrapper.enif_get_map_value(%{a: 1}, :a))
     end
+
+    describe "compare" do
+        test "enif_compare(<)", do:
+            assert(-1 == NimlerWrapper.enif_compare(1, 2))
+        test "enif_compare(>)", do:
+            assert(1 == NimlerWrapper.enif_compare(2, 1))
+        test "enif_compare(=)", do:
+            assert(0 == NimlerWrapper.enif_compare(2, 2))
+        test "enif_compare(char)", do:
+            assert(1 == NimlerWrapper.enif_compare('x', 'b'))
+    end
+
+    describe "term_type" do
+        test "term_type()", do:
+            NimlerWrapper.enif_term_type( 1, 'test', {1}, "test", %{}, self())
+    end
+
+    describe "system_info" do
+        test "system_info()", do:
+            NimlerWrapper.enif_system_info()
+    end
+
+    describe "snprintf" do
+        test "snprintf()", do:
+            NimlerWrapper.enif_snprintf('test')
+    end
+
+    describe "raise_exception" do
+        test "raise_exception()", do:
+            assert_raise(ErlangError, ~s(Erlang error: "test"), fn -> NimlerWrapper.enif_raise_exception("test") end)
+    end
+
 end
 

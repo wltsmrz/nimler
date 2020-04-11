@@ -204,12 +204,16 @@ proc from_term*(env; term; T: typedesc[Table]): Option[T] =
   enif_map_iterator_destroy(env, addr(iter))
   return some(res)
 proc to_term*(env; V: Table): ErlNifTerm =
-  var map = enif_make_new_map(env)
+  var keys = newSeq[ErlNifTerm](len(V))
+  var vals = newSeq[ErlNifTerm](len(V))
+  var i = 0
   for k, v in V:
-    let key = env.to_term(k)
-    let value = env.to_term(v)
-    if not enif_make_map_put(env, map, key, value, addr(map)):
-      discard enif_raise_exception(env, env.to_term(ExceptionMapEncode))
+    keys[i] = env.to_term(k)
+    vals[i] = env.to_term(v)
+    inc(i)
+  var map: ErlNifTerm
+  if not enif_make_map_from_arrays(env, addr(keys[0]), addr(vals[0]), cuint(len(keys)), addr(map)):
+    return enif_raise_exception(env, env.to_term(ExceptionMapEncode))
   return map
 
 # result

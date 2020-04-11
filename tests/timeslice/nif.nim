@@ -14,10 +14,10 @@ proc consume_timeslice(env; argc; argv): ErlNifTerm =
 
   while it < 1000:
     inc(it)
-    os.sleep(1)
     if enif_consume_timeslice(env, cint(100)):
       let next_args = [ env.to_term(it), env.to_term(invocations) ]
       return enif_schedule_nif(env, consume_timeslice, next_args)
+    os.sleep(1)
 
   return env.ok(env.to_term(it), env.to_term(invocations))
 

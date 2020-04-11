@@ -66,24 +66,24 @@ proc codec_binary(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
   return env.to_term(a1)
 
 proc codec_list_int(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
-  var a1 = env.from_term(argv[0], seq[int]).get()
+  let a1 = env.from_term(argv[0], seq[int]).get()
   doAssert(a1 == @[1,2,3])
   return env.to_term(a1)
 
 proc codec_list_string(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
-  var a1 = env.from_term(argv[0], seq[string]).get()
+  let a1 = env.from_term(argv[0], seq[string]).get()
   doAssert(a1 == @["a","b","c"])
   return env.to_term(a1)
 
 proc codec_tuple(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
-  var a1 = env.from_term(argv[0], tuple[a: string, b: int, c: float]).get()
+  let a1 = env.from_term(argv[0], (string, int, float)).get()
   doAssert(a1 == ("test", 1, 1.2))
   return env.to_term(a1)
 
 proc codec_map(env, argc, argv): ErlNifTerm {.nif(arity=3).} =
-  var a1 = env.from_term(argv[0], Table[ErlCharlist, int]).get()
-  var a2 = env.from_term(argv[1], Table[string, int]).get()
-  var a3 = env.from_term(argv[2], Table[ErlAtom, string]).get()
+  let a1 = env.from_term(argv[0], Table[ErlCharlist, int]).get()
+  let a2 = env.from_term(argv[1], Table[string, int]).get()
+  let a3 = env.from_term(argv[2], Table[ErlAtom, string]).get()
   return env.to_term((a1, a2, a3))
 
 proc codec_result_ok(env, argc, argv): ErlNifTerm {.nif(arity=2).} =

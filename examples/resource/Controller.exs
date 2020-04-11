@@ -8,9 +8,8 @@ defmodule PIController do
     def load_nif do
         :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), "nif")), 0)
 
-        ctrl = create_resource()
+        {:ok, ctrl} = create_resource()
         IO.inspect(update_resource(ctrl, 10.0, 1.0), label: 'PIControl update')
-        # :erlang.garbage_collect()
         IO.inspect(update_resource(ctrl, 10.0, 5.0), label: 'PIControl update')
         IO.inspect(update_resource(ctrl, 10.0, 8.0), label: 'PIControl update')
 

@@ -48,7 +48,7 @@ template export_nifs*(module_name: string, nifs: static openArray[ErlNifFunc]) =
     var flags = cast[cint]({ERL_NIF_RT_CREATE, ERL_NIF_RT_TAKEOVER})
     var flags_tried: cint
     var open_res = enif_open_resource_type(env, module_name, flags, addr(flags_tried))
-    if open_res == nil: return -1
+    if isNil(open_res): return -1
     priv.resource_type = open_res
     priv_data[] = priv
     return 0

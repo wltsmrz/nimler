@@ -1,5 +1,5 @@
 
-# Cooperating with Erlang scheduler
+# Cooperating with Erlang schedulers
 
 NIFs should return as soon as possible. The threshold for not-quick is around 1ms--although in reality this figure is dynamic.
 

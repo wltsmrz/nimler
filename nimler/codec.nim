@@ -23,7 +23,7 @@ const AtomTrue* = ErlAtom(val: "true")
 const AtomFalse* = ErlAtom(val: "false")
 const ExceptionMapEncode* = @"nimler: fail to encode map"
 
-macro generic_params*(T: typedesc): untyped =
+macro generic_params(T: typedesc): untyped =
   result = newNimNode(nnkTupleConstr)
   var impl = getTypeImpl(T)
   expectKind(impl, nnkBracketExpr)
@@ -146,16 +146,17 @@ proc from_term*(env; term; T: typedesc[seq]): Option[T] =
   var head, tail: ErlNifTerm
   type el_type = codec.generic_params(T).get(0)
   while enif_get_list_cell(env, cursor, addr(head), addr(tail)):
-    let head_d = env.from_term(head, el_type)
+    var head_d = env.from_term(head, el_type)
     if head_d.isNone():
       return none(T)
-    res.add(head_d.get())
+    res.add(move(head_d.get()))
     cursor = tail
   return some(res)
 proc to_term*(env; V: seq): ErlNifTerm =
-  var v = newSeq[ErlNifTerm](V.len)
-  for i, el in V: v[i] = env.to_term(el)
-  result = enif_make_list_from_array(env, v)
+  var v = newSeqOfCap[ErlNifTerm](V.len)
+  for el in V:
+    v.add(env.to_term(el))
+  result = enif_make_list_from_array(env, move(v))
 
 # tuple
 proc from_term*(env; term; T: typedesc[tuple]): Option[T] =
@@ -201,21 +202,19 @@ proc from_term*(env; term; T: typedesc[Table]): Option[T] =
   enif_map_iterator_destroy(env, addr(iter))
   return some(res)
 proc to_term*(env; V: Table): ErlNifTerm =
-  var keys = newSeq[ErlNifTerm](len(V))
-  var vals = newSeq[ErlNifTerm](len(V))
-  var i = 0
+  var keys = newSeqOfCap[ErlNifTerm](V.len)
+  var vals = newSeqOfCap[ErlNifTerm](V.len)
   for k, v in V:
-    keys[i] = env.to_term(k)
-    vals[i] = env.to_term(v)
-    inc(i)
+    keys.add(env.to_term(k))
+    vals.add(env.to_term(v))
   var map: ErlNifTerm
-  if not enif_make_map_from_arrays(env, addr(keys[0]), addr(vals[0]), cuint(len(keys)), addr(map)):
+  if not enif_make_map_from_arrays(env, addr(keys[0]), addr(vals[0]), cuint(keys.len), addr(map)):
     return enif_raise_exception(env, env.to_term(ExceptionMapEncode))
   return map
 
 # result
 template result_tuple*(env; res_type: ErlnifTerm; terms: varargs[ErlNifTerm]): ErlNifTerm =
-  var result_tup: array[1 + len(terms), ErlNifTerm]
+  var result_tup: array[1 + terms.len, ErlNifTerm]
   result_tup[0] = res_type
   result_tup[1..result_tup.high] = terms
   enif_make_tuple_from_array(env, result_tup)

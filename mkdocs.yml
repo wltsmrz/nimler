@@ -11,13 +11,14 @@ nav:
   - Examples:
     - NumberAdder: examples/NumberAdder.md
     - PIController: examples/PIController.md
-    - OrderedSet: examples/OrderedSet.md
+    - Nimler Tests: examples/tests.md
   - Developer Guide:
-    - Reading and writing Erlang terms: guide/codec.md
-    - Using resource objects: guide/resources.md
-    - Cooperating with Erlang schedulers: guide/timeslice.md
-  - API:
-    - Nim docs: api.md
+    - Nimler Modules: guide/nimler_structure.md
+    - Reading and Writing Erlang terms: guide/codec.md
+    - Using Resource Objects: guide/resources.md
+    - Cooperating with Erlang Schedulers: guide/timeslice.md
+    - Generating Elixir Modules: guide/generating_wrapper.md
+  - API: api.md
 
 theme:
   name: material

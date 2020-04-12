@@ -1,8 +1,8 @@
 # Reading and writing Erlang terms
 
-Erlang terms are represented in nimler with the opaque type `ErlNifTerm`. nimler exposes a set of functions for reading and writing to and from `ErlNifTerm`.
+Erlang terms are represented in nimler with the opaque type `ErlNifTerm`. nimler exposes a set of functions for converting between `ErlNifTerm` and nim types.
 
-## Reading
+## Reading terms
 
 Produce nim type from `ErlNifTerm`. `from_term()` returns an [Option](https://nim-lang.org/docs/options.html).
 
@@ -18,7 +18,7 @@ else:
 let ii = env.from_term(term, int32).get(0)
 ```
 
-## Writing
+## Writing terms
 
 Produce `ErlNifTerm` from nim type
 
@@ -51,7 +51,7 @@ let atom = env.from_term(term, ErlAtom).get()
 # ErlAtom(val: "test")
 ```
 
-!!! note
+!!! info
     The following atom constants are exported from nimler. Note that these are not yet written to Erlang terms.
 
     * `AtomOk`: `ErlAtom(val: "ok")`
@@ -61,6 +61,8 @@ let atom = env.from_term(term, ErlAtom).get()
 
 ### Strings
 
+Strings follow the Elixir pattern of using Erlang bitstring rather than charlists
+
 ```nim
 let term = env.to_term("test")
 # "test"
@@ -69,10 +71,9 @@ let str = env.from_term(term, string).get()
 # "test"
 ```
 
-!!! note
-    Strings follow the Elixir pattern of using Erlang bitstring rather than charlists
-
 ### Lists
+
+Elements of `seq` must be of the same type.
 
 ```nim
 let term = env.to_term(@[1,2,3])
@@ -82,10 +83,9 @@ let lst = env.from_term(term, seq[int]).get()
 # @[1,2,3]
 ```
 
-!!! note
-    Elements of `seq` must be of the same type.
-
 ### Tuples
+
+Tuples in nim may contain mixed types.
 
 ```nim
 let term = env.to_term(("test",1,3.14))
@@ -97,10 +97,9 @@ let (a,b,c) = env.from_term(term, (string, int, float)).get()
 # c=3.14
 ```
 
-!!! note
-    Tuples in nim may contain mixed types.
-
 ### Maps
+
+Other types that have a defined `to_term()` function can be used as map keys or values.
 
 ```nim
 import tables
@@ -109,18 +108,20 @@ var t = initTable[string, int](4)
 t["a"] = 1
 t["b"] = 2
 
-let encoded = t.encode(env)
-# %{'a' => 1, 'b' => 2}
+let term = env.to_term(t)
+# %{"a" => 1, "b" => 2}
 
-let decoded = encoded.decode(env, Table[string, int]).get()
+let tt = env.from_term(term, Table[string, int]).get()
 # {"a": 1, "b": 2}
 ```
 
 ### Results
 
+Result tuples have a first element either `:ok` or `:error`. Nimler functions `env.ok()` and `env.error()` accept varargs.
+
 ```nim
 let ok_term = env.ok(env.to_term(1), env.to_term(2))
-# {:ok, 1, 2, 3}
+# {:ok, 1, 2}
 
 let err_term = env.error(env.to_term(1))
 # {:error, 1}

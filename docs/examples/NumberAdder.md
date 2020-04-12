@@ -1,9 +1,5 @@
 
-# NumberAdder
-
-## Add two signed 32-bit ints.
-
-Erlang/Elixir NIFs are shared libraries that depend on `erl_nif.h`. Nimler automatically detects installed Erlang/OTP, and tries to produce bindings that are compatible with the version detected.
+Add two signed 32-bit ints.
 
 ```nim tab="NumberAdder.nim"
 import nimler
@@ -44,7 +40,7 @@ elixir NumberAdder.exs
 		* `argc: cint` count of arguments
 		* `argv: ErlNifArgs` array of arguments to the NIF. Each element in ErlNifArgs array is an `ErlNifTerm`
 		* `export_nifs()` compile-time nim template that exports an `ErlNifEntry` to be loaded by Erlang or Elixir
-		* `.get(0)` Nimler `read_term()` returns an [Option](https://nim-lang.org/docs/options.html). In this case if the term cannot be read as an int32, the default value is `0`
+		* `.get(0)` Nimler `from_term()` returns an [Option](https://nim-lang.org/docs/options.html). In this case if the term cannot be read as an int32, the default value is `0`
 		* `{.nif(arity=2), raises: [].}` Nimler exports a `nif(arity=x, name=y)` macro pragma to transform function into a useable `ErlNifFunc`. The optional `raises: []` pragma is part of nim's [effect system](https://nim-lang.org/docs/manual.html#effect-system). It can be used to validate that the function does not raise an exception, which is particularly useful in the context of an Erlang NIF
 
 !!! info "NumberAdder.exs"

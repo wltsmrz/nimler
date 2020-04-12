@@ -1,9 +1,6 @@
 # nimler ![](https://github.com/wltsmrz/nimler/workflows/CI/badge.svg?branch=develop)
 
-Nimler is a library for authoring Erlang and Elixir NIFs in the nim programming language. It has mostly complete [bindings](https://github.com/wltsmrz/nimler/blob/develop/nimler/bindings/erl_nif.nim) for the Erlang [NIF API](http://erlang.org/doc/man/erl_nif.html) and some accessories for making writing NIFs easier:
-
-* Idiomatic functions for converting opaque Erlang terms to nim types
-* Simplifications for using resources
+Nimler is a library for authoring Erlang and Elixir NIFs in the nim programming language. It has mostly complete bindings for the Erlang NIF API and some accessories for making writing NIFs easier, including idiomatic functions for converting between Erlang terms and nim types, and simplifications for using resource objects.
 
 ## Installation
 

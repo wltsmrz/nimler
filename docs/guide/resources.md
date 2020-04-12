@@ -73,10 +73,10 @@ end
 ```
 
 !!! info "ResourceTest.nim"
+    * `import nimler/resources` Although nimler/resources provides convenience for using resources, it is optional. There are tests for using resources [with](https://github.com/wltsmrz/nimler/tree/develop/tests/init_resource) and [without](https://github.com/wltsmrz/nimler/tree/develop/tests/resource) the additional functionality of nimler/resources.
     * `resources.export_nifs()` rather than `nimler.export_nifs()` to automatically add `load` and `unload` handlers
-    * `env.new_resource(T): ptr T`
-    * `env.release_resource(ptr T): term`
-    * `env.get_resource(term, T): term`
-
+    * `env.new_resource(T): Option[ptr T]` allocate new resource of type
+    * `env.release_resource(ptr T): term` create `ErlNifTerm` of the resource and pass ownership to BEAM
+    * `env.get_resource(term, T): Option[ptr T]` get resource at term
 
 

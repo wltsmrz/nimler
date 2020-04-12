@@ -4,10 +4,6 @@ ExUnit.start(trace: false, seed: 0)
 defmodule NimlerTest do
     use ExUnit.Case, async: false
 
-    setup_all do
-        NimlerWrapper.load_nif()
-    end
-
     describe "init_nif" do
         test "test normal nif is properly exported", do:
             assert(1 == NimlerWrapper.test())

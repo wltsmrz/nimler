@@ -1,9 +1,10 @@
-import macros
+import std/macros
 
 import nimler/erl_sys_info
-export erl_sys_info
-
 import nimler/bindings/erl_nif
+import nimler/gen_module
+
+export erl_sys_info
 export erl_nif
 
 {.passc: "-I" & ertsPath.}
@@ -77,4 +78,8 @@ template export_nifs*(
   proc nif_init(): ptr ErlNifEntry {.dynlib, exportc.} =
     NimMain()
     result = addr(entry)
+
+  static:
+    when defined(nimlerGenModule):
+      gen_elixir_module(module_name, nifs)
 

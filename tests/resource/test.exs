@@ -4,10 +4,6 @@ ExUnit.start(trace: false, seed: 0)
 defmodule NimlerTest do
     use ExUnit.Case, async: false
 
-    setup_all do
-        NimlerWrapper.load_nif()
-    end
-
     test "resource" do
         res = NimlerWrapper.create_resource()
         assert(is_reference(res))

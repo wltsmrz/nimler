@@ -4,10 +4,6 @@ ExUnit.start(trace: false, seed: 0)
 defmodule NimlerTest do
     use ExUnit.Case, async: false
 
-    setup_all do
-        NimlerWrapper.load_nif()
-    end
-
     describe "type_checkers" do
         test "is_atom(:test)", do:
             assert(1 == NimlerWrapper.enif_is_atom(:test))
@@ -45,12 +41,12 @@ defmodule NimlerTest do
             assert(0 == NimlerWrapper.enif_is_pid(1))
         test "is_pid_undefined(self())", do:
             assert(0 == NimlerWrapper.enif_is_pid_undefined(self()))
-        @tag :skip
-        test "is_port()", do:
-            assert(1 == NimlerWrapper.enif_is_port(:test))
-        @tag :skip
-        test "is_port_alive()", do:
-            assert(1 == NimlerWrapper.enif_is_port_alive(:test))
+#         @tag :skip
+#         test "is_port()", do:
+#             assert(1 == NimlerWrapper.enif_is_port(:test))
+#         @tag :skip
+#         test "is_port_alive()", do:
+#             assert(1 == NimlerWrapper.enif_is_port_alive(:test))
         test "is_process_alive()", do:
             assert(1 == NimlerWrapper.enif_is_process_alive(self()))
         test "is_tuple({1, 2})", do:

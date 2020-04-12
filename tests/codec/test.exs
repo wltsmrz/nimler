@@ -55,6 +55,8 @@ defmodule NimlerTest do
     describe "codec_list" do
         test "codec_list_int()", do:
             assert([1,2,3] == NimlerWrapper.codec_list_int([1,2,3]))
+        test "codec_list_int() badarg", do:
+            assert(:error == NimlerWrapper.codec_list_int("asdf"))
         test "codec_list_string()", do:
             assert(["a","b","c"] == NimlerWrapper.codec_list_string(["a","b","c"]))
     end

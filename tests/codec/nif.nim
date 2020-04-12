@@ -66,9 +66,11 @@ proc codec_binary(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
   return env.to_term(a1)
 
 proc codec_list_int(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
-  let a1 = env.from_term(argv[0], seq[int]).get()
-  doAssert(a1 == @[1,2,3])
-  return env.to_term(a1)
+  let a1 = env.from_term(argv[0], seq[int])
+  if a1.isNone():
+    return env.to_term(AtomError)
+  doAssert(a1.get() == @[1,2,3])
+  return env.to_term(a1.get())
 
 proc codec_list_string(env, argc, argv): ErlNifTerm {.nif(arity=1).} =
   let a1 = env.from_term(argv[0], seq[string]).get()

@@ -115,10 +115,10 @@ proc to_term*(env; V: ErlCharlist): ErlNifTerm =
   enif_make_string(env, cast[string](V), ERL_NIF_LATIN1)
 
 # string
-proc bin_to_str(bin: ErlNifBinary): string =
+proc bin_to_str(bin: ErlNifBinary): string {.inline.} =
   result = newString(bin.size)
-  copyMem(addr(result[0]), bin.data, bin.size)
-proc str_to_bin(str: string): ErlNifBinary =
+  copyMem(addr(result[0]), bin.data, result.len)
+proc str_to_bin(str: string): ErlNifBinary {.inline.} =
   result.size = cast[csize_t](str.len)
   result.data = cast[ptr cuchar](unsafeAddr(str[0]))
 proc from_term*(env; term; T: typedesc[string]): Option[T] =
@@ -138,23 +138,20 @@ proc to_term*(env; V: ErlBinary): ErlNifTerm =
   enif_make_binary(env, unsafeAddr(V))
 
 # list
-proc from_term_list*(env; term): Option[tuple[head: ErlNifTerm, tail:ErlNifTerm]] =
-  var head, tail: ErlNifTerm
-  if enif_get_list_cell(env, term, addr(head), addr(tail)):
-    result = some((head, tail))
 proc from_term*(env; term; T: typedesc[seq]): Option[T] =
+  if not enif_is_list(env, term):
+    return none(T)
   var res: T
-  type el_type = type(res[0])
-  var list = env.from_term_list(term)
-  while list.isSome():
-    var cell = list.get()
-    var head = env.from_term(cell[0], el_type)
-    var tail = cell[1]
-    if head.isNone():
+  var cursor = term
+  var head, tail: ErlNifTerm
+  type el_type = codec.generic_params(T).get(0)
+  while enif_get_list_cell(env, cursor, addr(head), addr(tail)):
+    let head_d = env.from_term(head, el_type)
+    if head_d.isNone():
       return none(T)
-    res.add(move(head.get()))
-    list = env.from_term_list(tail)
-  result = some(res)
+    res.add(head_d.get())
+    cursor = tail
+  return some(res)
 proc to_term*(env; V: seq): ErlNifTerm =
   var v = newSeq[ErlNifTerm](V.len)
   for i, el in V: v[i] = env.to_term(el)

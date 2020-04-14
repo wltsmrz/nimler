@@ -1,0 +1,31 @@
+name: build-arm64
+
+on:
+  push:
+    branches: [ develop, master ]
+  pull_request:
+    branches: [ develop, master ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        tuple:
+          - elixir: '1.10.2'
+            nim: '1.2.0'
+    name: Elixir ${{matrix.tuple.elixir}} - Nim ${{matrix.tuple.nim}}
+    runs-on: ubuntu-18.04
+    steps:
+    - run: uname -a
+    - uses: actions/checkout@v2
+    - run: sudo apt-get update
+    - run: sudo apt-get install -y qemu binfmt-support qemu-user-static gcc-aarch64-linux-gnu
+    - run: docker pull arm64v8/elixir:${{matrix.tuple.elixir}}-slim
+    - run: docker pull multiarch/qemu-user-static
+    - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - uses: jiro4989/setup-nim-action@v1.0.2
+      with:
+          nim-version: ${{matrix.tuple.nim}}
+    - run: NIMLER_BUILD_ARM64=1 nimble build_all
+    - run: NIMLER_TEST_ELIXIR_EXE="docker run --rm -t -v "$PWD":/testdir -w /testdir arm64v8/elixir:${{matrix.tuple.elixir}}-slim elixir" nimble test_all
+

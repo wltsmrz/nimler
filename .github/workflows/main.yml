@@ -1,5 +1,4 @@
-
-name: CI
+name: build-x64
 
 on:
   push:
@@ -9,33 +8,23 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tuple:
+          - otp: '22.2'
+            elixir: '1.10.2'
+            nim: '1.2.0'
+    name: OTP ${{matrix.tuple.otp}} - Elixir ${{matrix.tuple.elixir}} - Nim ${{matrix.tuple.nim}}
+    runs-on: ubuntu-18.04
     steps:
+    - run: uname -a
     - uses: actions/checkout@v2
     - uses: actions/setup-elixir@v1.2.0
       with:
-          otp-version: 22.x
-          elixir-version: 1.10.x
+          otp-version: ${{matrix.tuple.otp}}
+          elixir-version: ${{matrix.tuple.elixir}}
     - uses: jiro4989/setup-nim-action@v1.0.2
       with:
-          nim-version: '1.2.0'
+          nim-version: ${{matrix.tuple.nim}}
     - run: nimble build_all
     - run: nimble test_all
-
-  build-arm:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - run: docker pull arm64v8/elixir 
-    - run: docker pull multiarch/qemu-user-static
-    - run: docker images
-    - run: sudo apt-get update
-    - run: sudo apt-get install -y qemu binfmt-support qemu-user-static gcc-aarch64-linux-gnu
-    - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
-    - uses: jiro4989/setup-nim-action@v1.0.2
-      with:
-          nim-version: '1.2.0'
-    - run: NIMLER_BUILD_ARM64=1 nimble build_all
-    - run: 'for testfile in $(find . -name "test.exs"); do docker run --rm -t -v "$PWD":/testdir -w /testdir arm64v8/elixir elixir -r "$(dirname $testfile)/NimlerWrapper.ex" $testfile; done'
-

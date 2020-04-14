@@ -21,3 +21,21 @@ jobs:
           nim-version: '1.2.0'
     - run: nimble build_all
     - run: nimble test_all
+
+  build-arm:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: docker pull arm64v8/elixir 
+    - run: docker pull multiarch/qemu-user-static
+    - run: docker images
+    - run: sudo apt-get update
+    - run: sudo apt-get install -y qemu binfmt-support qemu-user-static gcc-aarch64-linux-gnu
+    - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+    - uses: jiro4989/setup-nim-action@v1.0.2
+      with:
+          nim-version: '1.2.0'
+    - run: NIMLER_BUILD_ARM64=1 nimble build_all
+    - run: 'for testfile in $(find . -name "test.exs"); do docker run --rm -t -v "$PWD":/testdir -w /testdir arm64v8/elixir elixir -r "$(dirname $testfile)/NimlerWrapper.ex" $testfile; done'
+

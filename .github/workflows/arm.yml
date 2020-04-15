@@ -19,7 +19,7 @@ jobs:
     - run: uname -a
     - uses: actions/checkout@v2
     - run: sudo apt-get update
-    - run: sudo apt-get install -y qemu binfmt-support qemu-user-static gcc-aarch64-linux-gnu
+    - run: sudo apt-get install -y binfmt-support gcc-aarch64-linux-gnu
     - run: docker pull arm64v8/elixir:${{matrix.tuple.elixir}}-slim
     - run: docker pull multiarch/qemu-user-static
     - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes

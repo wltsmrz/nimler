@@ -216,7 +216,7 @@ proc to_term*(env; V: Table): ErlNifTerm =
 template result_tuple*(env; res_type: ErlnifTerm; terms: varargs[ErlNifTerm]): ErlNifTerm =
   var result_tup: array[1 + terms.len, ErlNifTerm]
   result_tup[0] = res_type
-  result_tup[1..result_tup.high] = terms
+  result_tup[1 .. result_tup.high] = terms
   enif_make_tuple_from_array(env, result_tup)
 template ok*(env; terms: varargs[ErlNifTerm]): ErlNifTerm =
   result_tuple(env, env.to_term(AtomOk), terms)

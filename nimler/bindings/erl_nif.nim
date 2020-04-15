@@ -69,7 +69,7 @@ type
   ErlNifEvent* {.importc: "ErlNifEvent", header: "erl_nif.h"} = cint
   ErlNifMonitor* {.importc: "ErlNifMonitor", header: "erl_nif.h".} = object
     data: array[4, csize_t]
-  ErlNifResourceType* = object
+  ErlNifResourceType* {.importc: "ErlNifResourceType", header: "erl_nif.h"} = object
   ErlNifResourceFlags* {.size: sizeof(cint), importc: "ErlNifResourceFlags", header: "erl_nif.h".} = enum
     ERL_NIF_RT_CREATE = 1
     ERL_NIF_RT_TAKEOVER = 2
@@ -197,7 +197,7 @@ proc enif_make_copy*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.importc: "
 proc enif_make_pid*(a1: ptr ErlNifEnv; a2: ptr ErlNifPid): ErlNifTerm {.importc: "enif_make_pid", header: "erl_nif.h".}
 proc enif_self*(a1: ptr ErlNifEnv; a2: ptr ErlNifPid): ptr ErlNifPid {.importc: "enif_self", header: "erl_nif.h".}
 proc enif_get_local_pid*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifPid): bool {.importc: "enif_get_local_pid", header: "erl_nif.h".}
-proc enif_get_map_size*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr cuint): bool {.importc: "enif_get_map_size", header: "erl_nif.h".}
+proc enif_get_map_size*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr csize_t): bool {.importc: "enif_get_map_size", header: "erl_nif.h".}
 proc enif_make_new_map*(a1: ptr ErlNifEnv): ErlNifTerm {.importc: "enif_make_new_map", header: "erl_nif.h".}
 proc enif_make_map_from_arrays*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm; a3: ptr ErlNifTerm; a4: cuint, a5: ptr ErlNifTerm): bool {.importc: "enif_make_map_from_arrays", header: "erl_nif.h".}
 proc enif_make_map_put*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ErlNifTerm; a5: ptr ErlNifTerm): bool {.importc: "enif_make_map_put", header: "erl_nif.h".}

@@ -148,11 +148,11 @@ defmodule NimlerTest do
         test "get_list_length()", do:
             assert(2 == NimlerWrapper.enif_get_list_length([1, 2]))
         test "get_list_cell()", do:
-            assert([2,3] == NimlerWrapper.enif_get_list_cell([1, 2, 3]))
-        test "get_map_size()", do:
+             assert([2,3] == NimlerWrapper.enif_get_list_cell([1, 2, 3]))
+         test "get_map_size()", do:
             assert(2 == NimlerWrapper.enif_get_map_size(%{a: "test", b: "test2"}))
-        test "get_map_value()", do:
-            assert(1 == NimlerWrapper.enif_get_map_value(%{a: 1}, :a))
+       test "get_map_value()", do:
+           assert(1 == NimlerWrapper.enif_get_map_value(%{a: 1}, :a))
     end
 
     describe "compare" do

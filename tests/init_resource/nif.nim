@@ -7,7 +7,7 @@ using
   argc: cint
   argv: ErlNifArgs
 
-type MyResource {.packed.} = object
+type MyResource = object
   thing: int32
 
 func new_res(env, argc, argv): ErlNifTerm {.nif(arity=0, name="new").} =

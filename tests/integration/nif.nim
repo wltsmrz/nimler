@@ -149,10 +149,10 @@ proc get_list_cell(env, argc, argv): ErlNifTerm =
   return tail
 
 proc get_map_size(env, argc, argv): ErlNifTerm =
-  var map_size: cuint
+  var map_size: csize_t
   if not enif_get_map_size(env, argv[0], addr(map_size)):
     return enif_make_badarg(env)
-  return enif_make_int(env, cast[cint](map_size))
+  return enif_make_uint(env, map_size)
 
 proc get_map_value(env, argc, argv): ErlNifTerm =
   var map_val_term: ErlNifTerm

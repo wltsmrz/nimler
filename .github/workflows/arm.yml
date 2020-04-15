@@ -26,6 +26,6 @@ jobs:
     - uses: jiro4989/setup-nim-action@v1.0.2
       with:
           nim-version: ${{matrix.tuple.nim}}
-    - run: NIMLER_BUILD_ARM64=1 nimble build_all
+    - run: NIMLER_BUILD_ARM64=1 NIMLER_BUILD_RELEASE=1 nimble build_all
     - run: NIMLER_TEST_ELIXIR_EXE="docker run --rm -t -v "$PWD":/testdir -w /testdir arm64v8/elixir:${{matrix.tuple.elixir}}-slim elixir" nimble test_all
 

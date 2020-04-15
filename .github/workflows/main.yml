@@ -26,5 +26,5 @@ jobs:
     - uses: jiro4989/setup-nim-action@v1.0.2
       with:
           nim-version: ${{matrix.tuple.nim}}
-    - run: nimble build_all
+    - run: NIMLER_BUILD_RELEASE=1 nimble build_all
     - run: nimble test_all

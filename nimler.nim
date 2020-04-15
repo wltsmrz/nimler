@@ -80,6 +80,6 @@ template export_nifs*(
     result = addr(entry)
 
   static:
-    when defined(nimlerGenModule):
+    when defined(nimlerGenModule) or defined(nimlerGenModuleForce):
       gen_elixir_module(module_name, nifs)
 

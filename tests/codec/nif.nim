@@ -94,7 +94,7 @@ proc codec_result_ok(env, argc, argv): ErlNifTerm {.nif(arity=2).} =
 proc codec_result_error(env, argc, argv): ErlNifTerm {.nif(arity=2).} =
   return env.error(argv[0], argv[1])
 
-export_nifs("Elixir.NimlerWrapper", [
+export_nifs("Elixir.NimlerCodec", [
   codec_options,
   codec_int,
   codec_int32,

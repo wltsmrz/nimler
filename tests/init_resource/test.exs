@@ -1,8 +1,9 @@
 
 ExUnit.start(trace: false, seed: 0)
 
-defmodule NimlerTest do
+defmodule NimlerInitResource.Test do
     use ExUnit.Case, async: false
+    alias NimlerInitResource, as: NimlerWrapper
 
     test "resource wrapper" do
         {:ok, res} = NimlerWrapper.new()

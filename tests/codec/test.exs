@@ -1,8 +1,9 @@
 
 ExUnit.start(trace: false, seed: 0)
 
-defmodule NimlerTest do
+defmodule NimlerCodec.Test do
     use ExUnit.Case, async: false
+    alias NimlerCodec, as: NimlerWrapper
 
     describe "codec_options" do
         test "codec_options() type check", do:

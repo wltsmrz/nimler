@@ -1,8 +1,9 @@
 
 ExUnit.start(trace: false, seed: 0)
 
-defmodule NimlerTest do
+defmodule NimlerDirtyNif.Test do
     use ExUnit.Case, async: false
+    alias NimlerDirtyNif, as: NimlerWrapper
 
     describe "dirty_nifs" do
         test "dirty CPU", do:

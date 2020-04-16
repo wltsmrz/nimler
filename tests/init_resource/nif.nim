@@ -32,7 +32,7 @@ func check_res(env, argc, argv): ErlNifTerm {.nif(arity=2, name="check").} =
   let checked = resource.isSome() and comp.isSome() and resource.get().thing == comp.get()
   return if checked: env.ok() else: env.error()
 
-resources.export_nifs("Elixir.NimlerWrapper", [
+resources.export_nifs("Elixir.NimlerInitResource", [
   new_res,
   set_res,
   check_res

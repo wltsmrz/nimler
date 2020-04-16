@@ -343,7 +343,7 @@ proc compare(env, argc, argv): ErlNifTerm =
   let v = enif_compare(argv[0], argv[1])
   return enif_make_int(env, v)
 
-export_nifs("Elixir.NimlerWrapper", [
+export_nifs("Elixir.NimlerIntegration", [
   tonif("enif_compare", 2, compare),
   tonif("enif_term_type", 6, term_type),
   tonif("enif_system_info", 0, system_info),

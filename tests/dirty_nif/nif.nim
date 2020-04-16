@@ -19,7 +19,7 @@ proc dirty_io(env; argc; argv): ErlNifTerm =
   os.sleep(100)
   return enif_make_int(env, 1)
 
-export_nifs("Elixir.NimlerWrapper", [
+export_nifs("Elixir.NimlerDirtyNif", [
   tonif(dirty_cpu, "dirty_cpu", 0, flags=ERL_NIF_DIRTY_CPU),
   tonif(dirty_io, "dirty_io", 0, flags=ERL_NIF_DIRTY_IO)
 ])

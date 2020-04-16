@@ -1,8 +1,9 @@
 
 ExUnit.start(trace: false, seed: 0)
 
-defmodule NimlerTest do
+defmodule NimlerInitTimeslice.Test do
     use ExUnit.Case, async: false
+    alias NimlerTimeslice, as: NimlerWrapper
 
     describe "test_consume_timeslice" do
         test "timeslice iter" do

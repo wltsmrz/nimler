@@ -1,8 +1,9 @@
 
 ExUnit.start(trace: false, seed: 0)
 
-defmodule NimlerTest do
+defmodule NimlerInitApi.Test do
     use ExUnit.Case, async: false
+    alias NimlerInitApi, as: NimlerWrapper
 
     describe "init_nif" do
         test "test normal nif is properly exported", do:

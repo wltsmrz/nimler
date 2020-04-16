@@ -24,5 +24,5 @@ proc consume_timeslice(env; argc; argv): ErlNifTerm =
 func test_consume_timeslice(env; argc; argv): ErlNifTerm {.nif: 2.} =
   consume_timeslice(env, argc, argv)
 
-export_nifs("Elixir.NimlerWrapper", [test_consume_timeslice])
+export_nifs("Elixir.NimlerTimeslice", [test_consume_timeslice])
 

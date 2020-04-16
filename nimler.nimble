@@ -1,5 +1,3 @@
-import strformat
-
 mode = ScriptMode.Silent
 version = "2.0.0"
 author = "wltsmrz"
@@ -10,8 +8,6 @@ skipFiles = @["README.md"]
 installDirs = @["nimler", "scripts"]
 installFiles = @["nimler.nim"]
 requires "nim >= 1.2.0"
-
-const elixirExe = getEnv("NIMLER_TEST_ELIXIR_EXE", "elixir")
 
 proc configTest() =
   --app:lib
@@ -50,13 +46,7 @@ task build_all, "build":
   exec("nimble build_timeslice")
 
 task test_all, "run tests":
-  exec("nimble test_init_api")
-  exec("nimble test_dirty_nif")
-  exec("nimble test_integration")
-  exec("nimble test_codec")
-  exec("nimble test_resource")
-  exec("nimble test_init_resource")
-  exec("nimble test_timeslice")
+  exec("elixir test_all.exs")
 
 task build_init_api, "build nif":
   configTest()
@@ -64,7 +54,7 @@ task build_init_api, "build nif":
   setCommand("compile", "tests/init_api/nif")
 
 task test_init_api, "run test":
-  exec(&"{elixirExe} -r tests/init_api/NimlerWrapper.ex tests/init_api/test.exs")
+  exec("elixir -r tests/init_api/NimlerWrapper.ex tests/init_api/test.exs")
 
 task build_integration, "build nif":
   configTest()
@@ -72,7 +62,7 @@ task build_integration, "build nif":
   setCommand("compile", "tests/integration/nif")
 
 task test_integration, "run test":
-  exec(&"{elixirExe} -r tests/integration/NimlerWrapper.ex tests/integration/test.exs")
+  exec("elixir -r tests/integration/NimlerWrapper.ex tests/integration/test.exs")
 
 task build_codec, "build nif":
   configTest()
@@ -80,7 +70,7 @@ task build_codec, "build nif":
   setCommand("compile", "tests/codec/nif")
 
 task test_codec, "run test":
-  exec(&"{elixirExe} -r tests/codec/NimlerWrapper.ex tests/codec/test.exs")
+  exec("elixir -r tests/codec/NimlerWrapper.ex tests/codec/test.exs")
 
 task build_resource, "build nif":
   configTest()
@@ -88,7 +78,7 @@ task build_resource, "build nif":
   setCommand("compile", "tests/resource/nif")
 
 task test_resource, "run test":
-  exec(&"{elixirExe} -r tests/resource/NimlerWrapper.ex tests/resource/test.exs")
+  exec("elixir -r tests/resource/NimlerWrapper.ex tests/resource/test.exs")
 
 task build_init_resource, "build nif":
   configTest()
@@ -96,7 +86,7 @@ task build_init_resource, "build nif":
   setCommand("compile", "tests/init_resource/nif")
 
 task test_init_resource, "run test":
-  exec(&"{elixirExe} -r tests/init_resource/NimlerWrapper.ex tests/init_resource/test.exs")
+  exec("elixir -r tests/init_resource/NimlerWrapper.ex tests/init_resource/test.exs")
 
 task build_dirty_nif, "build nif":
   configTest()
@@ -104,7 +94,7 @@ task build_dirty_nif, "build nif":
   setCommand("compile", "tests/dirty_nif/nif")
 
 task test_dirty_nif, "run test":
-  exec(&"{elixirExe} -r tests/dirty_nif/NimlerWrapper.ex tests/dirty_nif/test.exs")
+  exec("elixir -r tests/dirty_nif/NimlerWrapper.ex tests/dirty_nif/test.exs")
 
 task build_timeslice, "build nif":
   configTest()
@@ -112,7 +102,7 @@ task build_timeslice, "build nif":
   setCommand("compile", "tests/timeslice/nif")
 
 task test_timeslice, "run test":
-  exec(&"{elixirExe} -r tests/timeslice/NimlerWrapper.ex tests/timeslice/test.exs")
+  exec("elixir -r tests/timeslice/NimlerWrapper.ex tests/timeslice/test.exs")
 
 task run_init_api, "run test":
   exec("nimble build_init_api")

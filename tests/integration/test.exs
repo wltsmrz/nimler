@@ -1,8 +1,9 @@
 
 ExUnit.start(trace: false, seed: 0)
 
-defmodule NimlerTest do
+defmodule NimlerIntegration.Test do
     use ExUnit.Case, async: false
+    alias NimlerIntegration, as: NimlerWrapper
 
     describe "type_checkers" do
         test "is_atom(:test)", do:

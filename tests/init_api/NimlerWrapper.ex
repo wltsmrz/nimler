@@ -1,4 +1,4 @@
-defmodule NimlerWrapper do
+defmodule NimlerInitApi do
   @on_load :init
   def init(), do: :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), 'nif')), 123)
 

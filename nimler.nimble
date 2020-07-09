@@ -10,18 +10,6 @@ installFiles = @["nimler.nim"]
 requires "nim >= 1.2.0"
 
 proc configTest() =
-  --app:lib
-  --noMain
-  --verbosity:2
-  --forceBuild
-  --parallelBuild:0
-  --hint[Conf]:off
-  --hint[Processing]:off
-  --hint[GCStats]:off
-  --hint[GlobalVar]:off
-  --checks:off
-  --path:"."
-
   if getEnv("NIMLER_BUILD_RELEASE") == "1":
     --define:release
 
@@ -30,8 +18,6 @@ proc configTest() =
     --gcc.linkerexe:"aarch64-linux-gnu-ld"
     --cpu:arm64
     --os:linux
-
-  switch("gc", getEnv("NIMLER_BUILD_GC", "arc"))
 
 task test, "dummy":
   quit(0)

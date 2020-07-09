@@ -19,28 +19,28 @@ proc codec_int(env; argc; argv): ErlNifTerm {.nif(arity=2).} =
   let a1 = env.from_term(argv[0], int).get()
   let a2 = env.from_term(argv[1], int).get()
   doAssert(env.from_term(env.to_term(1), int).get() == 1)
-  return env.to_term(a1 + a2)
+  return env.to_term(int(a1 + a2))
 
 proc codec_int32(env; argc; argv): ErlNifTerm {.nif(arity=2).} =
   let a1 = env.from_term(argv[0], int32).get()
   let a2 = env.from_term(argv[1], int32).get()
-  doAssert(env.from_term(env.to_term(1'i32), int32).get() == 1)
-  return env.to_term(a1 + a2)
+  doAssert(env.from_term(env.to_term(1'i32), int32).get() == 1'i32)
+  return env.to_term(int32(a1 + a2))
 
 proc codec_uint32(env; argc; argv): ErlNifTerm {.nif(arity=2).} =
   let a1 = env.from_term(argv[0], uint32).get()
   let a2 = env.from_term(argv[1], uint32).get()
-  doAssert(env.from_term(env.to_term(1'u32), uint32).get() == 1)
-  return env.to_term(a1 + a2)
+  doAssert(env.from_term(env.to_term(1'u32), uint32).get() == 1'u32)
+  return env.to_term(uint32(a1 + a2))
 
 proc codec_uint64(env; argc; argv): ErlNifTerm {.nif(arity=1).} =
   let a1 = env.from_term(argv[0], uint64).get()
-  doAssert(env.from_term(env.to_term(1'u64), uint64).get() == 1)
-  return env.to_term(a1)
+  doAssert(env.from_term(env.to_term(1'u64), uint64).get() == 1'u64)
+  return env.to_term(uint64(a1))
 
 proc codec_double(env; argc; argv): ErlNifTerm {.nif(arity=1).} =
   let a1 = env.from_term(argv[0], float).get()
-  doAssert(env.from_term(env.to_term(1.0'f64), float).get() == 1.0)
+  doAssert(env.from_term(env.to_term(1.0'f64), float).get() == 1.0'f64)
   return env.to_term(a1)
 
 proc codec_atom(env, argc, argv): ErlNifTerm {.nif(arity=1).} =

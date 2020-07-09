@@ -2,7 +2,7 @@ import ../erl_sys_info
 
 type
   ErlNifEnv* {.importc: "ErlNifEnv", header: "erl_nif.h".} = object
-  ErlNifTerm* = culonglong
+  ErlNifTerm* = distinct culonglong
   ErlNifArgs* = ptr UncheckedArray[ErlNifTerm]
   ErlNifFptr* = proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm {.nimcall.}
   ErlNifFlags* {.size: sizeof(cint).} = enum
@@ -106,6 +106,8 @@ type
     u*: ErlNifMapIteratorU
     spare*: array[2, pointer]
 
+proc `==`*(a, b: ErlNifTerm): bool {.borrow.}
+
 proc enif_map_iterator_create*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifMapIterator; a4: ErlNifMapIteratorEntry): bool {.importc: "enif_map_iterator_create", header: "erl_nif.h".}
 proc enif_map_iterator_destroy*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): void {.importc: "enif_map_iterator_destroy", header: "erl_nif.h".}
 proc enif_map_iterator_next*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool {.importc: "enif_map_iterator_next", header: "erl_nif.h".}
@@ -173,6 +175,7 @@ proc enif_make_list_cell*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm): Er
 proc enif_make_reverse_list*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifTerm): bool {.importc: "enif_make_reverse_list", header: "erl_nif.h".}
 proc enif_make_string*(a1: ptr ErlNifEnv; string: cstring; a3: ErlNifCharEncoding): ErlNifTerm {.importc: "enif_make_string", header: "erl_nif.h".}
 proc enif_make_string_len*(a1: ptr ErlNifEnv; string: cstring; a2: csize_t; a3: ErlNifCharEncoding): ErlNifTerm {.  importc: "enif_make_string_len", header: "erl_nif.h".}
+proc enif_make_string_len*(a1: ptr ErlNifEnv; string: openArray[char]; a3: ErlNifCharEncoding): ErlNifTerm {.  importc: "enif_make_string_len", header: "erl_nif.h".}
 proc enif_make_ref*(a1: ptr ErlNifEnv): ErlNifTerm {.importc: "enif_make_ref", header: "erl_nif.h".}
 proc enif_make_uint*(a1: ptr ErlNifEnv; a2: csize_t): ErlNifTerm {.importc: "enif_make_uint", header: "erl_nif.h".}
 proc enif_make_tuple_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): ErlNifTerm {.  importc: "enif_make_tuple_from_array", header: "erl_nif.h".}

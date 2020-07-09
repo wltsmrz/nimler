@@ -303,7 +303,8 @@ proc make_copy(env, argc, argv): ErlNifTerm =
   return c
 
 proc make_pid(env, argc, argv): ErlNifTerm =
-  var pid_term = ErlNifPid(pid: 0xBEEF)
+  var pid_term: ErlNifPid
+  pid_term.pid = enif_make_int(env, 0)
   return enif_make_pid(env, addr(pid_term))
 
 proc make_ref(env, argc, argv): ErlNifTerm =

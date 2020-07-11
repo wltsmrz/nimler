@@ -17,7 +17,6 @@ template dirty_cpu*() {.pragma.}
 
 func pragma_table(fn: NimNode): Table[string, NimNode] =
   result = initTable[string, NimNode]()
-
   for p in fn.pragma:
     case p.kind:
       of nnkIdent, nnkSym:
@@ -56,15 +55,9 @@ macro nif*(fn: untyped): untyped =
       $ERL_NIF_REGULAR
   )
 
-  case fn.kind:
-    of nnkProcDef, nnkFuncDef:
-      result = quote do:
-        const `fn_name` = ErlNifFunc(name: `nif_name`, arity: `nif_arity`, fptr: `nif_fn`, flags: `nif_flags`)
-    of nnkIdent:
-      result = quote do:
-        ErlNifFunc(name: `nif_name`, arity: `nif_arity`, fptr: `nif_fn`, flags: `nif_flags`)
-    else:
-      error "wrong kind: " & $fn.kind
+  result = quote do:
+    const `fn_name` = ErlNifFunc(name: `nif_name`, arity: `nif_arity`,
+        fptr: `nif_fn`, flags: `nif_flags`)
 
 template export_nifs*(
     module_name: string,
@@ -74,15 +67,15 @@ template export_nifs*(
     on_upgrade: ErlNifEntryUpgrade = nil,
     on_unload: ErlNifEntryUnload = nil) =
 
-  var funcs = nifs
+  var funcs {.gensym.} = nifs
   var entry: ErlNifEntry
   entry.name = module_name
-  entry.num_of_funcs = funcs.len.cint
+  entry.num_of_funcs = len(funcs).cint
   if funcs.len > 0:
-    entry.funcs = addr(funcs[0])
-  entry.major = cint(nifMajor)
-  entry.minor = cint(nifMinor)
-  entry.vm_variant = cstring("beam.vanilla")
+    entry.funcs = funcs[0].addr
+  entry.major = nifMajor.cint
+  entry.minor = nifMinor.cint
+  entry.vm_variant = "beam.vanilla"
   entry.load = on_load
   entry.reload = on_reload
   entry.upgrade = on_upgrade
@@ -92,5 +85,5 @@ template export_nifs*(
     addr(entry)
 
   static:
-      gen_wrapper(module_name, nifs)
+    gen_wrapper(module_name, nifs)
 

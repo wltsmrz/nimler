@@ -9,7 +9,8 @@ proc priv_data*(env: ptr ErlNifEnv): Option[ptr ErlNifResourceType] =
 proc get_resource*(env: ptr ErlNifEnv, term: ErlNifTerm, T: typedesc): Option[ptr T] =
   let privdata = priv_data(env)
   var res: ptr T
-  if privdata.isSome() and enif_get_resource(env, term, privdata.unsafeGet(), addr(res)):
+  if privdata.isSome() and enif_get_resource(env, term, privdata.unsafeGet(),
+      addr(res)):
     return some(res)
 
 proc release_resource*(env: ptr ErlNifEnv, V: ptr): ErlNifTerm =
@@ -20,11 +21,13 @@ proc release_resource*(env: ptr ErlNifEnv, V: ptr): ErlNifTerm =
 proc new_resource*(env: ptr ErlNifEnv, T: typedesc): Option[ptr T] =
   let privdata = priv_data(env)
   if privdata.isSome():
-    let res = cast[ptr T](enif_alloc_resource(privdata.unsafeGet(), cast[csize_t](sizeof(T))))
+    let res = cast[ptr T](enif_alloc_resource(privdata.unsafeGet(), cast[
+        csize_t](sizeof(T))))
     return some(res)
 
 template export_nifs*(module_name: string, nifs: static openArray[ErlNifFunc]) =
-  proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer, load_info: ErlNifTerm): cint =
+  proc on_load(env: ptr ErlNifEnv, priv_data: ptr pointer,
+      load_info: ErlNifTerm): cint =
     let flags = cast[cint]({ERL_NIF_RT_CREATE, ERL_NIF_RT_TAKEOVER})
     var flags_tried: cint
     let open_res = enif_open_resource_type(env, module_name, flags, addr(flags_tried))
@@ -35,5 +38,6 @@ template export_nifs*(module_name: string, nifs: static openArray[ErlNifFunc]) =
   proc on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
     enif_free(priv_data)
 
-  nimler.export_nifs(module_name, nifs, on_load=on_load, on_unload=on_unload)
+  nimler.export_nifs(module_name, nifs, on_load = on_load,
+      on_unload = on_unload)
 

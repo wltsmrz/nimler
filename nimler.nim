@@ -1,4 +1,5 @@
 import std/macros
+import std/tables
 
 import nimler/erl_sys_info
 import nimler/bindings/erl_nif
@@ -9,49 +10,61 @@ export erl_nif
 
 {.passc: "-I" & ertsPath.}
 
-macro tonif*(fptr: ErlNifFptr, name: string, arity: int, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
-  result = quote do:
-    ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fptr`, flags: `flags`)
+template arity*(x: int) {.pragma.}
+template nif_name*(x: string) {.pragma.}
+template dirty_io*() {.pragma.}
+template dirty_cpu*() {.pragma.}
 
-macro tonif*(name: string, arity: int, fptr: ErlNifFptr, flags: ErlNifFlags = ERL_NIF_REGULAR): untyped =
-  result = quote do:
-    ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fptr`, flags: `flags`)
+func pragma_table(fn: NimNode): Table[string, NimNode] =
+  result = initTable[string, NimNode]()
 
-proc toproc(fn: NimNode): NimNode {.compileTime.} =
+  for p in fn.pragma:
+    case p.kind:
+      of nnkIdent, nnkSym:
+        result[repr p] = newEmptyNode()
+      of nnkExprColonExpr:
+        result[repr p[0]] = p[1]
+      else:
+        error: "wrong kind: " & $p.kind
+
+func clone_proc(fn: NimNode): NimNode =
   result = nnkProcDef.newTree(nnkEmpty.newNimNode)
   for i, child in fn:
     if i != 0:
       result.add(child)
 
-macro nif* (name: string, arity: int, fn: untyped): untyped =
+macro nif*(fn: untyped): untyped =
+  if not (fn.kind == nnkProcDef or fn.kind == nnkFuncDef):
+    error:
+      "nif macro must be applied to proc or func"
+
+  let fn_pragmas = pragma_table(fn)
+  if not fn_pragmas.hasKey("arity"):
+    error:
+      "nif must have specified arity"
+
+  let fn_name = fn.name
+  let nif_fn = clone_proc(fn)
+  let nif_name = getOrDefault(fn_pragmas, "nif_name", newLit(repr fn_name))
+  let nif_arity = getOrDefault(fn_pragmas, "arity", newLit(0))
+  let nif_flags = ident(
+    if fn_pragmas.hasKey("dirty_io"):
+      $ERL_NIF_DIRTY_IO
+    elif fn_pragmas.hasKey("dirty_cpu"):
+      $ERL_NIF_DIRTY_CPU
+    else:
+      $ERL_NIF_REGULAR
+  )
+
   case fn.kind:
     of nnkProcDef, nnkFuncDef:
-      let fn_name = fn[0]
-      let fn_node = toproc(fn)
       result = quote do:
-        const `fn_name` = ErlNifFunc(name: `name`, arity: cuint(`arity`), fptr: `fn_node`)
+        const `fn_name` = ErlNifFunc(name: `nif_name`, arity: `nif_arity`, fptr: `nif_fn`, flags: `nif_flags`)
     of nnkIdent:
       result = quote do:
-        ErlNifFunc(name: `name`, arity: `arity`, fn: `fn`)
+        ErlNifFunc(name: `nif_name`, arity: `nif_arity`, fptr: `nif_fn`, flags: `nif_flags`)
     else:
       error "wrong kind: " & $fn.kind
-
-macro nif*(arity: int, fn: untyped): untyped =
-  case fn.kind:
-    of nnkProcDef, nnkFuncDef:
-      let fn_name = fn[0]
-      let fn_name_lit = fn_name.toStrLit()
-      let fn_node = toproc(fn)
-      result = quote do:
-        const `fn_name` = ErlNifFunc(name: `fn_name_lit`, arity: cuint(`arity`), fptr: `fn_node`)
-    of nnkIdent:
-      let fn_name_lit = newLit(repr(fn))
-      result = quote do:
-        ErlNifFunc(name: `fn_name_lit`, arity: `arity`, fptr: `fn`)
-    else:
-      error "wrong kind: " & $fn.kind
-
-proc NimMain() {.gensym, importc: "NimMain".}
 
 template export_nifs*(
     module_name: string,
@@ -59,12 +72,12 @@ template export_nifs*(
     on_load: ErlNifEntryLoad = nil,
     on_reload: ErlNifEntryReload = nil,
     on_upgrade: ErlNifEntryUpgrade = nil,
-    on_unload: ErlNifEntryUnload = nil
-) =
+    on_unload: ErlNifEntryUnload = nil) =
+
   var funcs = nifs
   var entry: ErlNifEntry
-  entry.name = cstring(module_name)
-  entry.num_of_funcs = cint(len(funcs))
+  entry.name = module_name
+  entry.num_of_funcs = funcs.len.cint
   if funcs.len > 0:
     entry.funcs = addr(funcs[0])
   entry.major = cint(nifMajor)
@@ -76,10 +89,8 @@ template export_nifs*(
   entry.unload = on_unload
 
   proc nif_init(): ptr ErlNifEntry {.dynlib, exportc.} =
-    NimMain()
-    result = addr(entry)
+    addr(entry)
 
   static:
-    when defined(nimlerGenModule) or defined(nimlerGenModuleForce):
-      gen_elixir_module(module_name, nifs)
+      gen_wrapper(module_name, nifs)
 

@@ -10,14 +10,14 @@ using
 type MyResource = object
   thing: int32
 
-func new_res(env, argc, argv): ErlNifTerm {.nif(arity=0, name="new").} =
+func new_res(env, argc, argv): ErlNifTerm {.nif, arity: 0, nif_name: "new".} =
   let res = env.new_resource(MyResource)
   if res.isNone():
     return env.error(env.to_term("fail to allocate new resource"))
   res.get().thing = 0
   return env.ok(env.release_resource(res.get()))
 
-func set_res(env, argc, argv): ErlNifTerm {.nif(arity=2, name="set").} =
+func set_res(env, argc, argv): ErlNifTerm {.nif, arity: 2, nif_name: "set".} =
   let resource = env.get_resource(argv[0], MyResource)
   let newval = env.from_term(argv[1], int32).get(-1)
   if resource.isNone():
@@ -26,7 +26,7 @@ func set_res(env, argc, argv): ErlNifTerm {.nif(arity=2, name="set").} =
   resource.get().thing = newval
   return env.ok(env.to_term(pval), argv[1])
     
-func check_res(env, argc, argv): ErlNifTerm {.nif(arity=2, name="check").} =
+func check_res(env, argc, argv): ErlNifTerm {.nif, arity: 2, nif_name: "check".} =
   let resource = env.get_resource(argv[0], MyResource)
   let comp = env.from_term(argv[1], int32)
   let checked = resource.isSome() and comp.isSome() and resource.get().thing == comp.get()

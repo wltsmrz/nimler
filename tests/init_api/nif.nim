@@ -8,7 +8,7 @@ using
   term: ErlNifTerm
   load_info: ErlNifTerm
 
-proc on_load(env, priv_data, load_info): cint =
+func on_load(env, priv_data, load_info): cint =
   var load_data: cint
   if not enif_get_int(env, load_info, addr(load_data)):
     return cint(1)
@@ -21,16 +21,16 @@ proc on_load(env, priv_data, load_info): cint =
 
   return cint(0)
 
-proc on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
+func on_unload(env: ptr ErlNifEnv, priv_data: pointer): void =
   enif_free(priv_data)
 
-proc test(env, argc, argv): ErlNifTerm {.nif(arity=0).} =
+func test(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
   enif_make_int(env, 1)
 
-func test_dirty(env, argc, argv): ErlNifTerm =
+func test_dirty(env, argc, argv): ErlNifTerm {.nif, arity: 0, dirty_io.} =
   enif_make_int(env, 1)
 
-proc test_priv_data(env, argc, argv): ErlNifTerm {.nif(name="test_priv", arity=0).}=
+func test_priv_data(env, argc, argv): ErlNifTerm {.nif, arity: 0, nif_name: "test_priv".} =
   var ptr_priv = enif_priv_data(env)
   if isNil(ptr_priv):
     return enif_make_badarg(env)
@@ -41,5 +41,5 @@ proc test_priv_data(env, argc, argv): ErlNifTerm {.nif(name="test_priv", arity=0
 export_nifs("Elixir.NimlerInitApi", [
   test,
   test_priv_data,
-  tonif(test_dirty, "test_dirty", 0, flags=ERL_NIF_DIRTY_IO)
+  test_dirty
 ], on_load=on_load, on_unload=on_unload)

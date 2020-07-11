@@ -1,4 +1,4 @@
 set -e
 
-nim c --app:lib --noMain --gc:arc --out=./nif.so ./nif.nim
-elixir ./NumberAdder.exs
+nim c -d:nimlerGenModule ./nif.nim
+elixir -r NumberAdder.ex ./test.exs

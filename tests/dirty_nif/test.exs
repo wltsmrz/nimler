@@ -7,7 +7,7 @@ defmodule NimlerDirtyNif.Test do
 
     describe "dirty_nifs" do
         test "dirty CPU", do:
-            assert(1 == NimlerWrapper.dirty_cpu())
+            assert(1346269 == NimlerWrapper.dirty_cpu())
         test "dirty IO", do:
             assert(1 == NimlerWrapper.dirty_io())
     end

@@ -37,6 +37,7 @@ task test_all, "run tests":
 task build_init_api, "build nif":
   configTest()
   switch("out", "tests/init_api/nif.so")
+  switch("define", "nimlerWrapperLoadInfo=123")
   setCommand("compile", "tests/init_api/nif")
 
 task test_init_api, "run test":

@@ -15,7 +15,7 @@ using
   argc: cint
   argv: ErlNifArgs
 
-func create_resource(env; argc; argv): ErlNifTerm =
+func create_resource(env; argc; argv): ErlNifTerm {.nif, arity: 0, dirty_io.} =
   let res = env.new_resource(PIControl)
 
   if res.isNone():
@@ -24,7 +24,7 @@ func create_resource(env; argc; argv): ErlNifTerm =
   init_controller(res.get(), rate, min, max, kp, ki, kf)
   return env.ok(env.release_resource(res.get()))
 
-func update_resource(env; argc; argv): ErlNifTerm =
+func update_resource(env; argc; argv): ErlNifTerm {.nif, arity: 3.} =
   let resource = env.get_resource(argv[0], PIControl)
 
   if resource.isNone():
@@ -44,8 +44,8 @@ func update_resource(env; argc; argv): ErlNifTerm =
 resources.export_nifs(
   "Elixir.PIController",
   [
-    create_resource.to_nif(name="create_resource", arity=0, flags=ERL_NIF_DIRTY_IO),
-    update_resource.to_nif(name="update_resource", arity=3)
+    create_resource,
+    update_resource
   ]
 )
 

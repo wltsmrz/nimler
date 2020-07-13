@@ -35,6 +35,7 @@ proc gen_wrapper*(module_name: string, funcs: static openArray[ErlNifFunc]) {.co
       
     module_contents.add("end\n")
 
-    echo "Generating wrapper module: " & module_filepath
+    echo("Generating wrapper module: " & module_filepath)
+
     writeFile(module_filepath, module_contents)
 

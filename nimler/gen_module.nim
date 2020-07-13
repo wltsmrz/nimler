@@ -4,11 +4,20 @@ import std/strutils
 import std/sequtils
 import bindings/erl_nif
 
+const nimlerWrapperRoot {.strdefine.}: string = ""
 const nimlerWrapperFilename {.strdefine.}: string = ""
 const nimlerWrapperLoadInfo {.strdefine.}: string = "0"
 
 proc gen_wrapper*(module_name: string, funcs: static openArray[ErlNifFunc]) {.compileTime.} =
-  let out_dir = querySetting(outDir)
+  let out_dir =
+    if nimlerWrapperRoot == "":
+      querySetting(outDir)
+    else:
+      nimlerWrapperRoot
+
+  doAssert(isAbsolute(out_dir), "Nimler root dir must be absolute")
+  discard staticExec("mkdir -p " & out_dir)
+
   let out_file = querySetting(outFile)
   let module_name = module_name.replace("Elixir.", "")
   let module_filename =
@@ -16,7 +25,9 @@ proc gen_wrapper*(module_name: string, funcs: static openArray[ErlNifFunc]) {.co
       module_name & ".ex"
     else:
       nimlerWrapperFilename
+
   let module_filepath = joinPath(out_dir, module_filename)
+
   let nif_filename = out_file.replace(".so", "")
   let load_info = nimlerWrapperLoadInfo
 

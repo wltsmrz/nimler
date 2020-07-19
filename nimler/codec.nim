@@ -123,7 +123,7 @@ func to_term*(env; V: ErlAtom): ErlNifTerm {.inline.} =
   if enif_make_existing_atom(env, V.val, addr(res), ERL_NIF_LATIN1):
     result = res
   else:
-    result = enif_make_atom(env, V.val)
+    result = enif_make_atom_len(env, V.val, cast[csize_t](V.val.len))
 
 # charlist
 func from_term*(env; term; T: typedesc[ErlCharlist]): Option[T] {.inline.} =

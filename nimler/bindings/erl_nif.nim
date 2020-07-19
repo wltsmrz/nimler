@@ -179,7 +179,9 @@ func enif_make_tuple*(a1: ptr ErlNifEnv; a2: csize_t): ErlNifTerm {.varargs, c_d
 func enif_make_list*(a1: ptr ErlNifEnv; a2: csize_t): ErlNifTerm {.varargs, c_dep_proc.}
 func enif_make_list_cell*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm): ErlNifTerm {.c_dep_proc.}
 func enif_make_reverse_list*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifTerm): bool {.c_dep_proc.}
-func enif_make_string*(a1: ptr ErlNifEnv; string: cstring; a3: ErlNifCharEncoding): ErlNifTerm {.c_dep_proc.}
+func enif_make_string*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifCharEncoding): ErlNifTerm {.c_dep_proc.}
+template enif_make_string*(a1: ptr ErlNifEnv; a2: cstring): untyped =
+  enif_make_string(a1, a2, ERL_NIF_LATIN1)
 func enif_make_string_len*(a1: ptr ErlNifEnv; string: cstring; a2: csize_t; a3: ErlNifCharEncoding): ErlNifTerm {.c_dep_proc.}
 func enif_make_string_len*(a1: ptr ErlNifEnv; string: openArray[char]; a3: ErlNifCharEncoding): ErlNifTerm {.c_dep_proc.}
 func enif_make_ref*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc.}

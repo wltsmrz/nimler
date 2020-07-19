@@ -30,6 +30,7 @@ task build_all, "build":
   exec("nimble build_resource")
   exec("nimble build_init_resource")
   exec("nimble build_timeslice")
+  exec("nimble build_message")
 
 task test_all, "run tests":
   exec("elixir test_all.exs")
@@ -91,6 +92,14 @@ task build_timeslice, "build nif":
 task test_timeslice, "run test":
   exec("elixir -r tests/timeslice/NimlerWrapper.ex tests/timeslice/test.exs")
 
+task build_message, "build nif":
+  configTest()
+  switch("out", "tests/message/nif.so")
+  setCommand("compile", "tests/message/nif")
+
+task test_message, "run test":
+  exec("elixir -r tests/message/NimlerWrapper.ex tests/message/test.exs")
+
 task run_init_api, "run test":
   exec("nimble build_init_api")
   exec("nimble test_init_api")
@@ -112,4 +121,6 @@ task run_resource, "run test":
 task run_timeslice, "run test":
   exec("nimble build_timeslice")
   exec("nimble test_timeslice")
-
+task run_message, "run test":
+  exec("nimble build_message")
+  exec("nimble test_message")

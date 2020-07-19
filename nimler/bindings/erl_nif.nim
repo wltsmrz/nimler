@@ -115,16 +115,14 @@ proc `==`*(a, b: ErlNifTerm): bool {.borrow.}
 
 func enif_raise_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.c_dep_proc.}
 func enif_priv_data*(a1: ptr ErlNifEnv): pointer {.c_dep_proc.}
-
 func enif_hash*(a1: ErlNifHash; term: ErlNifTerm; salt: culonglong = 0): culonglong {.c_dep_proc.}
-
 func enif_system_info*(a1: ptr ErlNifSysInfo; a2: csize_t): void {.c_dep_proc.}
 func enif_system_info*(): ErlNifSysInfo {.inline.} =
   var info: ErlNifSysInfo
   enif_system_info(addr(info), cast[csize_t](sizeof(info)))
   return info
 
-# Erlang allocator
+# allocator
 func enif_alloc*(a1: csize_t): pointer {.c_dep_proc.}
 func enif_free*(a1: pointer) {.c_dep_proc.}
 func enif_realloc*(a1: pointer; a2: csize_t): pointer {.c_dep_proc.}
@@ -224,7 +222,7 @@ func enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize_t; a4: pt
 template enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize_t; a4: ptr ErlNifTerm): csize_t =
   enif_binary_to_term(a1, a2, a3, a4, ERL_NIF_BIN2TERM_SAFE)
 
-# messages/threads
+# messages
 func enif_alloc_env*(): ptr ErlNifEnv {.c_dep_proc.}
 func enif_free_env*(a1: ptr ErlNifEnv) {.c_dep_proc.}
 func enif_clear_env*(a1: ptr ErlNifEnv) {.c_dep_proc.}
@@ -252,12 +250,22 @@ template enif_schedule_nif*(a1: ptr ErlNifEnv; a2: ErlNifFptr; a3: openArray[Erl
 
 when (nifMajor, nifMinor) >= (2, 8):
   func enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.c_dep_proc.}
-  template enif_has_pending_exception*(a1: ptr ErlNifEnv): bool =
-    enif_has_pending_exception(a1, nil)
+else:
+  func enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm) =
+    {.error: "enif_has_pending_exception not supported in target NIF version".}
+
+template enif_has_pending_exception*(a1: ptr ErlNifEnv): bool =
+  enif_has_pending_exception(a1, nil)
 
 when (nifMajor, nifMinor) >= (2, 11):
   func enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, c_dep_proc.}
+else:
+  func enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring) =
+    {.error: "enif_snprintf not supported in target NIF version".}
 
 when (nifMajor, nifMinor) >= (2, 15):
   func enif_term_type*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTermType {.c_dep_proc.}
+else:
+  func enif_term_type*(a1: ptr ErlNifEnv; a2: ErlNifTerm) =
+    {.error: "enif_term_type not supported in target NIF version".}
 

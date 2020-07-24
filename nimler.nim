@@ -87,3 +87,15 @@ template export_nifs*(
   static:
     gen_wrapper(module_name, nifs)
 
+proc `$`*(x: ErlNifTerm): string =
+  when (nifMajor, nifMinor) >= (2, 11):
+    let str_len = 100.cuint
+    result = newString(str_len)
+    if not enif_snprintf(result[0].addr, str_len, "ErlNifTerm:%T", x):
+      result = "ErlNifTerm"
+  else:
+    result = "ErlNifTerm"
+
+proc echo*(x: ErlNifTerm) = echo $x
+proc debugEcho*(x: ErlNifTerm) = debugEcho $x
+

@@ -142,18 +142,16 @@ func bin_to_str(bin: ErlNifBinary): string {.inline.} =
   result = newString(bin.size)
   copyMem(addr(result[0]), bin.data, result.len)
 
-func str_to_bin(str: string): ErlNifBinary {.inline.} =
-  result.size = cast[csize_t](str.len)
-  result.data = cast[ptr cuchar](unsafeAddr(str[0]))
-
 func from_term*(env; term; T: typedesc[string]): Option[T] {.inline.} =
   var bin: ErlNifBinary
   if enif_inspect_binary(env, term, addr(bin)):
     result = some(bin_to_str(bin))
 
 func to_term*(env; V: string): ErlNifTerm {.inline.} =
-  var bin = str_to_bin(V)
-  result = enif_make_binary(env, addr(bin))
+  var term: ErlNifTerm
+  var bin = cast[ptr byte](enif_make_new_binary(env, cast[csize_t](V.len), term.addr))
+  copyMem(bin, unsafeAddr(V[0]), V.len)
+  result = term
 
 # binary
 func from_term*(env; term; T: typedesc[ErlBinary]): Option[T] {.inline.} =

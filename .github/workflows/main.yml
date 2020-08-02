@@ -14,17 +14,20 @@ jobs:
           - otp: '22.2'
             elixir: '1.10.2'
             nim: '1.2.0'
+          - otp: '23.0'
+            elixir: '1.10.4'
+            nim: '1.2.6'
     name: OTP ${{matrix.tuple.otp}} - Elixir ${{matrix.tuple.elixir}} - Nim ${{matrix.tuple.nim}}
     runs-on: ubuntu-18.04
     steps:
     - run: uname -a
     - uses: actions/checkout@v2
-    - uses: actions/setup-elixir@v1.2.0
+    - uses: actions/setup-elixir@v1.3.0
       with:
           otp-version: ${{matrix.tuple.otp}}
           elixir-version: ${{matrix.tuple.elixir}}
-    - uses: jiro4989/setup-nim-action@v1.0.2
+    - uses: jiro4989/setup-nim-action@v1.0.5
       with:
           nim-version: ${{matrix.tuple.nim}}
-    - run: NIMLER_BUILD_RELEASE=1 nimble build_all
+    - run: nimble build_all
     - run: nimble test_all

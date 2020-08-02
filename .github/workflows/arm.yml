@@ -13,6 +13,8 @@ jobs:
         tuple:
           - elixir: '1.10.2'
             nim: '1.2.0'
+          - elixir: '1.10.4'
+            nim: '1.2.6'
     name: Elixir ${{matrix.tuple.elixir}} - Nim ${{matrix.tuple.nim}}
     runs-on: ubuntu-18.04
     steps:
@@ -23,9 +25,9 @@ jobs:
     - run: docker pull arm64v8/elixir:${{matrix.tuple.elixir}}-slim
     - run: docker pull multiarch/qemu-user-static
     - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    - uses: jiro4989/setup-nim-action@v1.0.2
+    - uses: jiro4989/setup-nim-action@v1.0.5
       with:
           nim-version: ${{matrix.tuple.nim}}
-    - run: NIMLER_BUILD_ARM64=1 NIMLER_BUILD_RELEASE=1 nimble build_all
+    - run: NIMLER_BUILD_ARM64=1 nimble build_all
     - run: docker run --rm -t -v "$PWD":/test -w /test arm64v8/elixir:${{matrix.tuple.elixir}}-slim elixir test_all.exs
 

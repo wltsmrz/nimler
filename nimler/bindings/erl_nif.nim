@@ -1,16 +1,17 @@
 import ../erl_sys_info
 
 const dep_header_name = "erl_nif.h"
-{.pragma: c_dep_struct, importc, header: dep_header_name, bycopy.}
-{.pragma: c_dep_enum, importc, header: dep_header_name, size: sizeof(cint).}
-{.pragma: c_dep_proc, importc, header: dep_header_name, cdecl.}
+{.pragma: c_dep, importc, header: dep_header_name.}
+{.pragma: c_dep_struct, c_dep, bycopy.}
+{.pragma: c_dep_enum, c_dep, size: sizeof(cint).}
+{.pragma: c_dep_proc, c_dep, cdecl.}
 
 type
-  ErlNifEnv* {.c_dep_struct.} = object
-  ErlNifTerm* {.c_dep_struct.} = distinct culonglong
+  ErlNifEnv* {.c_dep, incompleteStruct.} = object
+  ErlNifTerm* {.c_dep, importc: "ERL_NIF_TERM".} = distinct uint
   ErlNifArgs* = ptr UncheckedArray[ErlNifTerm]
   ErlNifFptr* = proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm {.nimcall.}
-  ErlNifFlags* {.size: sizeof(cint).} = enum
+  ErlNifFlags* {.c_dep_enum, importc: "ErlNifDirtyTaskFlags".} = enum
     ERL_NIF_REGULAR = 0,
     ERL_NIF_DIRTY_CPU = 1,
     ERL_NIF_DIRTY_IO = 2
@@ -110,6 +111,13 @@ type
     idx*: cuint
     u*: ErlNifMapIteratorU
     spare*: array[2, pointer]
+  ErlNifTime* {.c_dep.} = int
+  ErlNifTimeUnit* {.c_dep_enum.} = enum
+    ERL_NIF_SEC = 0
+    ERL_NIF_MSEC = 1
+    ERL_NIF_USEC = 2
+    ERL_NIF_NSEC = 3
+  ErlNifTimeError* {.c_dep, importc: "ERL_NIF_TIME_ERROR".} = int
 
 proc `==`*(a, b: ErlNifTerm): bool {.borrow.}
 
@@ -118,7 +126,7 @@ func enif_priv_data*(a1: ptr ErlNifEnv): pointer {.c_dep_proc.}
 func enif_hash*(a1: ErlNifHash; term: ErlNifTerm; salt: culonglong = 0): culonglong {.c_dep_proc.}
 func enif_system_info*(a1: ptr ErlNifSysInfo; a2: csize_t): void {.c_dep_proc.}
 func enif_system_info*(): ErlNifSysInfo {.inline.} =
-  var info: ErlNifSysInfo
+  var info = ErlNifSysInfo()
   enif_system_info(addr(info), cast[csize_t](sizeof(info)))
   return info
 
@@ -163,9 +171,11 @@ func enif_get_string*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr char; a4: csize
 # make
 func enif_make_unique_integer*(a1: ptr ErlNifEnv; a2: ErlNifUniqueInteger): ErlNifTerm {.c_dep_proc.}
 func enif_make_atom*(a1: ptr ErlNifEnv; a2: cstring): ErlNifTerm {.c_dep_proc.}
-func enif_make_atom_len*(a1: ptr ErlNifEnv; a2: cstring; a3: csize_t): ErlNifTerm {.c_dep_proc.}
+func enif_make_atom_len*(a1: ptr ErlNifEnv; a2: cstring; a3: uint): ErlNifTerm {.c_dep_proc.}
 func enif_make_existing_atom*(a1: ptr ErlNifEnv; a2: cstring; a3: ptr ErlNifTerm; a4: ErlNifCharEncoding): bool {.c_dep_proc.}
-func enif_make_existing_atom_len*(a1: ptr ErlNifEnv; a2: cstring; a3: cuint; a4: ptr ErlNifTerm; a5: ErlNifCharEncoding): bool {.c_dep_proc.}
+func enif_make_existing_atom_len*(a1: ptr ErlNifEnv; a2: cstring; a3: uint; a4: ptr ErlNifTerm; a5: ErlNifCharEncoding): bool {.c_dep_proc.}
+template enif_make_existing_atom_len*(a1: ptr ErlNifEnv; a2: cstring; a3: uint; a4: ptr ErlNifTerm): bool =
+  enif_make_existing_atom_len(a1, a2, a3, a4, ERL_NIF_LATIN1)
 func enif_make_binary*(a1: ptr ErlNifEnv; a2: ptr ErlNifBinary): ErlNifTerm {.c_dep_proc.}
 func enif_make_sub_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: csize_t; a4: csize_t): ErlNifTerm {.c_dep_proc.}
 func enif_make_badarg*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc.}
@@ -256,6 +266,25 @@ else:
 
 template enif_has_pending_exception*(a1: ptr ErlNifEnv): bool =
   enif_has_pending_exception(a1, nil)
+
+# time
+when (nifMajor, nifMinor) >= (2, 10):
+  func enif_monotonic_time*(a1: ErlNifTimeUnit): ErlNifTime {.c_dep_proc.}
+  func enif_convert_time_unit*(a1: ErlNifTime, a2: ErlNifTimeUnit, a3: ErlNifTimeUnit): ErlNifTime {.c_dep_proc.}
+  func enif_time_offset*(a1: ErlNifTimeUnit): ErlNifTime {.c_dep_proc.}
+  func enif_cpu_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc.}
+  func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc.}
+else:
+  func enif_monotonic_time*(a1: ErlNifTimeUnit): ErlNifTime =
+    {.error: "enif time API not supported in target NIF version".}
+  func enif_convert_time_unit*(a1: ErlNifTime, a2: ErlNifTimeUnit, a3: ErlNifTimeUnit): ErlNifTime =
+    {.error: "enif time API not supported in target NIF version".}
+  func enif_time_offset*(a1: ErlNifTimeUnit): ErlNifTime =
+    {.error: "enif time API not supported in target NIF version".}
+  func enif_cpu_time*(a1: ptr ErlNifEnv): ErlNifTerm =
+    {.error: "enif time API not supported in target NIF version".}
+  func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm =
+    {.error: "enif time API not supported in target NIF version".}
 
 when (nifMajor, nifMinor) >= (2, 11):
   func enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, c_dep_proc.}

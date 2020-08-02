@@ -181,5 +181,18 @@ defmodule NimlerIntegration.Test do
         test "raise_exception()", do:
             assert_raise(ErlangError, ~s(Erlang error: "test"), fn -> NimlerWrapper.e_raise_exception("test") end)
     end
+
+    describe "time" do
+        test "enif_monotonic_time()", do:
+          NimlerWrapper.e_monotonic_time()
+        test "enif_convert_time_unit()", do:
+          NimlerWrapper.e_convert_time_unit()
+        test "enif_time_offset()", do:
+          NimlerWrapper.e_time_offset()
+        test "enif_cpu_time()", do:
+          NimlerWrapper.e_cpu_time()
+        test "enif_now_time()", do:
+          NimlerWrapper.e_now_time()
+    end
 end
 

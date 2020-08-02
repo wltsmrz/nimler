@@ -49,26 +49,27 @@ func hash*(a: ErlAtom): Hash {.inline.} =
 
 # int
 func from_term*(env; term; T: typedesc[int]): Option[T] {.inline.} =
-  when sizeof(int) == sizeof(int32):
-    var res: int32
-    if enif_get_long(env, term, addr(res)):
-      result = some(res.int)
-  else:
-    var res: int64
-    if enif_get_int64(env, term, addr(res)):
-      result = some(res.int)
+  var res: int
+  if enif_get_long(env, term, addr(res)):
+    result = some(res)
 
 func to_term*(env; term: int): ErlNifTerm {.inline.} =
-  when sizeof(int) == sizeof(int32):
-    enif_make_long(env, term)
-  else:
-    enif_make_int64(env, term)
+  enif_make_long(env, term)
+
+# uint
+func from_term*(env; term; T: typedesc[uint]): Option[T] {.inline.} =
+  var res: uint
+  if enif_get_ulong(env, term, addr(res)):
+    result = some(res)
+
+func to_term*(env; term: uint): ErlNifTerm {.inline.} =
+  enif_make_ulong(env, term)
 
 # int32
 func from_term*(env; term; T: typedesc[int32]): Option[T] {.inline.} =
   var res: clong
   if enif_get_long(env, term, addr(res)):
-    result = some(cast[int32](res))
+    result = some(res.int32)
 
 func to_term*(env; term: int32): ErlNifTerm {.inline.} =
   enif_make_long(env, term)
@@ -77,7 +78,7 @@ func to_term*(env; term: int32): ErlNifTerm {.inline.} =
 func from_term*(env; term; T: typedesc[uint32]): Option[T] {.inline.} =
   var res: culong
   if enif_get_ulong(env, term, addr(res)):
-    result = some(cast[uint32](res))
+    result = some(res.uint32)
 
 func to_term*(env; term: uint32): ErlNifTerm {.inline.} =
   enif_make_ulong(env, term)
@@ -120,10 +121,10 @@ func from_term*(env; term; T: typedesc[ErlAtom]): Option[T] {.inline.} =
 
 func to_term*(env; V: ErlAtom): ErlNifTerm {.inline.} =
   var res: ErlNifTerm
-  if enif_make_existing_atom(env, V.val, addr(res), ERL_NIF_LATIN1):
+  if enif_make_existing_atom_len(env, V.val, len(V.val).csize_t, addr(res)):
     result = res
   else:
-    result = enif_make_atom_len(env, V.val, cast[csize_t](V.val.len))
+    result = enif_make_atom_len(env, V.val, len(V.val).csize_t)
 
 # charlist
 func from_term*(env; term; T: typedesc[ErlCharlist]): Option[T] {.inline.} =
@@ -149,8 +150,8 @@ func from_term*(env; term; T: typedesc[string]): Option[T] {.inline.} =
 
 func to_term*(env; V: string): ErlNifTerm {.inline.} =
   var term: ErlNifTerm
-  var bin = cast[ptr byte](enif_make_new_binary(env, cast[csize_t](V.len), term.addr))
-  copyMem(bin, unsafeAddr(V[0]), V.len)
+  var bin = cast[ptr byte](enif_make_new_binary(env, len(V).csize_t, term.addr))
+  copyMem(bin, unsafeAddr(V[0]), len(V))
   result = term
 
 # binary
@@ -238,8 +239,7 @@ func from_term*(env; term; T: typedesc[Table]): Option[T] =
   return some(res)
 
 func to_term*(env; V: Table): ErlNifTerm =
-  var keys = newSeqOfCap[ErlNifTerm](V.len)
-  var vals = newSeqOfCap[ErlNifTerm](V.len)
+  var keys, vals = newSeqOfCap[ErlNifTerm](len(V))
   for k, v in V:
     keys.add(env.to_term(k))
     vals.add(env.to_term(v))

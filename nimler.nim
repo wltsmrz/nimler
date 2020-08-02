@@ -10,6 +10,18 @@ export erl_nif
 
 {.passc: "-I" & ertsPath.}
 
+proc `$`*(x: ErlNifTerm): string =
+  when (nifMajor, nifMinor) >= (2, 11):
+    let str_len = 200.cuint
+    result = newString(str_len)
+    if not enif_snprintf(result[0].addr, str_len, "ErlNifTerm:%T", x):
+      result = "ErlNifTerm"
+  else:
+    result = "ErlNifTerm"
+
+proc echo*(x: ErlNifTerm) = echo $x
+proc debugEcho*(x: ErlNifTerm) = debugEcho $x
+
 template arity*(x: int) {.pragma.}
 template nif_name*(x: string) {.pragma.}
 template dirty_io*() {.pragma.}
@@ -67,35 +79,22 @@ template export_nifs*(
     on_upgrade: ErlNifEntryUpgrade = nil,
     on_unload: ErlNifEntryUnload = nil) =
 
-  var funcs {.gensym.} = nifs
-  var entry: ErlNifEntry
-  entry.name = module_name
-  entry.num_of_funcs = len(funcs).cint
-  if funcs.len > 0:
-    entry.funcs = funcs[0].addr
-  entry.major = nifMajor.cint
-  entry.minor = nifMinor.cint
-  entry.vm_variant = "beam.vanilla"
-  entry.load = on_load
-  entry.reload = on_reload
-  entry.upgrade = on_upgrade
-  entry.unload = on_unload
+  let funcs = nifs
+  let entry = ErlNifEntry(
+    name: module_name,
+    num_of_funcs: len(funcs).cint,
+    funcs: funcs[0].unsafeAddr,
+    major: nifMajor.cint,
+    minor: nifMinor.cint,
+    vm_variant: "beam.vanilla",
+    load: on_load,
+    reload: on_reload,
+    upgrade: on_upgrade,
+    unload: on_unload,
+  )
 
   proc nif_init(): ptr ErlNifEntry {.dynlib, exportc.} =
-    addr(entry)
+    entry.unsafeAddr
 
-  static:
-    gen_wrapper(module_name, nifs)
-
-proc `$`*(x: ErlNifTerm): string =
-  when (nifMajor, nifMinor) >= (2, 11):
-    let str_len = 100.cuint
-    result = newString(str_len)
-    if not enif_snprintf(result[0].addr, str_len, "ErlNifTerm:%T", x):
-      result = "ErlNifTerm"
-  else:
-    result = "ErlNifTerm"
-
-proc echo*(x: ErlNifTerm) = echo $x
-proc debugEcho*(x: ErlNifTerm) = debugEcho $x
+  static: gen_wrapper(module_name, nifs)
 

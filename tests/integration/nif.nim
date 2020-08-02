@@ -321,7 +321,7 @@ func system_info(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
   var info = enif_system_info()
   doAssert(info.nif_major_version == nifMajor)
   doAssert(info.nif_minor_version == nifMinor)
-  return enif_make_int(env, cint(0))
+  return enif_make_int(env, 0)
 
 func term_type(env, argc, argv): ErlNifTerm {.nif, arity: 6.} =
   doAssert(enif_term_type(env, argv[0]) == ERL_NIF_TERM_TYPE_INTEGER)
@@ -330,11 +330,32 @@ func term_type(env, argc, argv): ErlNifTerm {.nif, arity: 6.} =
   doAssert(enif_term_type(env, argv[3]) == ERL_NIF_TERM_TYPE_BITSTRING)
   doAssert(enif_term_type(env, argv[4]) == ERL_NIF_TERM_TYPE_MAP)
   doAssert(enif_term_type(env, argv[5]) == ERL_NIF_TERM_TYPE_PID)
-  return enif_make_int(env, cint(0))
+  return enif_make_int(env, 0)
 
 func e_compare(env, argc, argv): ErlNifTerm {.nif, arity: 2.} =
   let v = enif_compare(argv[0], argv[1])
   return enif_make_int(env, v)
+
+func e_monotonic_time(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
+  let v = enif_monotonic_time(ERL_NIF_SEC)
+  return enif_make_int64(env, v)
+
+func e_convert_time_unit(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
+  let v = enif_monotonic_time(ERL_NIF_MSEC)
+  let vv = enif_convert_time_unit(v, ERL_NIF_MSEC, ERL_NIF_SEC)
+  return enif_make_list(env, 2,
+    enif_make_int64(env, v),
+    enif_make_int64(env, vv))
+
+func e_time_offset(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
+  let v = enif_time_offset(ERL_NIF_SEC)
+  return enif_make_int64(env, v)
+
+func e_cpu_time(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
+  return enif_cpu_time(env)
+
+func e_now_time(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
+  return enif_now_time(env)
 
 export_nifs("Elixir.NimlerIntegration", [
    is_atom,
@@ -402,6 +423,11 @@ export_nifs("Elixir.NimlerIntegration", [
    e_compare,
    term_type,
    system_info,
-   e_raise_exception
+   e_raise_exception,
+   e_monotonic_time,
+   e_convert_time_unit,
+   e_time_offset,
+   e_cpu_time,
+   e_now_time
 ])
 

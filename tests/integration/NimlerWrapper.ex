@@ -65,4 +65,9 @@ defmodule NimlerIntegration do
   def term_type(_, _, _, _, _, _), do: exit(:nif_library_not_loaded)
   def system_info(), do: exit(:nif_library_not_loaded)
   def e_raise_exception(_), do: exit(:nif_library_not_loaded)
+  def e_monotonic_time(), do: exit(:nif_library_not_loaded)
+  def e_convert_time_unit(), do: exit(:nif_library_not_loaded)
+  def e_time_offset(), do: exit(:nif_library_not_loaded)
+  def e_cpu_time(), do: exit(:nif_library_not_loaded)
+  def e_now_time(), do: exit(:nif_library_not_loaded)
 end

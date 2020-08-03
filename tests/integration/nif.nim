@@ -313,9 +313,10 @@ func make_unique_integer(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
   return enif_make_unique_integer(env, ERL_NIF_UNIQUE_POSITIVE)
 
 func e_raise_exception(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
-  let ex = enif_raise_exception(env, argv[0])
+  doAssert(false == enif_has_pending_exception(env))
+  discard enif_raise_exception(env, argv[0])
   doAssert(true == enif_has_pending_exception(env))
-  return ex
+  return argv[0]
 
 func system_info(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
   var info = enif_system_info()

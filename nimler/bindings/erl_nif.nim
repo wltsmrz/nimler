@@ -121,7 +121,6 @@ type
 
 proc `==`*(a, b: ErlNifTerm): bool {.borrow.}
 
-func enif_raise_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.c_dep_proc.}
 func enif_priv_data*(a1: ptr ErlNifEnv): pointer {.c_dep_proc.}
 func enif_hash*(a1: ErlNifHash; term: ErlNifTerm; salt: culonglong = 0): culonglong {.c_dep_proc.}
 func enif_system_info*(a1: ptr ErlNifSysInfo; a2: csize_t): void {.c_dep_proc.}
@@ -173,8 +172,10 @@ func enif_make_unique_integer*(a1: ptr ErlNifEnv; a2: ErlNifUniqueInteger): ErlN
 func enif_make_atom*(a1: ptr ErlNifEnv; a2: cstring): ErlNifTerm {.c_dep_proc.}
 func enif_make_atom_len*(a1: ptr ErlNifEnv; a2: cstring; a3: uint): ErlNifTerm {.c_dep_proc.}
 func enif_make_existing_atom*(a1: ptr ErlNifEnv; a2: cstring; a3: ptr ErlNifTerm; a4: ErlNifCharEncoding): bool {.c_dep_proc.}
+template enif_make_existing_atom*(a1: ptr ErlNifEnv; a2: cstring; a3: ptr ErlNifTerm): untyped =
+  enif_make_existing_atom(a1, a2, a3, ERL_NIF_LATIN1)
 func enif_make_existing_atom_len*(a1: ptr ErlNifEnv; a2: cstring; a3: uint; a4: ptr ErlNifTerm; a5: ErlNifCharEncoding): bool {.c_dep_proc.}
-template enif_make_existing_atom_len*(a1: ptr ErlNifEnv; a2: cstring; a3: uint; a4: ptr ErlNifTerm): bool =
+template enif_make_existing_atom_len*(a1: ptr ErlNifEnv; a2: cstring; a3: uint; a4: ptr ErlNifTerm): untyped =
   enif_make_existing_atom_len(a1, a2, a3, a4, ERL_NIF_LATIN1)
 func enif_make_binary*(a1: ptr ErlNifEnv; a2: ptr ErlNifBinary): ErlNifTerm {.c_dep_proc.}
 func enif_make_sub_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: csize_t; a4: csize_t): ErlNifTerm {.c_dep_proc.}
@@ -229,7 +230,7 @@ func enif_realloc_binary*(a1: ptr ErlNifBinary; a2: csize_t): bool {.c_dep_proc.
 func enif_release_binary*(a1: ptr ErlNifBinary): void {.c_dep_proc.}
 func enif_term_to_binary*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifBinary): bool {.c_dep_proc.}
 func enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize_t; a4: ptr ErlNifTerm; a5: ErlNifBinaryToTerm): csize_t {.c_dep_proc.}
-template enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize_t; a4: ptr ErlNifTerm): csize_t =
+template enif_binary_to_term*(a1: ptr ErlNifEnv; a2: ptr cuchar; a3: csize_t; a4: ptr ErlNifTerm): untyped =
   enif_binary_to_term(a1, a2, a3, a4, ERL_NIF_BIN2TERM_SAFE)
 
 # messages
@@ -243,9 +244,9 @@ func enif_get_local_pid*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr ErlNifPid): 
 # resources
 func enif_open_resource_type*(a1: ptr ErlNifEnv, a2: pointer; a3: cstring, a4: pointer; a5: ErlNifResourceFlags; a6: ptr ErlNifResourceFlags): ptr ErlNifResourceType {.c_dep_proc.}
 func enif_open_resource_type*(a1: ptr ErlNifEnv, a2: pointer; a3: cstring, a4: pointer; a5: cint; a6: ptr cint): ptr ErlNifResourceType {.c_dep_proc.}
-template enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ptr cint): ptr ErlNifResourceType =
+template enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ptr cint): untyped =
   enif_open_resource_type(a1, nil, a2, nil, a3, a4)
-template enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifResourceFlags; a4: ptr ErlNifResourceFlags): ptr ErlNifResourceType =
+template enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifResourceFlags; a4: ptr ErlNifResourceFlags): untyped =
   enif_open_resource_type(a1, nil, a2, nil, a3, a4)
 func enif_alloc_resource*(a1: pointer; a2: csize_t): pointer {.c_dep_proc.}
 func enif_release_resource*(a1: pointer): void {.c_dep_proc.}
@@ -254,12 +255,13 @@ func enif_get_resource*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: pointer; a4: poin
 
 # timeslice/scheduling
 func enif_consume_timeslice*(a1: ptr ErlNifEnv; a2: cint): bool {.c_dep_proc.}
-func enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ErlNifFptr; a5: cint; a6: ErlNifArgs): ErlNifTerm {.c_dep_proc.}
+func enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifFlags; a4: ErlNifFptr; a5: cint; a6: ErlNifArgs): ErlNifTerm {.c_dep_proc.}
 template enif_schedule_nif*(a1: ptr ErlNifEnv; a2: ErlNifFptr; a3: openArray[ErlNifTerm]): untyped =
-  enif_schedule_nif(a1, astToStr(a2), cint(0), a2, len(a3).cint, cast[ErlNifArgs](a3.unsafeAddr))
+  enif_schedule_nif(a1, astToStr(a2), ERL_NIF_REGULAR, a2, len(a3).cint, cast[ErlNifArgs](a3.unsafeAddr))
 
+func enif_raise_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.c_dep_proc.}
 func enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.c_dep_proc, min_nif_version(2, 8).}
-template enif_has_pending_exception*(a1): bool =
+template enif_has_pending_exception*(a1): untyped =
   enif_has_pending_exception(a1, nil)
 
 # time
@@ -270,6 +272,5 @@ func enif_cpu_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, min_nif_version
 func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, min_nif_version(2, 10).}
 
 func enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, c_dep_proc, min_nif_version(2, 11).}
-
 func enif_term_type*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTermType {.c_dep_proc, min_nif_version(2, 15).}
 

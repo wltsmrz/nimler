@@ -258,43 +258,18 @@ func enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: cint; a4: ErlNifFptr
 template enif_schedule_nif*(a1: ptr ErlNifEnv; a2: ErlNifFptr; a3: openArray[ErlNifTerm]): untyped =
   enif_schedule_nif(a1, astToStr(a2), cint(0), a2, len(a3).cint, cast[ErlNifArgs](a3.unsafeAddr))
 
-when (nifMajor, nifMinor) >= (2, 8):
-  func enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.c_dep_proc.}
-else:
-  func enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm) =
-    {.error: "enif_has_pending_exception not supported in target NIF version".}
-
-template enif_has_pending_exception*(a1: ptr ErlNifEnv): bool =
+func enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.c_dep_proc, min_nif_version(2, 8).}
+template enif_has_pending_exception*(a1): bool =
   enif_has_pending_exception(a1, nil)
 
 # time
-when (nifMajor, nifMinor) >= (2, 10):
-  func enif_monotonic_time*(a1: ErlNifTimeUnit): ErlNifTime {.c_dep_proc.}
-  func enif_convert_time_unit*(a1: ErlNifTime, a2: ErlNifTimeUnit, a3: ErlNifTimeUnit): ErlNifTime {.c_dep_proc.}
-  func enif_time_offset*(a1: ErlNifTimeUnit): ErlNifTime {.c_dep_proc.}
-  func enif_cpu_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc.}
-  func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc.}
-else:
-  func enif_monotonic_time*(a1: ErlNifTimeUnit): ErlNifTime =
-    {.error: "enif time API not supported in target NIF version".}
-  func enif_convert_time_unit*(a1: ErlNifTime, a2: ErlNifTimeUnit, a3: ErlNifTimeUnit): ErlNifTime =
-    {.error: "enif time API not supported in target NIF version".}
-  func enif_time_offset*(a1: ErlNifTimeUnit): ErlNifTime =
-    {.error: "enif time API not supported in target NIF version".}
-  func enif_cpu_time*(a1: ptr ErlNifEnv): ErlNifTerm =
-    {.error: "enif time API not supported in target NIF version".}
-  func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm =
-    {.error: "enif time API not supported in target NIF version".}
+func enif_monotonic_time*(a1: ErlNifTimeUnit): ErlNifTime {.c_dep_proc, min_nif_version(2, 10).}
+func enif_convert_time_unit*(a1: ErlNifTime, a2: ErlNifTimeUnit, a3: ErlNifTimeUnit): ErlNifTime {.c_dep_proc, min_nif_version(2, 10).}
+func enif_time_offset*(a1: ErlNifTimeUnit): ErlNifTime {.c_dep_proc, min_nif_version(2, 10).}
+func enif_cpu_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, min_nif_version(2, 10).}
+func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, min_nif_version(2, 10).}
 
-when (nifMajor, nifMinor) >= (2, 11):
-  func enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, c_dep_proc.}
-else:
-  func enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring) =
-    {.error: "enif_snprintf not supported in target NIF version".}
+func enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, c_dep_proc, min_nif_version(2, 11).}
 
-when (nifMajor, nifMinor) >= (2, 15):
-  func enif_term_type*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTermType {.c_dep_proc.}
-else:
-  func enif_term_type*(a1: ptr ErlNifEnv; a2: ErlNifTerm) =
-    {.error: "enif_term_type not supported in target NIF version".}
+func enif_term_type*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTermType {.c_dep_proc, min_nif_version(2, 15).}
 

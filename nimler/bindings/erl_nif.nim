@@ -251,6 +251,7 @@ template enif_open_resource_type*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifReso
   enif_open_resource_type(a1, nil, a2, nil, a3, a4)
 func enif_alloc_resource*(a1: pointer; a2: csize_t): pointer {.c_dep_proc.}
 func enif_release_resource*(a1: pointer): void {.c_dep_proc.}
+func enif_keep_resource*(a1: pointer): cint {.c_dep_proc.}
 func enif_make_resource*(a1: ptr ErlNifEnv; a2: pointer): ErlNifTerm {.c_dep_proc.}
 func enif_get_resource*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: pointer; a4: pointer): bool {.c_dep_proc.}
 

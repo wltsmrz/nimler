@@ -70,4 +70,5 @@ defmodule NimlerIntegration do
   def e_time_offset(), do: exit(:nif_library_not_loaded)
   def e_cpu_time(), do: exit(:nif_library_not_loaded)
   def e_now_time(), do: exit(:nif_library_not_loaded)
+  def e_fprintf(), do: exit(:nif_library_not_loaded)
 end

@@ -194,5 +194,10 @@ defmodule NimlerIntegration.Test do
         test "enif_now_time()", do:
           NimlerWrapper.e_now_time()
     end
+
+    describe "printing" do
+        test "enif_fprintf()", do:
+          NimlerWrapper.e_fprintf()
+    end
 end
 

@@ -135,6 +135,7 @@ func enif_free*(a1: pointer) {.c_dep_proc.}
 func enif_realloc*(a1: pointer; a2: csize_t): pointer {.c_dep_proc.}
 
 # comparisons
+func enif_term_type*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTermType {.c_dep_proc, min_nif_version(2, 15).}
 func enif_compare*(a1: ErlNifTerm; a2: ErlNifTerm): cint {.c_dep_proc.}
 func enif_is_current_process_alive*(a1: ptr ErlNifEnv): bool {.c_dep_proc.}
 func enif_is_process_alive*(a1: ptr ErlNifEnv; a2: ptr ErlNifPid): bool {.c_dep_proc.}
@@ -217,7 +218,7 @@ func enif_map_iterator_is_head*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): b
 func enif_map_iterator_is_tail*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool {.c_dep_proc.}
 func enif_get_map_size*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr csize_t): bool {.c_dep_proc.}
 func enif_make_new_map*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc.}
-func enif_make_map_from_arrays*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm; a3: ptr ErlNifTerm; a4: cuint, a5: ptr ErlNifTerm): bool {.c_dep_proc.}
+func enif_make_map_from_arrays*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm; a3: ptr ErlNifTerm; a4: cuint, a5: ptr ErlNifTerm): bool {.c_dep_proc, min_nif_version(2, 14).}
 func enif_make_map_put*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ErlNifTerm; a5: ptr ErlNifTerm): bool {.c_dep_proc.}
 func enif_get_map_value*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ptr ErlNifTerm): bool {.c_dep_proc.}
 func enif_make_map_update*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ErlNifTerm; a5: ptr ErlNifTerm): bool {.c_dep_proc.}
@@ -259,6 +260,7 @@ func enif_schedule_nif*(a1: ptr ErlNifEnv; a2: cstring; a3: ErlNifFlags; a4: Erl
 template enif_schedule_nif*(a1: ptr ErlNifEnv; a2: ErlNifFptr; a3: openArray[ErlNifTerm]): untyped =
   enif_schedule_nif(a1, astToStr(a2), ERL_NIF_REGULAR, a2, len(a3).cint, cast[ErlNifArgs](a3.unsafeAddr))
 
+# exceptions
 func enif_raise_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.c_dep_proc.}
 func enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.c_dep_proc, min_nif_version(2, 8).}
 template enif_has_pending_exception*(a1): untyped =
@@ -271,6 +273,8 @@ func enif_time_offset*(a1: ErlNifTimeUnit): ErlNifTime {.c_dep_proc, min_nif_ver
 func enif_cpu_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, min_nif_version(2, 10).}
 func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, min_nif_version(2, 10).}
 
+# printing
+func enif_fprintf*(a1: File; a2: cstring): bool {.varargs, c_dep_proc.}
 func enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, c_dep_proc, min_nif_version(2, 11).}
-func enif_term_type*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTermType {.c_dep_proc, min_nif_version(2, 15).}
+
 

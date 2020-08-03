@@ -358,6 +358,12 @@ func e_cpu_time(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
 func e_now_time(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
   return enif_now_time(env)
 
+proc e_fprintf(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
+  var term = enif_make_int(env, 1)
+  var file = open("/dev/null", fmWrite)
+  doAssert(enif_fprintf(file, "%T", term))
+  return term
+
 export_nifs("Elixir.NimlerIntegration", [
    is_atom,
    is_binary,
@@ -429,6 +435,7 @@ export_nifs("Elixir.NimlerIntegration", [
    e_convert_time_unit,
    e_time_offset,
    e_cpu_time,
-   e_now_time
+   e_now_time,
+   e_fprintf
 ])
 

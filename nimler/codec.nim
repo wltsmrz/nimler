@@ -250,10 +250,7 @@ func to_term*(env; V: Table): ErlNifTerm =
 
 # result
 template result_tuple*(env; res_type: ErlnifTerm; terms: varargs[ErlNifTerm]): untyped =
-  var result_tup: array[1 + terms.len, ErlNifTerm]
-  result_tup[0] = res_type
-  result_tup[1 .. result_tup.high] = terms
-  enif_make_tuple_from_array(env, move(result_tup))
+  enif_make_tuple_from_array(env, res_type & @terms)
 
 template ok*(env; terms: varargs[ErlNifTerm]): untyped =
   result_tuple(env, env.to_term(AtomOk), terms)

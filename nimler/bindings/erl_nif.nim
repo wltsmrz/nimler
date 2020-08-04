@@ -35,9 +35,12 @@ type
     upgrade*: ErlNifEntryUpgrade
     unload*: ErlNifEntryUnload
     vm_variant*: cstring
-    options*: cint
-    sizeof_ErlNifResourceTypeInit*: csize_t
-    min_erts*: cstring
+    when nif_version_gte(2, 7):
+      options*: cint
+    when nif_version_gte(2, 12):
+      sizeof_ErlNifResourceTypeInit*: csize_t
+    when nif_version_gte(2, 14):
+      min_erts*: cstring
   ErlNifTermType* {.c_dep_enum.} = enum
     ERL_NIF_TERM_TYPE_ATOM = 1
     ERL_NIF_TERM_TYPE_BITSTRING = 2
@@ -277,5 +280,4 @@ func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, min_nif_version
 # printing
 func enif_fprintf*(a1: File; a2: cstring): bool {.varargs, c_dep_proc.}
 func enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, c_dep_proc, min_nif_version(2, 11).}
-
 

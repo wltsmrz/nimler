@@ -21,7 +21,7 @@ proc consume_timeslice(env; argc; argv): ErlNifTerm =
 
   return env.ok(env.to_term(it), env.to_term(invocations))
 
-func test_consume_timeslice(env; argc; argv): ErlNifTerm {.nif, arity: 2.} =
+proc test_consume_timeslice(env; argc; argv): ErlNifTerm {.nif, arity: 2.} =
   consume_timeslice(env, argc, argv)
 
 export_nifs("Elixir.NimlerTimeslice", [test_consume_timeslice])

@@ -3,38 +3,46 @@ import std/macros
 
 const (sysInfo, exitCode) = gorgeEx("escript ../scripts/get_erl_sys_info.erl")
 
-when exitCode == 0:
-  const infoLines = sysInfo.splitLines()
-  const ertsPath* = infoLines[0]
-  const nifVersionStr = infoLines[1].split(".")
-  const nif_major* = parseInt(nifVersionStr[0])
-  const nif_minor* = parseInt(nifVersionStr[1])
-else:
+when exitCode != 0:
   {.fatal: """
   Could not detect installed Erlang/OTP.
   """".}
 
-func version_gte(major, minor: Natural): bool =
+const info_lines = sysInfo.splitLines()
+const erts_path* = infoLines[0]
+const nif_version {.strdefine.}: string = info_lines[1]
+const nif_major* = parseInt(nif_version.split(".")[0])
+const nif_minor* = parseInt(nif_version.split(".")[1])
+
+func nif_version_gte*(major, minor: Natural): bool {.compileTime.} =
   (major < nif_major) or (major == nif_major and minor <= nif_minor)
 
-func clone_proc(fn: NimNode): NimNode =
-  result = nnkFuncDef.newTree(newNimNode(nnkEmpty))
+func clone_func*(fn: NimNode, is_export: bool = false): NimNode =
+  if fn.kind == nnkFuncDef:
+    result = nnkFuncDef.newTree(newNimNode(nnkEmpty))
+  else:
+    result = nnkProcDef.newTree(newNimNode(nnkEmpty))
 
-  let export_marker = newNimNode(nnkPostfix)
-  export_marker.add(ident("*"))
-  export_marker.add(fn.name)
-  result.name = export_marker
+  if is_export:
+    let export_marker = newNimNode(nnkPostfix)
+    export_marker.add(ident("*"))
+    export_marker.add(fn.name)
+    result.name = export_marker
+  # else:
+    # would like to set name here, but ambiguous error
+    # "has no type (or is ambiguous)"
+    # result.name.add(ident($fn.name & "_nif"))
 
   for i, child in fn:
     if i != 0:
       result.add(child)
 
 macro min_nif_version*(major, minor: typed, body: untyped) =
-  let nif_fn = clone_proc(body)
+  let nif_fn = clone_func(body, is_export=true)
   let major_int = major.intVal
   let minor_int = minor.intVal
 
-  if not version_gte(major_int, minor_int):
+  if not nif_version_gte(major_int, minor_int):
     let err_pragma = newNimNode(nnkPragma)
     let pragma_body = newNimNode(nnkExprColonExpr)
     pragma_body.add(ident("error"))
@@ -50,3 +58,4 @@ macro min_nif_version*(major, minor: typed, body: untyped) =
     nif_fn.pragma = errpragma
 
   result = nif_fn
+

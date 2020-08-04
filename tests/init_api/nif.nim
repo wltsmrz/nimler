@@ -12,6 +12,7 @@ func on_load(env, priv_data, load_info): cint =
   var load_data: cint
   if not enif_get_int(env, load_info, addr(load_data)):
     return cint(1)
+
   doAssert(load_data == 123)
 
   var m = enif_alloc(cast[csize_t](sizeof(cint)))
@@ -38,8 +39,14 @@ func test_priv_data(env, argc, argv): ErlNifTerm {.nif, arity: 0, nif_name: "tes
   doAssert(vv[] == 123)
   return enif_make_int(env, 1)
 
-export_nifs("Elixir.NimlerInitApi", [
-  test,
-  test_priv_data,
-  test_dirty
-], on_load=on_load, on_unload=on_unload)
+export_nifs(
+  module_name="Elixir.NimlerInitApi",
+  nifs=[
+    test,
+    test_priv_data,
+    test_dirty
+  ],
+  on_load=on_load,
+  on_unload=on_unload
+)
+

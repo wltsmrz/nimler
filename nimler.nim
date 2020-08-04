@@ -38,12 +38,6 @@ func pragma_table(fn: NimNode): Table[string, NimNode] =
       else:
         error: "wrong kind: " & $p.kind
 
-func clone_proc(fn: NimNode): NimNode =
-  result = nnkProcDef.newTree(nnkEmpty.newNimNode)
-  for i, child in fn:
-    if i != 0:
-      result.add(child)
-
 macro nif*(fn: untyped): untyped =
   if not (fn.kind == nnkProcDef or fn.kind == nnkFuncDef):
     error:
@@ -54,22 +48,27 @@ macro nif*(fn: untyped): untyped =
     error:
       "nif must have specified arity"
 
-  let fn_name = fn.name
-  let nif_fn = clone_proc(fn)
-  let nif_name = getOrDefault(fn_pragmas, "nif_name", newLit(repr fn_name))
+  let fn_name = ident($fn.name)
+  let nif_fn = clone_func(fn)
+
+  let nif_name = getOrDefault(fn_pragmas, "nif_name", newLit($fn.name))
   let nif_arity = getOrDefault(fn_pragmas, "arity", newLit(0))
   let nif_flags = ident(
-    if fn_pragmas.hasKey("dirty_io"):
-      $ERL_NIF_DIRTY_IO
-    elif fn_pragmas.hasKey("dirty_cpu"):
+    if fn_pragmas.hasKey("dirty_cpu"):
       $ERL_NIF_DIRTY_CPU
+    elif fn_pragmas.hasKey("dirty_io"):
+      $ERL_NIF_DIRTY_IO
     else:
       $ERL_NIF_REGULAR
   )
 
   result = quote do:
-    const `fn_name` = ErlNifFunc(name: `nif_name`, arity: `nif_arity`,
-        fptr: `nif_fn`, flags: `nif_flags`)
+    const `fn_name` = ErlNifFunc(
+      name: `nif_name`,
+      arity: `nif_arity`,
+      fptr: `nif_fn`,
+      flags: `nif_flags`
+    )
 
 template export_nifs*(
     module_name: string,
@@ -80,6 +79,7 @@ template export_nifs*(
     on_unload: ErlNifEntryUnload = nil) =
 
   let funcs = nifs
+
   let entry = ErlNifEntry(
     name: module_name,
     num_of_funcs: len(funcs).cint,

@@ -49,8 +49,6 @@ macro nif*(fn: untyped): untyped =
       "nif must have specified arity"
 
   let fn_name = ident($fn.name)
-  let nif_fn = clone_func(fn)
-
   let nif_name = getOrDefault(fn_pragmas, "nif_name", newLit($fn.name))
   let nif_arity = getOrDefault(fn_pragmas, "arity", newLit(0))
   let nif_flags = ident(
@@ -61,12 +59,16 @@ macro nif*(fn: untyped): untyped =
     else:
       $ERL_NIF_REGULAR
   )
+  let internal_name = ident("Z" & $fn.name)
+  fn.name = internal_name
 
   result = quote do:
+    `fn`
+
     const `fn_name` = ErlNifFunc(
       name: `nif_name`,
       arity: `nif_arity`,
-      fptr: `nif_fn`,
+      fptr: `internal_name`,
       flags: `nif_flags`
     )
 

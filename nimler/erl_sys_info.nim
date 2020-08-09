@@ -17,28 +17,7 @@ const nif_minor* = parseInt(nif_version.split(".")[1])
 func nif_version_gte*(major, minor: Natural): bool {.compileTime.} =
   (major < nif_major) or (major == nif_major and minor <= nif_minor)
 
-func clone_func*(fn: NimNode, is_export: bool = false): NimNode =
-  if fn.kind == nnkFuncDef:
-    result = nnkFuncDef.newTree(newNimNode(nnkEmpty))
-  else:
-    result = nnkProcDef.newTree(newNimNode(nnkEmpty))
-
-  if is_export:
-    let export_marker = newNimNode(nnkPostfix)
-    export_marker.add(ident("*"))
-    export_marker.add(fn.name)
-    result.name = export_marker
-  # else:
-    # would like to set name here, but ambiguous error
-    # "has no type (or is ambiguous)"
-    # result.name.add(ident($fn.name & "_nif"))
-
-  for i, child in fn:
-    if i != 0:
-      result.add(child)
-
 macro min_nif_version*(major, minor: typed, body: untyped) =
-  let nif_fn = clone_func(body, is_export=true)
   let major_int = major.intVal
   let minor_int = minor.intVal
 
@@ -55,7 +34,7 @@ macro min_nif_version*(major, minor: typed, body: untyped) =
     """ % [$body.name, $nif_major, $nif_minor, $major_int, $minor_int]
     ))
     err_pragma.add(pragma_body)
-    nif_fn.pragma = errpragma
+    body.pragma = err_pragma
 
-  result = nif_fn
+  result = body
 

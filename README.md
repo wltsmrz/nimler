@@ -29,7 +29,7 @@ $ nimble install nimler
 
 Nimler is documented at [smrz.dev/nimler](https://smrz.dev/nimler).
 
-## Running tests
+## Tests
 
 ```bash
 $ git clone git@github.com:wltsmrz/nimler.git

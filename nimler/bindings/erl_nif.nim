@@ -7,10 +7,10 @@ const dep_header_name = "erl_nif.h"
 {.pragma: c_dep_proc, c_dep, cdecl.}
 
 type
-  ErlNifEnv* {.c_dep, incompleteStruct.} = object
   ErlNifTerm* {.c_dep, importc: "ERL_NIF_TERM".} = distinct uint
+  ErlNifEnv* {.c_dep, incompleteStruct.} = object
   ErlNifArgs* = ptr UncheckedArray[ErlNifTerm]
-  ErlNifFptr* = proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm {.nimcall.}
+  ErlNifFptr* = proc (env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm {.cdecl.}
   ErlNifFlags* {.c_dep_enum, importc: "ErlNifDirtyTaskFlags".} = enum
     ERL_NIF_REGULAR = 0,
     ERL_NIF_DIRTY_CPU = 1,
@@ -121,8 +121,6 @@ type
     ERL_NIF_USEC = 2
     ERL_NIF_NSEC = 3
   ErlNifTimeError* {.c_dep, importc: "ERL_NIF_TIME_ERROR".} = int
-
-proc `==`*(a, b: ErlNifTerm): bool {.borrow.}
 
 func enif_priv_data*(a1: ptr ErlNifEnv): pointer {.c_dep_proc.}
 func enif_hash*(a1: ErlNifHash; term: ErlNifTerm; salt: culonglong = 0): culonglong {.c_dep_proc.}

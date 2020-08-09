@@ -10,17 +10,16 @@ export erl_nif
 
 {.passc: "-I" & ertsPath.}
 
-proc `$`*(x: ErlNifTerm): string =
+proc `==`*(a, b: ErlNifTerm): bool {.borrow.}
+
+func `$`*(x: ErlNifTerm): string =
   when (nifMajor, nifMinor) >= (2, 11):
-    let str_len = 200.cuint
+    let str_len = 100.cuint
     result = newString(str_len)
     if not enif_snprintf(result[0].addr, str_len, "ErlNifTerm:%T", x):
       result = "ErlNifTerm"
   else:
     result = "ErlNifTerm"
-
-proc echo*(x: ErlNifTerm) = echo $x
-proc debugEcho*(x: ErlNifTerm) = debugEcho $x
 
 template arity*(x: int) {.pragma.}
 template nif_name*(x: string) {.pragma.}
@@ -47,6 +46,7 @@ macro nif*(fn: untyped): untyped =
   if not fn_pragmas.hasKey("arity"):
     error:
       "nif must have specified arity"
+  fn.addPragma(ident("cdecl"))
 
   let fn_name = ident($fn.name)
   let nif_name = getOrDefault(fn_pragmas, "nif_name", newLit($fn.name))

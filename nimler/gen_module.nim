@@ -47,7 +47,8 @@ proc gen_wrapper*(module_name: string, funcs: static openArray[ErlNifFunc]) {.co
       
     module_contents.add("end\n")
 
-    hint("Generating wrapper module: " & module_filepath)
+    hint:
+      "Generating wrapper module: " & module_filepath
 
     writeFile(module_filepath, module_contents)
 

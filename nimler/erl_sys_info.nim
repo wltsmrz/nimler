@@ -4,9 +4,10 @@ import std/macros
 const (sysInfo, exitCode) = gorgeEx("escript ../scripts/get_erl_sys_info.erl")
 
 when exitCode != 0:
-  {.fatal: """
-  Could not detect installed Erlang/OTP.
-  """".}
+  fatal:
+    """
+    Could not detect installed Erlang/OTP.
+    """"
 
 const info_lines = sysInfo.splitLines()
 const erts_path* = infoLines[0]

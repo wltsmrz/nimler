@@ -7,7 +7,7 @@ using
   argc: cint
   argv: ErlNifArgs
 
-proc consume_timeslice(env; argc; argv): ErlNifTerm =
+proc consume_timeslice(env; argc; argv): ErlNifTerm {.cdecl.} =
   var it = env.from_term(argv[0], int).get(0)
   var invocations = env.from_term(argv[1], int).get(0)
   inc(invocations)

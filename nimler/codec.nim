@@ -256,5 +256,3 @@ template ok*(env; terms: varargs[ErlNifTerm]): untyped =
   result_tuple(env, env.to_term(AtomOk), terms)
 
 template error*(env; terms: varargs[ErlNifTerm]): untyped =
-  result_tuple(env, env.to_term(AtomError), terms)
-

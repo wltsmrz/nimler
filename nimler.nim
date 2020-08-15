@@ -8,18 +8,7 @@ import nimler/gen_module
 export erl_sys_info
 export erl_nif
 
-{.passc: "-I" & ertsPath.}
-
-proc `==`*(a, b: ErlNifTerm): bool {.borrow.}
-
-func `$`*(x: ErlNifTerm): string =
-  when (nifMajor, nifMinor) >= (2, 11):
-    let str_len = 100.cuint
-    result = newString(str_len)
-    if not enif_snprintf(result[0].addr, str_len, "ErlNifTerm:%T", x):
-      result = "ErlNifTerm"
-  else:
-    result = "ErlNifTerm"
+{.passc: "-I" & erts_path.}
 
 template arity*(x: int) {.pragma.}
 template nif_name*(x: string) {.pragma.}

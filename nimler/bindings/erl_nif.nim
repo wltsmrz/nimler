@@ -1,3 +1,4 @@
+import std/hashes
 import ../erl_sys_info
 
 const dep_header_name = "erl_nif.h"
@@ -279,14 +280,26 @@ func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, min_nif_version
 func enif_fprintf*(a1: File; a2: cstring): bool {.varargs, c_dep_proc.}
 func enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, c_dep_proc, min_nif_version(2, 11).}
 
-proc `==`*(a, b: ErlNifTerm): bool {.borrow.}
-
-func `$`*(x: ErlNifTerm): string =
+proc `==`*(a, b: ErlNifTerm): bool =
+  enif_is_identical(a, b)
+proc hash*(x: ErlNifTerm): Hash {.borrow.}
+proc `$`*(x: ErlNifTerm): string =
   when (nifMajor, nifMinor) >= (2, 11):
-    let str_len = 100.cuint
+    let str_len = 100
     result = newString(str_len)
-    if not enif_snprintf(result[0].addr, str_len, "ErlNifTerm:%T", x):
-      result = "ErlNifTerm"
+    if enif_snprintf(result[0].addr, str_len.cuint, "ErlNifTerm:%T", x):
+      var i = 0
+      while result[i] != '\0': inc(i)
+      result.setLen(i)
+      if result.len == str_len.int - 1:
+        result[^3 ..< result.len] = "..."
   else:
     result = "ErlNifTerm"
+
+type ErlAtom* = distinct string
+
+proc `$`*(x: ErlAtom): string {.borrow.}
+proc `==`*(a: ErlAtom, b: ErlAtom): bool {.borrow.}
+proc hash*(x: ErlAtom): Hash {.borrow.}
+proc len*(x: ErlAtom): int {.borrow.}
 

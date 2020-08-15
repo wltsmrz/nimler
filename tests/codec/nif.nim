@@ -47,13 +47,13 @@ func codec_double(env; argc; argv): ErlNifTerm {.nif, arity: 1.} =
 
 func codec_atom(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
   let a1 = env.from_term(argv[0], ErlAtom).get()
-  doAssert(a1 == ErlAtom(val: "test"))
+  doAssert(a1 == ErlAtom("test"))
   return env.to_term(a1)
 
 func codec_charlist(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
-  let a1 = env.from_term(argv[0], ErlCharlist).get()
+  let a1 = env.from_term(argv[0], seq[char]).get()
   doAssert(a1 == @"test")
-  doAssert(env.from_term(env.to_term(@"test2"), ErlCharlist).get() == @"test2")
+  doAssert(env.from_term(env.to_term(@"test2"), seq[char]).get() == @"test2")
   return env.to_term(a1)
 
 func codec_string(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
@@ -63,8 +63,8 @@ func codec_string(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
   return env.to_term(a1)
 
 func codec_binary(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
-  let a1 = env.from_term(argv[0], ErlBinary).get()
-  doAssert(cast[cstring](a1.data) == "test".cstring)
+  let a1 = env.from_term(argv[0], seq[byte]).get()
+  doAssert(a1 == @[116.byte, 101, 115, 116, 0])
   return env.to_term(a1)
 
 func codec_list_int(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
@@ -85,7 +85,7 @@ func codec_tuple(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
   return env.to_term(a1)
 
 func codec_map(env, argc, argv): ErlNifTerm {.nif, arity: 3.} =
-  let a1 = env.from_term(argv[0], Table[ErlCharlist, int]).get()
+  let a1 = env.from_term(argv[0], Table[seq[char], int]).get()
   let a2 = env.from_term(argv[1], Table[string, int]).get()
   let a3 = env.from_term(argv[2], Table[ErlAtom, string]).get()
   return env.to_term((a1, a2, a3))

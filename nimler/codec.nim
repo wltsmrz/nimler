@@ -1,7 +1,6 @@
 import std/macros
 import std/typetraits
 import std/tables
-import std/hashes
 import bindings/erl_nif
 
 import std/options
@@ -11,17 +10,10 @@ using
   env: ptr ErlNifEnv
   term: ErlNifTerm
 
-type
-  ErlAtom* = object
-    val*: string
-  ErlCharlist* = seq[char]
-  ErlBinary* = ErlNifBinary
-
-const AtomOk* = ErlAtom(val: "ok")
-const AtomError* = ErlAtom(val: "error")
-const AtomTrue* = ErlAtom(val: "true")
-const AtomFalse* = ErlAtom(val: "false")
-const AtomMapEncodeException = ErlAtom(val: "nimler: fail to encode map")
+const AtomOk* = ErlAtom("ok")
+const AtomError* = ErlAtom("error")
+const AtomTrue* = ErlAtom("true")
+const AtomFalse* = ErlAtom("false")
 
 macro generic_params(T: typedesc): untyped =
   result = newNimNode(nnkTupleConstr)
@@ -42,10 +34,6 @@ macro generic_params(T: typedesc): untyped =
         break
       else:
         error "wrong kind: " & $impl.kind
-
-func hash*(a: ErlAtom): Hash {.inline.} =
-  result = a.val.hash
-  result = !$result
 
 # int
 func from_term*(env; term; T: typedesc[int]): Option[T] {.inline.} =
@@ -115,19 +103,19 @@ func from_term*(env; term; T: typedesc[ErlAtom]): Option[T] {.inline.} =
   var atom_len: cuint
   if enif_get_atom_length(env, term, addr(atom_len), ERL_NIF_LATIN1):
     let buf_len = atom_len + 1
-    var atom = ErlAtom(val: newString(atom_len))
-    if enif_get_atom(env, term, addr(atom.val[0]), buf_len, ERL_NIF_LATIN1) == cint(buf_len):
-      result = some(atom)
+    var atom = newString(atom_len)
+    if enif_get_atom(env, term, addr(atom[0]), buf_len, ERL_NIF_LATIN1) == cint(buf_len):
+      result = some(ErlAtom(atom))
 
 func to_term*(env; V: ErlAtom): ErlNifTerm {.inline.} =
   var res: ErlNifTerm
-  if enif_make_existing_atom_len(env, V.val, len(V.val).csize_t, addr(res)):
+  if enif_make_existing_atom_len(env, V.cstring, len(V).csize_t, addr(res)):
     result = res
   else:
-    result = enif_make_atom_len(env, V.val, len(V.val).csize_t)
+    result = enif_make_atom_len(env, V.cstring, len(V).csize_t)
 
 # charlist
-func from_term*(env; term; T: typedesc[ErlCharlist]): Option[T] {.inline.} =
+func from_term*(env; term; T: typedesc[seq[char]]): Option[T] {.inline.} =
   var string_len: cuint
   if enif_get_list_length(env, term, addr(string_len)):
     let buf_len = string_len + 1
@@ -135,7 +123,7 @@ func from_term*(env; term; T: typedesc[ErlCharlist]): Option[T] {.inline.} =
     if enif_get_string(env, term, addr(string_buf[0]), buf_len, ERL_NIF_LATIN1) == cint(buf_len):
       result = some(string_buf)
 
-func to_term*(env; V: ErlCharlist): ErlNifTerm {.inline.} =
+func to_term*(env; V: seq[char]): ErlNifTerm {.inline.} =
   enif_make_string_len(env, V, ERL_NIF_LATIN1)
 
 # string
@@ -155,16 +143,21 @@ func to_term*(env; V: string): ErlNifTerm {.inline.} =
   result = term
 
 # binary
-func from_term*(env; term; T: typedesc[ErlBinary]): Option[T] {.inline.} =
-  var bin: ErlNifBinary
-  if enif_inspect_binary(env, term, addr(bin)):
+func from_term*(env; term; T: typedesc[seq[byte]]): Option[T] {.inline.} =
+  var erl_bin: ErlNifBinary
+  if enif_inspect_binary(env, term, addr(erl_bin)):
+    var bin = newSeq[byte](erl_bin.size)
+    copyMem(addr(bin[0]), erl_bin.data, erl_bin.size)
     result = some(bin)
 
-func to_term*(env; V: ErlBinary): ErlNifTerm {.inline.} =
-  enif_make_binary(env, unsafeAddr(V))
+func to_term*(env; V: seq[byte]): ErlNifTerm {.inline.} =
+  var term: ErlNifTerm
+  var bin = cast[ptr byte](enif_make_new_binary(env, len(V).csize_t, term.addr))
+  copyMem(bin, unsafeAddr(V[0]), len(V))
+  result = term
 
 # list
-func from_term*(env; term; T: typedesc[seq]): Option[T] {.inline.} =
+func from_term*(env; term; T: typedesc[seq]): Option[T] =
   if not enif_is_list(env, term):
     return none(T)
   var res: T
@@ -179,7 +172,7 @@ func from_term*(env; term; T: typedesc[seq]): Option[T] {.inline.} =
     cursor = tail
   return some(res)
 
-func to_term*(env; V: seq): ErlNifTerm {.inline.} =
+func to_term*(env; V: seq): ErlNifTerm =
   var v = newSeqOfCap[ErlNifTerm](V.len)
   for el in V:
     v.add(env.to_term(el))
@@ -204,19 +197,17 @@ func from_term*(env; term; T: typedesc[tuple]): Option[T] =
   return some(res)
 
 macro to_term*(env: typed; V: tuple): untyped =
-  case V.kind:
-    of nnkSym:
-      let tup_len = V.getTypeImpl().len
-      result = newCall("enif_make_tuple", env, newLit(tup_len))
-      for i in 0 ..< tup_len:
-        let v = quote do: `V`[`i`]
-        result.add(newCall("to_term", env, v))
-    of nnkTupleConstr:
-      result = quote do:
-        let erl_tup = `V`
-        to_term(env, erl_tup)
-    else:
-      error "wrong kind: " & $V.kind
+  expectKind(V, {nnkSym, nnkTupleConstr})
+  if V.kind == nnkSym:
+    let tup_len = V.getTypeImpl().len
+    result = newCall("enif_make_tuple", env, newLit(tup_len))
+    for i in 0 ..< tup_len:
+      let v = quote do: `V`[`i`]
+      result.add(newCall("to_term", env, v))
+  elif V.kind == nnkTupleConstr:
+    result = quote do:
+      let erl_tup = `V`
+      to_term(env, erl_tup)
 
 # map/table
 func from_term*(env; term; T: typedesc[Table]): Option[T] =
@@ -243,10 +234,10 @@ func to_term*(env; V: Table): ErlNifTerm =
   for k, v in V:
     keys.add(env.to_term(k))
     vals.add(env.to_term(v))
-  var map: ErlNifTerm
-  if not enif_make_map_from_arrays(env, addr(keys[0]), addr(vals[0]), cuint(keys.len), addr(map)):
-    return enif_raise_exception(env, env.to_term(AtomMapEncodeException))
-  return map
+  var res: ErlNifTerm
+  if not enif_make_map_from_arrays(env, addr(keys[0]), addr(vals[0]), cuint(keys.len), addr(res)):
+    return enif_raise_exception(env, env.to_term(ErlAtom("fail to encode map")))
+  return res
 
 # result
 template result_tuple*(env; res_type: ErlnifTerm; terms: varargs[ErlNifTerm]): untyped =
@@ -256,3 +247,4 @@ template ok*(env; terms: varargs[ErlNifTerm]): untyped =
   result_tuple(env, env.to_term(AtomOk), terms)
 
 template error*(env; terms: varargs[ErlNifTerm]): untyped =
+  result_tuple(env, env.to_term(AtomError), terms)

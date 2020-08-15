@@ -38,15 +38,12 @@ func pragma_table(fn: NimNode): Table[string, NimNode] =
         error: "wrong kind: " & $p.kind
 
 macro nif*(fn: untyped): untyped =
-  if not (fn.kind == nnkProcDef or fn.kind == nnkFuncDef):
-    error:
-      "nif macro must be applied to proc or func"
+  expectKind(fn, {nnkProcDef, nnkFuncDef})
 
   let fn_pragmas = pragma_table(fn)
   if not fn_pragmas.hasKey("arity"):
     error:
       "nif must have specified arity"
-  fn.addPragma(ident("cdecl"))
 
   let fn_name = ident($fn.name)
   let nif_name = getOrDefault(fn_pragmas, "nif_name", newLit($fn.name))
@@ -61,6 +58,7 @@ macro nif*(fn: untyped): untyped =
   )
   let internal_name = ident("Z" & $fn.name)
   fn.name = internal_name
+  fn.addPragma(ident("cdecl"))
 
   result = quote do:
     `fn`

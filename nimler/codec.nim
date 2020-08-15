@@ -1,10 +1,10 @@
-import macros
-import typetraits
-import tables
-import hashes
+import std/macros
+import std/typetraits
+import std/tables
+import std/hashes
 import bindings/erl_nif
 
-import options
+import std/options
 export options
 
 using

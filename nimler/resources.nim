@@ -1,4 +1,4 @@
-import options
+import std/options
 import ../nimler
 
 proc priv_data*(env: ptr ErlNifEnv): Option[ptr ErlNifResourceType] =

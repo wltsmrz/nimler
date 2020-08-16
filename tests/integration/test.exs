@@ -197,7 +197,9 @@ defmodule NimlerIntegration.Test do
 
     describe "printing" do
         test "enif_fprintf()", do:
-          NimlerWrapper.e_fprintf()
+          assert(1 == NimlerWrapper.e_fprintf())
+        test "enif_snprintf()", do:
+          assert(1 == NimlerWrapper.e_snprintf())
     end
 end
 

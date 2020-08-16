@@ -364,6 +364,16 @@ proc e_fprintf(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
   doAssert(enif_fprintf(file, "%T", term))
   return term
 
+proc e_snprintf(env, argc, argv): ErlNifTerm {.nif, arity: 0.} =
+  var term = enif_make_int(env, 1)
+  var buf = cast[ptr char](enif_alloc(16))
+  let size = enif_snprintf(buf, 1, "ErlNifTerm:%T", term) + 1
+  buf = cast[ptr char](enif_realloc(buf, size.csize_t))
+  doAssert(enif_snprintf(buf, size.cuint, "ErlNifTerm:%T", term) == size-1)
+  doAssert($buf == "ErlNifTerm:1")
+  enif_free(buf)
+  return term
+
 export_nifs("Elixir.NimlerIntegration", [
    is_atom,
    is_binary,
@@ -436,6 +446,7 @@ export_nifs("Elixir.NimlerIntegration", [
    e_time_offset,
    e_cpu_time,
    e_now_time,
-   e_fprintf
+   e_fprintf,
+   e_snprintf
 ])
 

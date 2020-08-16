@@ -278,16 +278,16 @@ func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, min_nif_version
 
 # printing
 func enif_fprintf*(a1: File; a2: cstring): bool {.varargs, c_dep_proc.}
-func enif_snprintf*(a1: ptr char, a2: cuint; a3: cstring): bool {.varargs, c_dep_proc, min_nif_version(2, 11).}
+func enif_snprintf*(a1: pointer, a2: cuint; a3: cstring): cint {.varargs, c_dep_proc, min_nif_version(2, 11).}
 
 proc `==`*(a, b: ErlNifTerm): bool =
   enif_is_identical(a, b)
 proc hash*(x: ErlNifTerm): Hash {.borrow.}
 proc `$`*(x: ErlNifTerm): string =
   when (nifMajor, nifMinor) >= (2, 11):
-    let str_len = 100
+    let str_len = 64
     result = newString(str_len)
-    if enif_snprintf(result[0].addr, str_len.cuint, "ErlNifTerm:%T", x):
+    if enif_snprintf(result[0].addr, str_len.cuint, "ErlNifTerm:%T", x) > 0:
       var i = 0
       while result[i] != '\0': inc(i)
       result.setLen(i)

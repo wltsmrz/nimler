@@ -20,8 +20,8 @@ func init(m: var ElixirModule, module_name: string, nif_filename: string, load_i
   m.tail = "\nend"
 
 func add_fn(m: var ElixirModule, name: string, arity: int) =
-  var params = "_".repeat(arity).join(",")
-  m.fns.add("  def $1($2), do: exit(:nif_library_not_loaded)" % [$name, params])
+  let params = "_".repeat(arity).join(",")
+  m.fns.add("  def $1($2), do: exit(:nif_library_not_loaded)" % [name, params])
 
 func `$`(m: var ElixirModule): string =
   result = m.head & m.fns.join("\n") & m.tail

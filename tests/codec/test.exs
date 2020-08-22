@@ -85,5 +85,10 @@ defmodule NimlerCodec.Test do
         test "codec_result_error()", do:
             assert({:error,1,2} == NimlerWrapper.codec_result_error(1,2))
     end
+
+    describe "xcodec" do
+        test "xcodec_int()", do:
+            assert(3 == NimlerWrapper.xcodec_int(1, 2))
+    end
 end
 

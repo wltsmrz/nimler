@@ -34,7 +34,6 @@ macro generic_params(T: typedesc): untyped =
         break
       else:
         error "wrong kind: " & $impl.kind
-
 # int
 func from_term*(env; term; T: typedesc[int]): Option[T] {.inline.} =
   var res: int
@@ -239,12 +238,77 @@ func to_term*(env; V: Table): ErlNifTerm =
     return enif_raise_exception(env, env.to_term(ErlAtom("fail to encode map")))
   return res
 
+# bool
+func from_term*(env; term; T: typedesc[bool]): Option[T] {.inline.} =
+  result = some(some(AtomTrue) == from_term(env, term, ErlAtom))
+
+func to_term*(env; term: bool): ErlNifTerm {.inline.} =
+  result = to_term(env, if term: AtomTrue else: AtomFalse)
+
 # result
-template result_tuple*(env; res_type: ErlnifTerm; terms: varargs[ErlNifTerm]): untyped =
-  enif_make_tuple_from_array(env, res_type & @terms)
+func result_tuple*(env; res_type: ErlnifTerm; terms: varargs[ErlNifTerm]): ErlNifTerm {.inline.} =
+  return enif_make_tuple_from_array(env, res_type & @terms)
 
-template ok*(env; terms: varargs[ErlNifTerm]): untyped =
-  result_tuple(env, env.to_term(AtomOk), terms)
+func ok*(env; terms: varargs[ErlNifTerm]): ErlNifTerm {.inline.} =
+  return result_tuple(env, env.to_term(AtomOk), terms)
 
-template error*(env; terms: varargs[ErlNifTerm]): untyped =
-  result_tuple(env, env.to_term(AtomError), terms)
+func error*(env; terms: varargs[ErlNifTerm]): ErlNifTerm {.inline.} =
+  return result_tuple(env, env.to_term(AtomError), terms)
+
+macro xnif*(fn: untyped): untyped =
+  expectKind(fn, {nnkProcDef, nnkFuncDef})
+  var rname = fn.name
+  fn.name = ident($rname & "_inner")
+  fn.addPragma(ident("inline"))
+  var rcall = newCall(fn.name, ident("env"))
+  var arity = 0
+
+  for i, p in fn.params:
+    if i < 2: continue
+    inc(arity)
+    rcall.add(newCall("get",
+      newCall("from_term",
+        ident("env"),
+        newTree(nnkBracketExpr, ident("argv"), newLit(i-2)),
+        p[1]),
+      newCall("default", p[1])))
+
+  var rbody = newTree(nnkStmtList,
+    fn,
+    newTree(nnkLetSection,
+      newTree(nnkIdentDefs,
+        ident("ret"),
+        newNimNode(nnkEmpty),
+        rcall)),
+    newTree(nnkReturnStmt,
+      newCall("to_term", ident("env"), ident("ret"))))
+
+  var rparams = newTree(nnkFormalParams,
+    ident("ErlNifTerm"),
+    newTree(nnkIdentDefs,
+      ident("env"),
+      newNimNode(nnkPtrTy).add(ident("ErlNifEnv")),
+      newNimNode(nnkEmpty)),
+    newTree(nnkIdentDefs,
+      ident("argc"),
+      ident("cint"),
+      newNimNode(nnkEmpty)),
+    newTree(nnkIdentDefs,
+      ident("argv"),
+      ident("ErlNifArgs"),
+      newNimNode(nnkEmpty)))
+
+  var rfn = newProc(
+    rname,
+    [],
+    rbody,
+    nnkFuncDef,
+  )
+  rfn.params = rparams
+  rfn.pragma = newTree(nnkPragma,
+    ident("nif"),
+    newTree(nnkExprColonExpr, ident("arity"), newLit(arity)))
+
+  result = rfn
+
+

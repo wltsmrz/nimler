@@ -1,6 +1,5 @@
 import ../../nimler
 import ../../nimler/codec
-import options
 import tables
 
 using
@@ -96,11 +95,6 @@ func codec_result_ok(env, argc, argv): ErlNifTerm {.nif, arity: 2.} =
 func codec_result_error(env, argc, argv): ErlNifTerm {.nif, arity: 2.} =
   return env.error(argv[0], argv[1])
 
-func xcodec_int(env: ptr ErlNifEnv, a: int, b: int): int {.xnif.} =
-  doAssert(a == 1)
-  doAssert(b == 2)
-  return a + b
-
 export_nifs("Elixir.NimlerCodec", [
   codec_options,
   codec_int,
@@ -117,8 +111,6 @@ export_nifs("Elixir.NimlerCodec", [
   codec_tuple,
   codec_map,
   codec_result_ok,
-  codec_result_error,
-
-  xcodec_int
+  codec_result_error
 ])
 

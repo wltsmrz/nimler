@@ -31,6 +31,7 @@ task build_all, "build":
   exec("nimble build_init_resource")
   exec("nimble build_timeslice")
   exec("nimble build_message")
+  exec("nimble build_positional")
 
 task test_all, "run tests":
   exec("elixir test_all.exs")
@@ -100,6 +101,14 @@ task build_message, "build nif":
 task test_message, "run test":
   exec("elixir -r tests/message/NimlerWrapper.ex tests/message/test.exs")
 
+task build_positional, "build nif":
+  configTest()
+  switch("out", "tests/positional/nif.so")
+  setCommand("compile", "tests/positional/nif")
+
+task test_positional, "run test":
+  exec("elixir -r tests/positional/NimlerWrapper.ex tests/positional/test.exs")
+
 task run_init_api, "run test":
   exec("nimble build_init_api")
   exec("nimble test_init_api")
@@ -124,3 +133,6 @@ task run_timeslice, "run test":
 task run_message, "run test":
   exec("nimble build_message")
   exec("nimble test_message")
+task run_positional, "run test":
+  exec("nimble build_positional")
+  exec("nimble test_positional")

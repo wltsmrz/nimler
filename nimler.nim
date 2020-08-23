@@ -59,60 +59,6 @@ macro nif*(fn: untyped): untyped =
       flags: `nif_flags`
     )
 
-macro xnif*(fn: untyped): untyped =
-  expectKind(fn, {nnkProcDef, nnkFuncDef})
-  var rcall = newCall(fn.name, ident("env"))
-  var arity = 0
-
-  for i, p in fn.params:
-    if i < 2: continue
-    inc(arity)
-    rcall.add(newCall("get",
-      newCall("from_term",
-        ident("env"),
-        newTree(nnkBracketExpr, ident("argv"), newLit(i-2)),
-        p[1]),
-      newCall("default", p[1])))
-
-  var rbody = newTree(nnkStmtList,
-    fn,
-    newTree(nnkLetSection,
-      newTree(nnkIdentDefs,
-        ident("ret"),
-        newNimNode(nnkEmpty),
-        rcall)),
-    newTree(nnkReturnStmt,
-      newCall("to_term", ident("env"), ident("ret"))))
-
-  var rparams = newTree(nnkFormalParams,
-    ident("ErlNifTerm"),
-    newTree(nnkIdentDefs,
-      ident("env"),
-      newNimNode(nnkPtrTy).add(ident("ErlNifEnv")),
-      newNimNode(nnkEmpty)),
-    newTree(nnkIdentDefs,
-      ident("argc"),
-      ident("cint"),
-      newNimNode(nnkEmpty)),
-    newTree(nnkIdentDefs,
-      ident("argv"),
-      ident("ErlNifArgs"),
-      newNimNode(nnkEmpty)),
-  )
-
-  let rfn = newProc(
-    fn.name,
-    [], #params
-    rbody,
-    nnkFuncDef,
-  )
-  rfn.params = rparams
-  rfn.pragma = newTree(nnkPragma,
-    ident("nif"),
-    newTree(nnkExprColonExpr, ident("arity"), newLit(arity)))
-
-  result = rfn
-
 template export_nifs*(
     module_name: string,
     nifs: static openArray[ErlNifFunc],

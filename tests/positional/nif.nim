@@ -13,9 +13,9 @@ func pos_bool(env: pointer, a: int, b: int, c: bool, d: bool): (ErlAtom, bool, b
   doAssert(b == 2)
   return (AtomOk, a > b, a < b)
 
-func pos_bin(env: pointer, a: seq[byte]): ErlAtom {.xnif, raises: [].} =
+func pos_bin(env: pointer, a: seq[byte]): (ErlAtom, seq[byte]) {.xnif, raises: [].} =
   doAssert(a == cast[seq[byte]]("test"))
-  return AtomOk
+  return (AtomOk, a & cast[seq[byte]]("ing"))
 
 export_nifs "Elixir.NimlerPositionalArgs",
   [ pos_int, pos_bool, pos_bin ]

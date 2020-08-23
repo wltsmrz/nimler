@@ -260,21 +260,26 @@ macro xnif*(fn: untyped): untyped =
   var rname = fn.name
   fn.name = ident($rname & "_inner")
   fn.addPragma(ident("inline"))
+  var rbody = newTree(nnkStmtList, fn)
   var rcall = newCall(fn.name, ident("env"))
   var arity = 0
 
   for i, p in fn.params:
     if i < 2: continue
     inc(arity)
-    rcall.add(newCall("get",
-      newCall("from_term",
-        ident("env"),
-        newTree(nnkBracketExpr, ident("argv"), newLit(i-2)),
-        p[1]),
-      newCall("default", p[1])))
+    var arg = newTree(nnkBracketExpr, ident("argv"), newLit(i-2))
+    var decode_term = newCall("from_term", ident("env"), arg, p[1])
+    var get_term = newCall("get", p[0], newCall("default", p[1]))
+    rbody.add(newTree(nnkLetSection, newTree(nnkIdentDefs,
+      p[0],
+      newNimNode(nnkEmpty),
+      decode_term)))
+    rbody.add(newTree(nnkIfStmt, newTree(nnkElifBranch,
+      newCall("isNone", p[0]),
+      newTree(nnkReturnStmt, newCall("enif_make_badarg", ident("env"))))))
+    rcall.add(get_term)
 
-  var rbody = newTree(nnkStmtList,
-    fn,
+  rbody.add(
     newTree(nnkLetSection,
       newTree(nnkIdentDefs,
         ident("ret"),

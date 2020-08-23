@@ -11,7 +11,7 @@ defmodule NimlerPositionalArgs.Test do
         test "pos_bool()", do:
             assert({:ok, false, true} == NimlerWrapper.pos_bool(1, 2, false, true))
         test "pos_binary()", do:
-            assert(:ok == NimlerWrapper.pos_bin("test"))
+            assert({:ok, "testing"} == NimlerWrapper.pos_bin("test"))
     end
 end
 

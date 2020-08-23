@@ -17,10 +17,10 @@ func init(m: var ElixirModule, module_name: string, nif_filename: string, load_i
   m.head.addf("defmodule $1 do\n", module_name)
   m.head.add("  @on_load :init\n")
   m.head.addf("  def init(), do: :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), \'$1\')), $2)\n\n", nif_filename, load_info)
-  m.tail = "\nend"
+  m.tail = "\nend\n"
 
 func add_fn(m: var ElixirModule, name: string, arity: int) =
-  let params = "_".repeat(arity).join(",")
+  let params = "_".repeat(arity).join(", ")
   m.fns.add("  def $1($2), do: exit(:nif_library_not_loaded)" % [name, params])
 
 func `$`(m: var ElixirModule): string =

@@ -295,11 +295,3 @@ proc `$`*(x: ErlNifTerm): string =
         result[^3 ..< result.len] = "..."
   else:
     result = "ErlNifTerm"
-
-type ErlAtom* = distinct string
-
-proc `$`*(x: ErlAtom): string {.borrow.}
-proc `==`*(a: ErlAtom, b: ErlAtom): bool {.borrow.}
-proc hash*(x: ErlAtom): Hash {.borrow.}
-proc len*(x: ErlAtom): int {.borrow.}
-

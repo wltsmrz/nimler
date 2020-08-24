@@ -288,12 +288,24 @@ func ok*(env; terms: varargs[ErlTerm]): ErlTerm {.inline.} =
 func error*(env; terms: varargs[ErlTerm]): ErlTerm {.inline.} =
   result = result_tuple(env, env.to_term(AtomError), terms)
 
+proc copy_pragma_without(p: NimNode, x: string): NimNode {.compileTime.} =
+  result = newTree(nnkPragma)
+  for e in p:
+    expectKind(e, {nnkIdent, nnkExprColonExpr})
+    case e.kind:
+      of nnkExprColonExpr:
+        if not eqIdent(e[0], x):
+          result.add(e)
+      of nnkIdent:
+        if not eqIdent(e, x):
+          result.add(e)
+      else: error "wrong kind"
+
 macro xnif*(fn: untyped): untyped =
   expectKind(fn, {nnkProcDef, nnkFuncDef})
   var rname = fn.name
-  fn.name = ident($rname & "_inner")
-  fn.addPragma(ident("inline"))
-  var rbody = newTree(nnkStmtList)
+  fn.name = ident("Z" & $rname & "_internal")
+  var rbody = newTree(nnkStmtList, fn)
   var rcall = newCall(fn.name, ident("env"))
   var arity = 0
 
@@ -308,7 +320,7 @@ macro xnif*(fn: untyped): untyped =
     rbody.add(newTree(nnkIfStmt, newTree(nnkElifBranch,
       newCall("isNone", p[0]),
       newTree(nnkReturnStmt, newCall("enif_make_badarg", ident("env"))))))
-    rcall.add(newCall("get", p[0]))
+    rcall.add(newCall("unsafeGet", p[0]))
 
   rbody.add(
     newTree(nnkLetSection,
@@ -336,17 +348,16 @@ macro xnif*(fn: untyped): untyped =
 
   var rfn = newProc(
     rname,
-    [],
+    [], # params
     rbody,
-    nnkFuncDef,
+    fn.kind,
   )
-  rfn.params = rparams
-  rfn.pragma = newTree(nnkPragma,
-    ident("nif"),
-    newTree(nnkExprColonExpr, ident("arity"), newLit(arity)))
 
-  result = quote do:
-    `fn`
-    `rfn`
+  rfn.params = rparams
+  rfn.pragma = copy_pragma_without(fn.pragma, "raises")
+  rfn.pragma.add(ident("nif"))
+  rfn.pragma.add(newTree(nnkExprColonExpr, ident("arity"), newLit(arity)))
+
+  result = rfn
 
 

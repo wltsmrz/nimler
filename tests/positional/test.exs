@@ -5,6 +5,8 @@ defmodule NimlerPositionalArgs.Test do
     use ExUnit.Case, async: false
     alias NimlerPositionalArgs, as: NimlerWrapper
 
+    test "pos_rename()", do:
+        assert({:ok, 1} == NimlerWrapper.pos_ok?(1))
     test "pos_int()", do:
         assert({:ok, 3} == NimlerWrapper.pos_int(1, 2))
     test "pos_bool()", do:

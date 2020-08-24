@@ -45,16 +45,19 @@ func pos_map(env; x: Table[ErlAtom, int]): (ErlAtom, Table[ErlAtom, int]) {.xnif
 
 type TupMap = Table[ErlAtom, tuple[a: string, b: int]]
 # { :t, ("a", 1) }
-func pos_tup_map(env; a: TupMap): (ErlAtom, TupMap) {.xnif.} =
+func pos_tup_map(env; a: TupMap): (ErlAtom, TupMap) {.xnif, raises: [].} =
   var ret: TupMap
   ret = initTable[ErlAtom, tuple[a: string, b: int]](4)
   ret.add(ErlAtom("c"), ("d", 5))
   return (AtomOk, ret)
 
-func pos_pid(env; pid: ErlPid, msg: ErlTerm): ErlAtom {.xnif, raises: [].} =
+func pos_pid(env; pid: ErlPid, msg: ErlTerm): ErlAtom {.xnif, raises: [], dirty_cpu.} =
   if not enif_send(env, unsafeAddr(pid), nil, msg):
     return AtomError
   return AtomOk
+
+func pos_rename(env; a: ErlTerm): (ErlAtom, ErlTerm) {.xnif, name: "pos_ok?".} =
+  return (AtomOk, a)
 
 export_nifs "Elixir.NimlerPositionalArgs",
   [
@@ -66,6 +69,7 @@ export_nifs "Elixir.NimlerPositionalArgs",
     pos_seq,
     pos_map,
     pos_tup_map,
-    pos_pid
+    pos_pid,
+    pos_rename
   ]
 

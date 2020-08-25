@@ -26,7 +26,8 @@ func pos_str(env; a: string): (ErlAtom, string) {.xnif, raises: [].} =
   return (AtomOk, a & "ing")
 
 func pos_seq(env; a: seq[int]): (ErlAtom, seq[int]) {.xnif, raises: [].} =
-  doAssert(a == @[1,2,3])
+  if len(a) > 0:
+    doAssert(a == @[1,2,3])
   return (AtomOk, a & @[4,5,6])
 
 func pos_charlist(env; a: seq[char]): (ErlAtom, seq[char]) {.xnif, raises: [].} =

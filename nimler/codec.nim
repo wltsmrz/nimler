@@ -58,6 +58,15 @@ func from_term*(env; term; T: typedesc[ErlTerm]): Option[T] {.inline.} = some(te
 
 func to_term*(env; term: ErlTerm): ErlTerm {.inline.} = term
 
+# pid
+func from_term*(env; term; T: typedesc[ErlPid]): Option[T] {.inline.} =
+  var pid: ErlPid
+  if enif_get_local_pid(env, term, addr(pid)):
+    result = some(pid)
+
+func to_term*(env; term: ErlPid): ErlTerm {.inline.} =
+  result = enif_make_pid(env, unsafeAddr(term))
+
 # int
 func from_term*(env; term; T: typedesc[int]): Option[T] {.inline.} =
   var res: int
@@ -136,6 +145,13 @@ func to_term*(env; V: ErlAtom): ErlTerm {.inline.} =
     result = res
   else:
     result = enif_make_atom_len(env, V.cstring, len(V).csize_t)
+
+# bool
+func from_term*(env; term; T: typedesc[bool]): Option[T] {.inline.} =
+  result = some(some(AtomTrue) == from_term(env, term, ErlAtom))
+
+func to_term*(env; term: bool): ErlTerm {.inline.} =
+  result = to_term(env, if term: AtomTrue else: AtomFalse)
 
 # charlist
 func from_term*(env; term; T: typedesc[seq[char]]): Option[T] {.inline.} =
@@ -220,17 +236,20 @@ func from_term*(env; term; T: typedesc[tuple]): Option[T] =
   return some(res)
 
 macro to_term*(env: typed; V: tuple): untyped =
-  expectKind(V, {nnkSym, nnkTupleConstr})
-  if V.kind == nnkSym:
-    let tup_len = V.getTypeImpl().len
-    result = newCall("enif_make_tuple", env, newLit(tup_len))
-    for i in 0 ..< tup_len:
-      let v = quote do: `V`[`i`]
-      result.add(newCall("to_term", env, v))
-  elif V.kind == nnkTupleConstr:
-    result = quote do:
-      let erl_tup = `V`
-      to_term(env, erl_tup)
+  expectKind(V, {nnkSym, nnkTupleConstr, nnkCall})
+  case V.kind:
+    of nnkSym:
+      let tup_len = V.getTypeImpl().len
+      result = newCall("enif_make_tuple", env, newLit(tup_len))
+      for i in 0 ..< tup_len:
+        let v = quote do: `V`[`i`]
+        result.add(newCall("to_term", env, v))
+    of nnkTupleConstr, nnkCall:
+      result = quote do:
+        let tup = `V`
+        to_term(env, tup)
+    else:
+      error "wrong kind"
 
 # map/table
 func from_term*(env; term; T: typedesc[Table]): Option[T] =
@@ -262,22 +281,6 @@ func to_term*(env; V: Table): ErlTerm =
     return enif_raise_exception(env, env.to_term(ErlAtom("fail to encode map")))
   return res
 
-# bool
-func from_term*(env; term; T: typedesc[bool]): Option[T] {.inline.} =
-  result = some(some(AtomTrue) == from_term(env, term, ErlAtom))
-
-func to_term*(env; term: bool): ErlTerm {.inline.} =
-  result = to_term(env, if term: AtomTrue else: AtomFalse)
-
-# pid
-func from_term*(env; term; T: typedesc[ErlPid]): Option[T] {.inline.} =
-  var pid: ErlPid
-  if enif_get_local_pid(env, term, addr(pid)):
-    result = some(pid)
-
-func to_term*(env; term: ErlPid): ErlTerm {.inline.} =
-  result = enif_make_pid(env, unsafeAddr(term))
-
 # result
 func result_tuple*(env; res_type: ErlTerm; terms: varargs[ErlTerm]): ErlTerm {.inline.} =
   result = enif_make_tuple_from_array(env, res_type & @terms)
@@ -289,6 +292,7 @@ func error*(env; terms: varargs[ErlTerm]): ErlTerm {.inline.} =
   result = result_tuple(env, env.to_term(AtomError), terms)
 
 proc copy_pragma_without(p: NimNode, x: string): NimNode {.compileTime.} =
+  expectKind(e, nnkPragma)
   result = newTree(nnkPragma)
   for e in p:
     expectKind(e, {nnkIdent, nnkExprColonExpr})
@@ -303,35 +307,27 @@ proc copy_pragma_without(p: NimNode, x: string): NimNode {.compileTime.} =
 
 macro xnif*(fn: untyped): untyped =
   expectKind(fn, {nnkProcDef, nnkFuncDef})
-  var rname = fn.name
+  let rname = fn.name
   fn.name = ident("Z" & $rname & "_internal")
-  var rbody = newTree(nnkStmtList, fn)
-  var rcall = newCall(fn.name, ident("env"))
-  var arity = 0
+  let rbody = newTree(nnkStmtList, fn)
+  let rcall = newCall(fn.name, ident("env"))
 
-  for i, p in fn.params:
-    if i < 2: continue
-    inc(arity)
-    var arg = newTree(nnkBracketExpr, ident("argv"), newLit(i-2))
+  for i in 2 ..< len(fn.params):
+    let p = fn.params[i]
+    let arg = newTree(nnkBracketExpr, ident("argv"), newLit(i-2))
     rbody.add(newTree(nnkLetSection, newTree(nnkIdentDefs,
       p[0],
       newNimNode(nnkEmpty),
       newCall("from_term", ident("env"), arg, p[1]))))
     rbody.add(newTree(nnkIfStmt, newTree(nnkElifBranch,
-      newCall("isNone", p[0]),
+      newCall("unlikely", newCall("isNone", p[0])),
       newTree(nnkReturnStmt, newCall("enif_make_badarg", ident("env"))))))
     rcall.add(newCall("unsafeGet", p[0]))
 
-  rbody.add(
-    newTree(nnkLetSection,
-      newTree(nnkIdentDefs,
-        ident("ret"),
-        newNimNode(nnkEmpty),
-        rcall)),
-    newTree(nnkReturnStmt,
-      newCall("to_term", ident("env"), ident("ret"))))
+  rbody.add(newTree(nnkReturnStmt, newCall("to_term", ident("env"), rcall)))
 
-  var rparams = newTree(nnkFormalParams,
+  let rfn = newProc(rname, [], rbody, fn.kind)
+  rfn.params = newTree(nnkFormalParams,
     ident("ErlTerm"),
     newTree(nnkIdentDefs,
       ident("env"),
@@ -345,19 +341,9 @@ macro xnif*(fn: untyped): untyped =
       ident("argv"),
       ident("ErlNifArgs"),
       newNimNode(nnkEmpty)))
-
-  var rfn = newProc(
-    rname,
-    [], # params
-    rbody,
-    fn.kind,
-  )
-
-  rfn.params = rparams
   rfn.pragma = copy_pragma_without(fn.pragma, "raises")
   rfn.pragma.add(ident("nif"))
-  rfn.pragma.add(newTree(nnkExprColonExpr, ident("arity"), newLit(arity)))
+  rfn.pragma.add(newTree(nnkExprColonExpr, ident("arity"), newLit(len(fn.params)-2)))
 
   result = rfn
-
 

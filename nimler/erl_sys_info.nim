@@ -9,33 +9,31 @@ when exitCode != 0:
     Could not detect installed Erlang/OTP.
     """"
 
-const info_lines = sysInfo.splitLines()
-const erts_path* = infoLines[0]
-const nif_version {.strdefine.}: string = info_lines[1]
-const nif_major* = parseInt(nif_version.split(".")[0])
-const nif_minor* = parseInt(nif_version.split(".")[1])
+const infoLines = sysInfo.splitLines()
+const ertsPath* = infoLines[0]
+const nifVersion {.strdefine.}: string = infoLines[1]
 
-func nif_version_gte*(major, minor: Natural): bool {.compileTime.} =
-  (major < nif_major) or (major == nif_major and minor <= nif_minor)
+const nifMajor* = parseInt(nifVersion.split(".")[0])
+const nifMinor* = parseInt(nifVersion.split(".")[1])
 
-macro min_nif_version*(major, minor: typed, body: untyped) =
-  let major_int = major.intVal
-  let minor_int = minor.intVal
+func nifVersionGte*(major, minor: Natural): bool {.compileTime.} =
+  (major < nifMajor) or (major == nifMajor and minor <= nifMinor)
 
-  if not nif_version_gte(major_int, minor_int):
-    let err_pragma = newNimNode(nnkPragma)
-    let pragma_body = newNimNode(nnkExprColonExpr)
-    pragma_body.add(ident("error"))
-    pragma_body.add(newStrLitNode("""
+macro minNifVersion*(major, minor: typed, body: untyped) =
+  let majorInt = major.intVal
+  let minorInt = minor.intVal
+
+  if not nifVersionGte(majorInt, minorInt):
+    body.addPragma(newTree(nnkPragma,
+      newTree(nnkExprColonExpr,
+      ident("error"),
+      newStrLitNode("""
 
 
-    $1() not supported in target NIF version: $2.$3.
-    Requires at least version $4.$5.
+      $1() not supported in target NIF version: $2.$3.
+      Requires at least version $4.$5.
 
-    """ % [$body.name, $nif_major, $nif_minor, $major_int, $minor_int]
-    ))
-    err_pragma.add(pragma_body)
-    body.pragma = err_pragma
+      """ % [$body.name, $nifMajor, $nifMinor, $majorInt, $minorInt]))))
 
   result = body
 

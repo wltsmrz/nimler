@@ -5,36 +5,36 @@ import tables
 using
   env: ptr ErlNifEnv
 
-func pos_int(env; a: int, b: int): (ErlAtom, int) {.xnif, raises: [].} =
+func posInt(env; a: int, b: int): (ErlAtom, int) {.xnif: "pos_int".} =
   doAssert(a == 1)
   doAssert(b == 2)
   return (AtomOk, a + b)
 
-func pos_bool(env; a: int, b: int, c: bool, d: bool): (ErlAtom, bool, bool) {.xnif, raises: [].} =
+func posBool(env; a: int, b: int, c: bool, d: bool): (ErlAtom, bool, bool) {.xnif: "pos_bool".} =
   doAssert(c == false)
   doAssert(d == true)
   doAssert(a == 1)
   doAssert(b == 2)
   return (AtomOk, a > b, a < b)
 
-func pos_bin(env; a: seq[byte]): (ErlAtom, seq[byte]) {.xnif, raises: [].} =
+func posBin(env; a: seq[byte]): (ErlAtom, seq[byte]) {.xnif: "pos_bin".} =
   doAssert(a == cast[seq[byte]]("test"))
   return (AtomOk, a & cast[seq[byte]]("ing"))
 
-func pos_str(env; a: string): (ErlAtom, string) {.xnif, raises: [].} =
+func posStr(env; a: string): (ErlAtom, string) {.xnif: "pos_str".} =
   doAssert(a == "test")
   return (AtomOk, a & "ing")
 
-func pos_seq(env; a: seq[int]): (ErlAtom, seq[int]) {.xnif, raises: [].} =
+func posSeq(env; a: seq[int]): (ErlAtom, seq[int]) {.xnif: "pos_seq".} =
   if len(a) > 0:
     doAssert(a == @[1,2,3])
   return (AtomOk, a & @[4,5,6])
 
-func pos_charlist(env; a: seq[char]): (ErlAtom, seq[char]) {.xnif, raises: [].} =
+func posCharlist(env; a: seq[char]): (ErlAtom, seq[char]) {.xnif: "pos_charlist".} =
   doAssert(a == @"test")
   return (AtomOk, a & @"ing")
 
-func pos_map(env; x: Table[ErlAtom, int]): (ErlAtom, Table[ErlAtom, int]) {.xnif, raises: [].} =
+func posMap(env; x: Table[ErlAtom, int]): (ErlAtom, Table[ErlAtom, int]) {.xnif: "pos_map".} =
   doAssert(x.hasKey(ErlAtom("a1")))
   doAssert(false == x.hasKey(ErlAtom("a9")))
   doAssert(len(x) == 3)
@@ -46,31 +46,31 @@ func pos_map(env; x: Table[ErlAtom, int]): (ErlAtom, Table[ErlAtom, int]) {.xnif
 
 type TupMap = Table[ErlAtom, tuple[a: string, b: int]]
 # { :t, ("a", 1) }
-func pos_tup_map(env; a: TupMap): (ErlAtom, TupMap) {.xnif, raises: [].} =
+func posTupMap(env; a: TupMap): (ErlAtom, TupMap) {.xnif: "pos_tup_map".} =
   var ret: TupMap
   ret = initTable[ErlAtom, tuple[a: string, b: int]](4)
   ret.add(ErlAtom("c"), ("d", 5))
   return (AtomOk, ret)
 
-func pos_pid(env; pid: ErlPid, msg: ErlTerm): ErlAtom {.xnif, raises: [], dirty_cpu.} =
+func posPid(env; pid: ErlPid, msg: ErlTerm): ErlAtom {.xnif: "pos_pid", dirtyCpu.} =
   if not enif_send(env, unsafeAddr(pid), nil, msg):
     return AtomError
   return AtomOk
 
-func pos_rename(env; a: ErlTerm): (ErlAtom, ErlTerm) {.xnif, name: "pos_ok?".} =
+func posRename(env; a: ErlTerm): (ErlAtom, ErlTerm) {.xnif: "pos_ok?".} =
   return (AtomOk, a)
 
-export_nifs "Elixir.NimlerPositionalArgs",
+exportNifs "Elixir.NimlerPositionalArgs",
   [
-    pos_int,
-    pos_bool,
-    pos_bin,
-    pos_str,
-    pos_charlist,
-    pos_seq,
-    pos_map,
-    pos_tup_map,
-    pos_pid,
-    pos_rename
+    posInt,
+    posBool,
+    posBin,
+    posStr,
+    posCharlist,
+    posSeq,
+    posMap,
+    posTupMap,
+    posPid,
+    posRename
   ]
 

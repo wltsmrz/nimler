@@ -1,8 +1,8 @@
 import std/hashes
 import ../erl_sys_info
 
-const dep_header_name = "erl_nif.h"
-{.pragma: c_dep, importc, header: dep_header_name.}
+const depHeaderName = "erl_nif.h"
+{.pragma: c_dep, importc, header: depHeaderName.}
 {.pragma: c_dep_struct, c_dep, bycopy.}
 {.pragma: c_dep_enum, c_dep, size: sizeof(cint).}
 {.pragma: c_dep_proc, c_dep, cdecl.}
@@ -36,12 +36,9 @@ type
     upgrade*: ErlNifEntryUpgrade
     unload*: ErlNifEntryUnload
     vm_variant*: cstring
-    when nif_version_gte(2, 7):
-      options*: cint
-    when nif_version_gte(2, 12):
-      sizeof_ErlNifResourceTypeInit*: csize_t
-    when nif_version_gte(2, 14):
-      min_erts*: cstring
+    options*: cint
+    sizeof_ErlNifResourceTypeInit*: csize_t
+    min_erts*: cstring
   ErlNifTermType* {.c_dep_enum.} = enum
     ERL_NIF_TERM_TYPE_ATOM = 1
     ERL_NIF_TERM_TYPE_BITSTRING = 2
@@ -137,7 +134,7 @@ func enif_free*(a1: pointer) {.c_dep_proc.}
 func enif_realloc*(a1: pointer; a2: csize_t): pointer {.c_dep_proc.}
 
 # comparisons
-func enif_term_type*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTermType {.c_dep_proc, min_nif_version(2, 15).}
+func enif_term_type*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTermType {.c_dep_proc, minNifVersion(2, 15).}
 func enif_compare*(a1: ErlNifTerm; a2: ErlNifTerm): cint {.c_dep_proc.}
 func enif_is_current_process_alive*(a1: ptr ErlNifEnv): bool {.c_dep_proc.}
 func enif_is_process_alive*(a1: ptr ErlNifEnv; a2: ptr ErlNifPid): bool {.c_dep_proc.}
@@ -220,7 +217,7 @@ func enif_map_iterator_is_head*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): b
 func enif_map_iterator_is_tail*(a1: ptr ErlNifEnv; a2: ptr ErlNifMapIterator): bool {.c_dep_proc.}
 func enif_get_map_size*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ptr csize_t): bool {.c_dep_proc.}
 func enif_make_new_map*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc.}
-func enif_make_map_from_arrays*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm; a3: ptr ErlNifTerm; a4: cuint, a5: ptr ErlNifTerm): bool {.c_dep_proc, min_nif_version(2, 14).}
+func enif_make_map_from_arrays*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm; a3: ptr ErlNifTerm; a4: cuint, a5: ptr ErlNifTerm): bool {.c_dep_proc, minNifVersion(2, 14).}
 func enif_make_map_put*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ErlNifTerm; a5: ptr ErlNifTerm): bool {.c_dep_proc.}
 func enif_get_map_value*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ptr ErlNifTerm): bool {.c_dep_proc.}
 func enif_make_map_update*(a1: ptr ErlNifEnv; a2: ErlNifTerm; a3: ErlNifTerm; a4: ErlNifTerm; a5: ptr ErlNifTerm): bool {.c_dep_proc.}
@@ -265,33 +262,33 @@ template enif_schedule_nif*(a1: ptr ErlNifEnv; a2: ErlNifFptr; a3: openArray[Erl
 
 # exceptions
 func enif_raise_exception*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.c_dep_proc.}
-func enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.c_dep_proc, min_nif_version(2, 8).}
+func enif_has_pending_exception*(a1: ptr ErlNifEnv; a2: ptr ErlNifTerm): bool {.c_dep_proc, minNifVersion(2, 8).}
 template enif_has_pending_exception*(a1): untyped =
   enif_has_pending_exception(a1, nil)
 
 # time
-func enif_monotonic_time*(a1: ErlNifTimeUnit): ErlNifTime {.c_dep_proc, min_nif_version(2, 10).}
-func enif_convert_time_unit*(a1: ErlNifTime, a2: ErlNifTimeUnit, a3: ErlNifTimeUnit): ErlNifTime {.c_dep_proc, min_nif_version(2, 10).}
-func enif_time_offset*(a1: ErlNifTimeUnit): ErlNifTime {.c_dep_proc, min_nif_version(2, 10).}
-func enif_cpu_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, min_nif_version(2, 10).}
-func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, min_nif_version(2, 10).}
+func enif_monotonic_time*(a1: ErlNifTimeUnit): ErlNifTime {.c_dep_proc, minNifVersion(2, 10).}
+func enif_convert_time_unit*(a1: ErlNifTime, a2: ErlNifTimeUnit, a3: ErlNifTimeUnit): ErlNifTime {.c_dep_proc, minNifVersion(2, 10).}
+func enif_time_offset*(a1: ErlNifTimeUnit): ErlNifTime {.c_dep_proc, minNifVersion(2, 10).}
+func enif_cpu_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, minNifVersion(2, 10).}
+func enif_now_time*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc, minNifVersion(2, 10).}
 
 # printing
 func enif_fprintf*(a1: File; a2: cstring): bool {.varargs, c_dep_proc.}
-func enif_snprintf*(a1: pointer, a2: cuint; a3: cstring): cint {.varargs, c_dep_proc, min_nif_version(2, 11).}
+func enif_snprintf*(a1: pointer, a2: cuint; a3: cstring): cint {.varargs, c_dep_proc, minNifVersion(2, 11).}
 
 proc `==`*(a, b: ErlNifTerm): bool =
   enif_is_identical(a, b)
 proc hash*(x: ErlNifTerm): Hash {.borrow.}
 proc `$`*(x: ErlNifTerm): string =
   when (nifMajor, nifMinor) >= (2, 11):
-    let str_len = 64
-    result = newString(str_len)
-    if enif_snprintf(result[0].addr, str_len.cuint, "ErlNifTerm:%T", x) > 0:
+    let strLen = 64
+    result = newString(strLen)
+    if enif_snprintf(result[0].addr, strLen.cuint, "ErlNifTerm:%T", x) > 0:
       var i = 0
       while result[i] != '\0': inc(i)
       result.setLen(i)
-      if result.len == str_len.int - 1:
+      if result.len == strLen.int - 1:
         result[^3 ..< result.len] = "..."
   else:
     result = "ErlNifTerm"

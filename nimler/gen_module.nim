@@ -19,43 +19,42 @@ func init(m: var ElixirModule, module_name: string, nif_filename: string, load_i
   m.head.addf("  def init(), do: :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), \'$1\')), $2)\n\n", nif_filename, load_info)
   m.tail = "\nend\n"
 
-func add_fn(m: var ElixirModule, name: string, arity: int) =
+func addFn(m: var ElixirModule, name: string, arity: int) =
   let params = "_".repeat(arity).join(", ")
   m.fns.add("  def $1($2), do: exit(:nif_library_not_loaded)" % [name, params])
 
 func `$`(m: var ElixirModule): string =
   result = m.head & m.fns.join("\n") & m.tail
 
-proc gen_wrapper*(module_name: string, funcs: static openArray[ErlNifFunc]) {.compileTime.} =
-  let out_dir =
+proc genWrapper*(moduleName: string, funcs: static openArray[ErlNifFunc]) {.compileTime.} =
+  let outDir =
     if nimlerWrapperRoot == "":
       querySetting(outDir)
     else:
       nimlerWrapperRoot
 
-  doAssert(isAbsolute(out_dir), "Nimler root dir must be absolute")
+  doAssert(isAbsolute(outDir), "Nimler root dir must be absolute")
 
-  let out_file = querySetting(outFile)
-  let module_name = module_name.replace("Elixir.", "")
-  let module_filename =
+  let outFile = querySetting(outFile)
+  let erlModuleName = moduleName.replace("Elixir.", "")
+  let moduleFilename =
     if nimlerWrapperFilename == "":
-      module_name & ".ex"
+      erlModuleName & ".ex"
     else:
       nimlerWrapperFilename
-  let module_filepath = joinPath(out_dir, module_filename)
-  let nif_filename = out_file.replace(".so", "")
-  let load_info = nimlerWrapperLoadInfo
+  let moduleFilepath = joinPath(outDir, moduleFilename)
+  let nifFilename = outFile.replace(".so", "")
+  let loadInfo = nimlerWrapperLoadInfo
 
-  if defined(nimlerGenWrapperForce) or (defined(nimlerGenWrapper) and not fileExists(module_filepath)):
-    discard staticExec("mkdir -p " & out_dir)
+  if defined(nimlerGenWrapperForce) or (defined(nimlerGenWrapper) and not fileExists(moduleFilepath)):
+    discard staticExec("mkdir -p " & outDir)
 
-    var elixir_module = ElixirModule()
-    elixir_module.init(module_name, nif_filename, load_info)
+    var elixirModule = ElixirModule()
+    elixirModule.init(erlModuleName, nifFilename, loadInfo)
     for fn in funcs:
-      elixir_module.add_fn($fn.name, fn.arity.int)
+      elixirModule.addFn($fn.name, fn.arity.int)
       
-    hint:
-      "Generating wrapper module: " & module_filepath
+    hint("Generating wrapper module: " & moduleFilepath)
   
-    writeFile(module_filepath, $elixir_module)
+    writeFile(moduleFilepath, $elixirModule)
 

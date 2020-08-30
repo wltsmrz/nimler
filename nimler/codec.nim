@@ -199,14 +199,14 @@ func toTerm*(env; V: string): ErlTerm {.inline.} =
   result = term
 
 # binary
-func fromTerm*(env; term; T: typedesc[seq[byte]]): Option[T] =
+func fromTerm*(env; term; T: typedesc[openArray[byte] or seq[byte]]): Option[T] =
   var erlBin: ErlNifBinary
   if enif_inspect_binary(env, term, addr(erlBin)):
     var bin = newSeq[byte](erlBin.size)
     copyMem(addr(bin[0]), erlBin.data, erlBin.size)
     result = some(bin)
 
-func toTerm*(env; V: seq[byte]): ErlTerm {.inline.} =
+func toTerm*(env; V: openArray[byte] or seq[byte]): ErlTerm {.inline.} =
   var term: ErlTerm
   var bin = cast[ptr byte](enif_make_new_binary(env, len(V).csize_t, term.addr))
   copyMem(bin, unsafeAddr(V[0]), len(V))
@@ -214,12 +214,12 @@ func toTerm*(env; V: seq[byte]): ErlTerm {.inline.} =
 
 # list
 func fromTerm*(env; term; T: typedesc[seq]): Option[T] =
+  type ElType = codec.genericParams(T).get(0)
   if not enif_is_list(env, term):
     return none(T)
   var res: T
   var cursor = term
   var head, tail: ErlTerm
-  type ElType = codec.genericParams(T).get(0)
   while enif_get_list_cell(env, cursor, addr(head), addr(tail)):
     var headD = env.fromTerm(head, ElType)
     if headD.isNone():
@@ -300,12 +300,12 @@ func toTerm*(env; V: Table): ErlTerm =
 
 # keyword list
 func fromTerm*(env; term; T: typedesc[ErlKeywords]): Option[T] =
+  type ElType = (ErlAtom, codec.genericParams(T).get(0))
   if not enif_is_list(env, term):
     return none(T)
   var res: T
   var cursor = term
   var head, tail: ErlTerm
-  type ElType = (ErlAtom, codec.genericParams(T).get(0))
   while enif_get_list_cell(env, cursor, addr(head), addr(tail)):
     var headD = env.fromTerm(head, ElType)
     if headD.isNone():

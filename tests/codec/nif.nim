@@ -64,6 +64,14 @@ func codec_string(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
 func codec_binary(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
   let a1 = env.from_term(argv[0], seq[byte]).get()
   doAssert(a1 == @[116.byte, 101, 115, 116, 0])
+
+  let a2 = toTerm(env, toOpenArrayByte("test", 0, 3))
+  let a3 = toTerm(env, "test")
+  doAssert(enif_is_identical(a2, a3))
+
+  doAssert(@[116.byte, 101, 115, 116] == fromTerm(env, a3, seq[byte]).get())
+  doAssert(@[116.byte, 101, 115, 116] == fromTerm(env, a2, seq[byte]).get())
+
   return env.to_term(a1)
 
 func codec_list_int(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =

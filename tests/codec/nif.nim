@@ -89,6 +89,53 @@ func codec_map(env, argc, argv): ErlNifTerm {.nif, arity: 3.} =
   let a3 = env.from_term(argv[2], Table[ErlAtom, string]).get()
   return env.to_term((a1, a2, a3))
 
+func codec_keywords(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
+  let a1 = fromTerm(env, argv[0], ErlKeywords[int]).get()
+  doAssert(a1 == @[ (ErlAtom("a"), 1), (ErlAtom("b"), 2) ])
+
+  let a2 = fromTerm(env, argv[0], ErlKeywords[ErlTerm]).get()
+  doAssert(a2[0][0] == ErlAtom("a"))
+  doAssert(a2[0][1] == toTerm(env, 1))
+  doAssert(a2[1][0] == ErlAtom("b"))
+  doAssert(a2[1][1] == toTerm(env, 2))
+
+  type OO = object
+    a: int
+    b: int
+
+  let a3 = fromTerm(env, argv[0], OO).get()
+  doAssert(a3.a == 1)
+  doAssert(a3.b == 2)
+
+  type OOO = object
+    a: int
+    b: int
+    c: int
+
+  let a4 = toTerm(env, OOO(a: 1, b: 2, c: 3))
+
+  let a5 = fromTerm(env, a4, OOO).get()
+  doAssert(a5.a == 1)
+  doAssert(a5.b == 2)
+  doAssert(a5.c == 3)
+
+  var a6: ErlKeywords[ErlTerm]
+  add(a6, "a", toTerm(env, 1))
+  add(a6, "b", toTerm(env, 2))
+  add(a6, "c", toTerm(env, 3))
+
+  doAssert(hasKey(a6, ErlAtom("a")))
+  doAssert(not hasKey(a6, ErlAtom("z")))
+  doAssert(hasKey(a6, "a"))
+  doAssert(not hasKey(a6, "z"))
+
+  doAssert(getKey(a6, "a") == (true, toTerm(env, 1)))
+  doAssert(getKey(a6, "b") == (true, toTerm(env, 2)))
+  doAssert(getKey(a6, "c") == (true, toTerm(env, 3)))
+  doAssert(getKey(a6, "d") == (false, ErlNifTerm(0)))
+
+  return toTerm(env, a4)
+
 func codec_result_ok(env, argc, argv): ErlNifTerm {.nif, arity: 2.} =
   return env.ok(argv[0], argv[1])
 
@@ -110,6 +157,7 @@ export_nifs("Elixir.NimlerCodec", [
   codec_list_string,
   codec_tuple,
   codec_map,
+  codec_keywords,
   codec_result_ok,
   codec_result_error
 ])

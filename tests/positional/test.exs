@@ -55,5 +55,12 @@ defmodule NimlerPositionalArgs.Test do
     end
     test "pos_rename()", do:
         assert({:ok, 1} == NimlerWrapper.pos_ok?(1))
+    test "pos_keywords()", do:
+        assert(:ok == NimlerWrapper.pos_keywords([a: 1, b: "test", c: 3.1]))
+    test "pos_keywords_badarg()", do:
+        assert_raise(ArgumentError, fn -> NimlerWrapper.pos_keywords([a: 1]) end)
+        assert_raise(ArgumentError, fn -> NimlerWrapper.pos_keywords([a: 1, b: "a"]) end)
+        assert_raise(ArgumentError, fn -> NimlerWrapper.pos_keywords([a: 1, b: "a", c: :t]) end)
+        assert_raise(ArgumentError, fn -> NimlerWrapper.pos_keywords(1) end)
 end
 

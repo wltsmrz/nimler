@@ -85,5 +85,10 @@ defmodule NimlerCodec.Test do
         test "codec_result_error()", do:
             assert({:error,1,2} == NimlerWrapper.codec_result_error(1,2))
     end
+
+    describe "codec_keywordlist" do
+        test "codec_keywords()", do:
+            assert([a: 1, b: 2, c: 3] == NimlerWrapper.codec_keywords([a: 1, b: 2]))
+    end
 end
 

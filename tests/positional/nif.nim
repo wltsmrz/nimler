@@ -60,6 +60,17 @@ func posPid(env; pid: ErlPid, msg: ErlTerm): ErlAtom {.xnif: "pos_pid", dirtyCpu
 func posRename(env; a: ErlTerm): (ErlAtom, ErlTerm) {.xnif: "pos_ok?".} =
   return (AtomOk, a)
 
+type MyO = object
+  a: int
+  b: string
+  c: float
+
+func posKeywords(env; a: MyO): ErlAtom {.xnif: "pos_keywords".} =
+  doAssert(a.a == 1)
+  doAssert(a.b == "test")
+  doAssert(a.c == 3.1)
+  return AtomOk
+
 exportNifs "Elixir.NimlerPositionalArgs",
   [
     posInt,
@@ -71,6 +82,7 @@ exportNifs "Elixir.NimlerPositionalArgs",
     posMap,
     posTupMap,
     posPid,
-    posRename
+    posRename,
+    posKeywords
   ]
 

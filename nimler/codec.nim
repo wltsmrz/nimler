@@ -11,19 +11,6 @@ using
   env: ptr ErlNifEnv
   term: ErlNifTerm
 
-type ErlAtom* = distinct string
-
-proc `$`*(x: ErlAtom): string {.borrow.}
-proc `==`*(a: ErlAtom, b: ErlAtom): bool {.borrow.}
-proc hash*(x: ErlAtom): Hash {.borrow.}
-proc len*(x: ErlAtom): int {.borrow.}
-
-const AtomOk* = ErlAtom("ok")
-const AtomError* = ErlAtom("error")
-const AtomTrue* = ErlAtom("true")
-const AtomFalse* = ErlAtom("false")
-
-type ErlTerm* = ErlNifTerm
 type ErlPid* = ErlNifPid
 type ErlCharlist* = seq[char]
 type ErlBinary* = seq[byte]
@@ -32,6 +19,38 @@ type ErlList*[T] = seq[T]
 type ErlInt* = int
 type ErlUInt* = uint
 type ErlFloat* = float
+
+type ErlTerm* = ErlNifTerm
+type ErlAtom* = distinct string
+type ErlKeywords*[T] = seq[tuple[k: ErlAtom, v: T]]
+
+proc `$`*(x: ErlAtom): string {.borrow.}
+proc `==`*(a: ErlAtom, b: ErlAtom): bool {.borrow.}
+proc hash*(x: ErlAtom): Hash {.borrow.}
+proc len*(x: ErlAtom): int {.borrow.}
+
+proc add*[T](x: var ErlKeywords[T], k: string, v: T) =
+  x.add((ErlAtom(k), v))
+
+func getKey*[T](keywords: ErlKeywords[T], key: ErlAtom, def: T = default(T)): (bool, T) =
+  for (k, v) in keywords:
+    if k == key:
+      return (true, v)
+  return (false, def)
+
+func getKey*[T](keywords: ErlKeywords[T], key: string): (bool, T) =
+  return getKey(keywords, ErlAtom(key))
+
+func hasKey*[T](keywords: ErlKeywords[T], key: ErlAtom): bool =
+  return getKey(keywords, key)[0]
+
+func hasKey*[T](keywords: ErlKeywords[T], key: string): bool =
+  return getKey(keywords, ErlAtom(key))[0]
+
+const AtomOk* = ErlAtom("ok")
+const AtomError* = ErlAtom("error")
+const AtomTrue* = ErlAtom("true")
+const AtomFalse* = ErlAtom("false")
 
 macro genericParams(T: typedesc): untyped =
   result = newNimNode(nnkTupleConstr)
@@ -131,7 +150,7 @@ func toTerm*(env; term: float): ErlTerm {.inline.} =
   enif_make_double(env, term)
 
 # atom
-func fromTerm*(env; term; T: typedesc[ErlAtom]): Option[T] {.inline.} =
+func fromTerm*(env; term; T: typedesc[ErlAtom]): Option[T] =
   var atomLen: cuint
   if enif_get_atom_length(env, term, addr(atomLen), ERL_NIF_LATIN1):
     let bufLen = atomLen + 1
@@ -154,7 +173,7 @@ func toTerm*(env; term: bool): ErlTerm {.inline.} =
   result = toTerm(env, if term: AtomTrue else: AtomFalse)
 
 # charlist
-func fromTerm*(env; term; T: typedesc[seq[char]]): Option[T] {.inline.} =
+func fromTerm*(env; term; T: typedesc[seq[char]]): Option[T] =
   var stringLen: cuint
   if enif_get_list_length(env, term, addr(stringLen)):
     let bufLen = stringLen + 1
@@ -166,14 +185,12 @@ func toTerm*(env; V: seq[char]): ErlTerm {.inline.} =
   enif_make_string_len(env, V, ERL_NIF_LATIN1)
 
 # string
-func binToStr(bin: ErlNifBinary): string {.inline.} =
-  result = newString(bin.size)
-  copyMem(addr(result[0]), bin.data, result.len)
-
-func fromTerm*(env; term; T: typedesc[string]): Option[T] {.inline.} =
-  var bin: ErlNifBinary
-  if enif_inspect_binary(env, term, addr(bin)):
-    result = some(binToStr(bin))
+func fromTerm*(env; term; T: typedesc[string]): Option[T] =
+  var erlBin: ErlNifBinary
+  if enif_inspect_binary(env, term, addr(erlBin)):
+    var bin = newString(erlBin.size)
+    copyMem(addr(bin[0]), erlbin.data, erlBin.size)
+    result = some(bin)
 
 func toTerm*(env; V: string): ErlTerm {.inline.} =
   var term: ErlTerm
@@ -182,7 +199,7 @@ func toTerm*(env; V: string): ErlTerm {.inline.} =
   result = term
 
 # binary
-func fromTerm*(env; term; T: typedesc[seq[byte]]): Option[T] {.inline.} =
+func fromTerm*(env; term; T: typedesc[seq[byte]]): Option[T] =
   var erlBin: ErlNifBinary
   if enif_inspect_binary(env, term, addr(erlBin)):
     var bin = newSeq[byte](erlBin.size)
@@ -281,6 +298,44 @@ func toTerm*(env; V: Table): ErlTerm =
     return enif_raise_exception(env, env.toTerm(ErlAtom("fail to encode map")))
   return res
 
+# keyword list
+func fromTerm*(env; term; T: typedesc[ErlKeywords]): Option[T] =
+  if not enif_is_list(env, term):
+    return none(T)
+  var res: T
+  var cursor = term
+  var head, tail: ErlTerm
+  type ElType = (ErlAtom, codec.genericParams(T).get(0))
+  while enif_get_list_cell(env, cursor, addr(head), addr(tail)):
+    var headD = env.fromTerm(head, ElType)
+    if headD.isNone():
+      return none(T)
+    res.add(move(headD.get()))
+    cursor = tail
+  return some(res)
+
+func fromTerm*(env; term; T: typedesc[object]): Option[T] =
+  let keywords = fromTerm(env, term, ErlKeywords[ErlTerm])
+  if isNone(keywords):
+    return none(T)
+  let keywordsVal = keywords.get()
+  var res: T
+  for k, v in fieldPairs(res):
+    var (has, kval) = keywordsVal.getKey(ErlAtom(k))
+    if not has:
+      return none(T)
+    var keywordVal = fromTerm(env, move(kval), type(v))
+    if isNone(keywordVal):
+      return none(T)
+    v = move(keywordVal.get())
+  return some(res)
+
+func toTerm*(env; V: object): ErlTerm =
+  var keywords: ErlKeywords[ErlTerm]
+  for k, v in fieldPairs(V):
+    keywords.add((ErlAtom(k), toTerm(env, v)))
+  return toTerm(env, keywords)
+
 # result
 func resultTuple*(env; resType: ErlAtom; terms: varargs[ErlTerm]): ErlTerm {.inline.} =
   result = enif_make_tuple_from_array(env, toTerm(env, resType) & @terms)
@@ -357,3 +412,4 @@ macro xnif*(nifName: untyped, fn: untyped): untyped =
 
 macro xnif*(fn: untyped): untyped =
   result = genNifWrapper(newLit(repr fn.name), fn)
+

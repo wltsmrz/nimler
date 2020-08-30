@@ -4,9 +4,11 @@ import std/tables
 import nimler/erl_sys_info
 import nimler/bindings/erl_nif
 import nimler/gen_module
+import nimler/codec
 
 export erl_sys_info
 export erl_nif
+export codec
 
 {.passc: "-I" & ertsPath.}
 

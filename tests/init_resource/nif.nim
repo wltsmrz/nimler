@@ -1,5 +1,4 @@
 import ../../nimler
-import ../../nimler/codec
 import ../../nimler/resources
 
 using

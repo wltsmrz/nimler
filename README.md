@@ -8,18 +8,9 @@ Mostly, Nimler is a minimal, zero-dependency wrapper for Erlang NIF API.
 
 | Target               | Status                                                                 |
 |----------------------|------------------------------------------------------------------------|
-| x86_64<sub>[0]</sub> | ![](https://github.com/wltsmrz/nimler/workflows/build-x64/badge.svg)   |
-| arm64<sub>[1]</sub>  | ![](https://github.com/wltsmrz/nimler/workflows/build-arm64/badge.svg) |
+| x86_64-linux | ![](https://github.com/wltsmrz/nimler/workflows/build-x64/badge.svg)   |
+| arm64-linux  | ![](https://github.com/wltsmrz/nimler/workflows/build-arm64/badge.svg) |
 
-<sub>[0]</sub> ubuntu 18.04 github runner / nimler release build, --gc:arc
-
-<sub>[1]</sub> ubuntu 18.04 github runner / nimler release build cross-compiled for arm64, --gc:arc / elixir arm64v8 docker
-
-## Installation
-
-Nimler requires nim version 1.2.0+.  See nim [<ins>installation guide</ins>](https://nim-lang.org/install.html).
-
-Install nimler with via nimble:
 
 ```bash
 $ nimble install nimler
@@ -29,11 +20,21 @@ $ nimble install nimler
 
 Nimler is documented at [smrz.dev/nimler](https://smrz.dev/nimler).
 
-## Tests
+## Sample
 
-```bash
-$ git clone git@github.com:wltsmrz/nimler.git
-$ cd nimler
-$ nimble build_all # build all test NIFs
-$ nimble test_all # run tests
+```nim
+import nimler
+import nimler/codec
+
+using
+  env: ptr ErlNifEnv
+
+func add(env; a: int, b: int): (ErlAtom, int) {.xnif.} =
+  return (AtomOk, a + b)
+  
+func sub(env; a: int, b: int): (ErlAtom, int) {.xnif.} =
+  return (AtomOk, a - b)
+
+exportNifs "Elixir.NifMath", [ add, sub ]
 ```
+

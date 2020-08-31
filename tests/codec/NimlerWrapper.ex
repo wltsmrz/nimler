@@ -17,6 +17,6 @@ defmodule NimlerCodec do
   def codec_tuple(_), do: exit(:nif_library_not_loaded)
   def codec_map(_, _, _), do: exit(:nif_library_not_loaded)
   def codec_keywords(_), do: exit(:nif_library_not_loaded)
-  def codec_result_ok(_, _), do: exit(:nif_library_not_loaded)
-  def codec_result_error(_, _), do: exit(:nif_library_not_loaded)
+  def codec_result_ok(_), do: exit(:nif_library_not_loaded)
+  def codec_result_error(_), do: exit(:nif_library_not_loaded)
 end

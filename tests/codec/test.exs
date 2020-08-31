@@ -81,9 +81,9 @@ defmodule NimlerCodec.Test do
 
     describe "codec_result" do
         test "codec_result_ok()", do:
-            assert({:ok,1,2} == NimlerWrapper.codec_result_ok(1,2))
+            assert({:ok,1} == NimlerWrapper.codec_result_ok(1))
         test "codec_result_error()", do:
-            assert({:error,1,2} == NimlerWrapper.codec_result_error(1,2))
+            assert({:error,1} == NimlerWrapper.codec_result_error(1))
     end
 
     describe "codec_keywordlist" do

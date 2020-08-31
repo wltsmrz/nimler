@@ -196,6 +196,8 @@ func enif_make_string_len*(a1: ptr ErlNifEnv; string: openArray[char]; a3: ErlNi
 func enif_make_ref*(a1: ptr ErlNifEnv): ErlNifTerm {.c_dep_proc.}
 func enif_make_uint*(a1: ptr ErlNifEnv; a2: csize_t): ErlNifTerm {.c_dep_proc.}
 func enif_make_tuple_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): ErlNifTerm {.c_dep_proc.}
+template enif_make_tuple_from_array*(a1: ptr ErlNifEnv; a2: array[2, ErlNifTerm]): ErlNifTerm =
+  enif_make_tuple_from_array(a1, toOpenArray(a2, 0, 1))
 func enif_make_list_from_array*(a1: ptr ErlNifEnv; a2: openArray[ErlNifTerm]): ErlNifTerm {.c_dep_proc.}
 func enif_make_new_binary*(a1: ptr ErlNifEnv; a2: csize_t; a3: ptr ErlNifTerm): ptr cuchar {.c_dep_proc.}
 func enif_make_copy*(a1: ptr ErlNifEnv; a2: ErlNifTerm): ErlNifTerm {.c_dep_proc.}

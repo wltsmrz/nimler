@@ -143,11 +143,21 @@ func codec_keywords(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
 
   return toTerm(env, a4)
 
-func codec_result_ok(env, argc, argv): ErlNifTerm {.nif, arity: 2.} =
-  return env.ok(argv[0], argv[1])
+func codec_result_ok(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
+  let a = ok(env, argv[0])
+  let b = ok(env, fromTerm(env, argv[0], int).get())
+  let c = ok(env, 1)
+  doAssert(enif_is_identical(a, b))
+  doAssert(enif_is_identical(a, c))
+  return env.ok(argv[0])
 
-func codec_result_error(env, argc, argv): ErlNifTerm {.nif, arity: 2.} =
-  return env.error(argv[0], argv[1])
+func codec_result_error(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
+  let a = error(env, argv[0])
+  let b = error(env, fromTerm(env, argv[0], int).get())
+  let c = error(env, 1)
+  doAssert(enif_is_identical(a, b))
+  doAssert(enif_is_identical(a, c))
+  return env.error(argv[0])
 
 export_nifs("Elixir.NimlerCodec", [
   codec_options,

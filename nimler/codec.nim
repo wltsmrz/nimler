@@ -337,14 +337,13 @@ func toTerm*(env; V: object): ErlTerm =
   return toTerm(env, keywords)
 
 # result
-func resultTuple*(env; resType: ErlAtom; terms: varargs[ErlTerm]): ErlTerm {.inline.} =
-  result = enif_make_tuple_from_array(env, toTerm(env, resType) & @terms)
+macro resultTuple*(env; resType: ErlAtom, term: untyped): untyped =
+  template args(resType, term) =
+    [toTerm(env, resType), toTerm(env, term)]
+  result = newCall("enif_make_tuple_from_array", env, getAst(args(resType, term)))
 
-func ok*(env; terms: varargs[ErlTerm]): ErlTerm {.inline.} =
-  result = resultTuple(env, AtomOk, terms)
-
-func error*(env; terms: varargs[ErlTerm]): ErlTerm {.inline.} =
-  result = resultTuple(env, AtomError, terms)
+template ok*(env; term): untyped = resultTuple(env, AtomOk, term)
+template error*(env; term): untyped = resultTuple(env, AtomError, term)
 
 proc copyPragmaWithout(p: NimNode, x: string): NimNode {.compileTime.} =
   expectKind(p, {nnkEmpty, nnkPragma})

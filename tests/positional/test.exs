@@ -62,5 +62,10 @@ defmodule NimlerPositionalArgs.Test do
         assert_raise(ArgumentError, fn -> NimlerWrapper.pos_keywords([a: 1, b: "a"]) end)
         assert_raise(ArgumentError, fn -> NimlerWrapper.pos_keywords([a: 1, b: "a", c: :t]) end)
         assert_raise(ArgumentError, fn -> NimlerWrapper.pos_keywords(1) end)
+    test "pos_result()", do:
+        assert({:ok, 3} == NimlerWrapper.pos_result(1, 2))
+    test "pos_result_badarg()", do:
+        assert_raise(ArgumentError, fn -> NimlerWrapper.pos_result("a", 2) end)
+        assert_raise(ArgumentError, fn -> NimlerWrapper.pos_result(1, :a) end)
 end
 

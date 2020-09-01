@@ -337,6 +337,13 @@ func toTerm*(env; V: object): ErlTerm =
   return toTerm(env, keywords)
 
 # result
+type ErlResult*[T] = tuple[R: ErlAtom, V: T]
+
+macro resultTuple*(env; res: ErlResult): untyped =
+  template args(res) =
+    [toTerm(env, res[0]), toTerm(env, res[1])]
+  result = newCall("enif_make_tuple_from_array", env, getAst(args(res)))
+
 macro resultTuple*(env; resType: ErlAtom, term: untyped): untyped =
   template args(resType, term) =
     [toTerm(env, resType), toTerm(env, term)]
@@ -344,6 +351,9 @@ macro resultTuple*(env; resType: ErlAtom, term: untyped): untyped =
 
 template ok*(env; term): untyped = resultTuple(env, AtomOk, term)
 template error*(env; term): untyped = resultTuple(env, AtomError, term)
+
+macro toTerm*(env; V: ErlResult): ErlTerm =
+  result = newCall("resultTuple", env, V)
 
 proc copyPragmaWithout(p: NimNode, x: string): NimNode {.compileTime.} =
   expectKind(p, {nnkEmpty, nnkPragma})

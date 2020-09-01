@@ -70,6 +70,11 @@ func posKeywords(env; a: MyO): ErlAtom {.xnif: "pos_keywords".} =
   doAssert(a.c == 3.1)
   return AtomOk
 
+func posResult(env; a: int, b: int): ErlResult[int] {.xnif: "pos_result".} =
+  doAssert(a == 1)
+  doAssert(b == 2)
+  return (AtomOk, a + b)
+
 exportNifs "Elixir.NimlerPositionalArgs",
   [
     posInt,
@@ -82,6 +87,7 @@ exportNifs "Elixir.NimlerPositionalArgs",
     posTupMap,
     posPid,
     posRename,
-    posKeywords
+    posKeywords,
+    posResult
   ]
 

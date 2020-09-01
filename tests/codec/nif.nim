@@ -149,6 +149,10 @@ func codec_result_ok(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
   let c = ok(env, 1)
   doAssert(enif_is_identical(a, b))
   doAssert(enif_is_identical(a, c))
+
+  let r: ErlResult[int] = (AtomOk, 1)
+  doAssert(enif_is_identical(toTerm(env, r), a))
+
   return env.ok(argv[0])
 
 func codec_result_error(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
@@ -157,6 +161,10 @@ func codec_result_error(env, argc, argv): ErlNifTerm {.nif, arity: 1.} =
   let c = error(env, 1)
   doAssert(enif_is_identical(a, b))
   doAssert(enif_is_identical(a, c))
+
+  let r: ErlResult[int] = (AtomError, 1)
+  doAssert(enif_is_identical(toTerm(env, r), a))
+
   return env.error(argv[0])
 
 export_nifs("Elixir.NimlerCodec", [

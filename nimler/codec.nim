@@ -349,8 +349,14 @@ macro resultTuple*(env; resType: ErlAtom, term: untyped): untyped =
     [toTerm(env, resType), toTerm(env, term)]
   result = newCall("enif_make_tuple_from_array", env, getAst(args(resType, term)))
 
+macro resultTuple*(env; resType: ErlAtom): untyped =
+  result = newCall("toTerm", env, resType)
+
 template ok*(env; term): untyped = resultTuple(env, AtomOk, term)
+template ok*(env): untyped = resultTuple(env, AtomOk)
+
 template error*(env; term): untyped = resultTuple(env, AtomError, term)
+template error*(env): untyped = resultTuple(env, AtomError)
 
 macro toTerm*(env; V: ErlResult): ErlTerm =
   result = newCall("resultTuple", env, V)

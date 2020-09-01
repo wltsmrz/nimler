@@ -12,9 +12,9 @@ type MyResource = object
 func new_res(env, argc, argv): ErlNifTerm {.nif, arity: 0, nif_name: "new".} =
   let res = env.new_resource(MyResource)
   if res.isNone():
-    return env.error(env.to_term("fail to allocate new resource"))
+    return env.error("fail to allocate new resource")
   res.get().thing = 0
-  return env.ok(env.release_resource(res.get()))
+  return ok(env, env.release_resource(res.get()))
 
 func set_res(env, argc, argv): ErlNifTerm {.nif, arity: 2, nif_name: "set".} =
   let resource = env.get_resource(argv[0], MyResource)
@@ -23,7 +23,7 @@ func set_res(env, argc, argv): ErlNifTerm {.nif, arity: 2, nif_name: "set".} =
     return env.error()
   let pval = resource.get().thing
   resource.get().thing = newval
-  return env.ok(env.to_term(pval), argv[1])
+  return ok(env, (pval, argv[1]))
     
 func check_res(env, argc, argv): ErlNifTerm {.nif, arity: 2, nif_name: "check".} =
   let resource = env.get_resource(argv[0], MyResource)

@@ -7,7 +7,7 @@ defmodule NimlerInitTimeslice.Test do
 
     describe "test_consume_timeslice" do
         test "timeslice iter" do
-            {:ok,it,invocations} = NimlerWrapper.test_consume_timeslice(0, 0)
+            {:ok, {it,invocations}} = NimlerWrapper.test_consume_timeslice(0, 0)
             assert(it == 1000) # countup val
             assert(invocations == 1001) # invocations
         end

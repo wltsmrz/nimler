@@ -18,7 +18,7 @@ proc consume_timeslice(env; argc; argv): ErlNifTerm {.cdecl.} =
       return enif_schedule_nif(env, consume_timeslice, next_args)
     os.sleep(1)
 
-  return env.ok(env.to_term(it), env.to_term(invocations))
+  return ok(env, (it, invocations))
 
 proc test_consume_timeslice(env; argc; argv): ErlNifTerm {.nif, arity: 2.} =
   consume_timeslice(env, argc, argv)

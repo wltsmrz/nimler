@@ -13,9 +13,7 @@ const elixirModule = """
   defmodule $1 do
     @on_load :init
 
-    def init() do
-      :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), '$2')), $3)
-    end
+    def init(), do: :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), '$2')), $3)
 
 $4
   end

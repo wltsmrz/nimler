@@ -1,6 +1,9 @@
 defmodule NimlerCodec do
   @on_load :init
-  def init(), do: :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), 'nif')), 0)
+
+  def init() do
+    :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), 'nif')), 0)
+  end
 
   def codec_options(_, _), do: exit(:nif_library_not_loaded)
   def codec_int(_, _), do: exit(:nif_library_not_loaded)
@@ -19,4 +22,5 @@ defmodule NimlerCodec do
   def codec_keywords(_), do: exit(:nif_library_not_loaded)
   def codec_result_ok(_), do: exit(:nif_library_not_loaded)
   def codec_result_error(_), do: exit(:nif_library_not_loaded)
+  
 end

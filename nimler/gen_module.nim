@@ -7,24 +7,72 @@ import bindings/erl_nif
 const nimlerWrapperRoot {.strdefine.}: string = ""
 const nimlerWrapperFilename {.strdefine.}: string = ""
 const nimlerWrapperLoadInfo {.strdefine.}: string = "0"
+const nimlerWrapperType {.strdefine.}: string = "elixir"
 
-type ElixirModule = object
-  head: string
-  tail: string
-  fns: seq[string]
+const elixirModule = """
+  defmodule $1 do
+    @on_load :init
 
-func init(m: var ElixirModule, module_name: string, nif_filename: string, load_info: string) =
-  m.head.addf("defmodule $1 do\n", module_name)
-  m.head.add("  @on_load :init\n")
-  m.head.addf("  def init(), do: :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), \'$1\')), $2)\n\n", nif_filename, load_info)
-  m.tail = "\nend\n"
+    def init() do
+      :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), '$2')), $3)
+    end
 
-func addFn(m: var ElixirModule, name: string, arity: int) =
-  let params = "_".repeat(arity).join(", ")
-  m.fns.add("  def $1($2), do: exit(:nif_library_not_loaded)" % [name, params])
+$4
+  end
+"""
+const elixirFn = """
+  def $1($2), do: exit(:nif_library_not_loaded)
+"""
 
-func `$`(m: var ElixirModule): string =
-  result = m.head & m.fns.join("\n") & m.tail
+const erlangModule = """
+  -module($1).
+  -export([
+$4
+  ]).
+  -on_load(init/0).
+
+  init() -> ok = erlang:load_nif("./$2", $3).
+
+$5
+"""
+const erlangFn = """
+  $1($2) -> exit(nif_library_not_loaded).
+"""
+
+proc genFn(templ: string, fn: ErlNifFunc): string {.compileTime.} =
+  let params = "_".repeat(fn.arity).join(", ")
+  return format(templ, [$fn.name, params]).unindent()
+
+proc genErlangWrapper(moduleName: string, nifFilename: string, loadInfo: string, funcs: openArray[ErlNifFunc]): string {.compileTime.} =
+  var exports = newSeqOfCap[string](len(funcs))
+  var fns = newSeqOfCap[string](len(funcs))
+
+  for i in 0 .. high(funcs):
+    fns.add(genFn(erlangFn, funcs[i]).unindent())
+    exports.add($funcs[i].name & "/" & $funcs[i].arity)
+
+  return format(erlangModule, [
+    moduleName,
+    nifFilename,
+    loadInfo,
+    exports.join(",\n").indent(4),
+    fns.join("").indent(2)
+  ])
+  .unindent(2)
+
+proc genElixirWrapper(moduleName: string, nifFilename: string, loadInfo: string, funcs: openArray[ErlNifFunc]): string {.compileTime.} =
+  var fns = newSeqOfCap[string](len(funcs))
+
+  for i in 0 .. high(funcs):
+    fns.add(genFn(elixirFn, funcs[i]))
+
+  return format(elixirModule, [
+    moduleName,
+    nifFilename,
+    loadInfo,
+    fns.join("").indent(4)
+  ])
+  .unindent(2)
 
 proc genWrapper*(moduleName: string, funcs: static openArray[ErlNifFunc]) {.compileTime.} =
   let outDir =
@@ -48,13 +96,14 @@ proc genWrapper*(moduleName: string, funcs: static openArray[ErlNifFunc]) {.comp
 
   if defined(nimlerGenWrapperForce) or (defined(nimlerGenWrapper) and not fileExists(moduleFilepath)):
     discard staticExec("mkdir -p " & outDir)
-
-    var elixirModule = ElixirModule()
-    elixirModule.init(erlModuleName, nifFilename, loadInfo)
-    for fn in funcs:
-      elixirModule.addFn($fn.name, fn.arity.int)
       
     hint("Generating wrapper module: " & moduleFilepath)
-  
-    writeFile(moduleFilepath, $elixirModule)
+
+    case nimlerWrapperType:
+    of "elixir":
+      writeFile(moduleFilepath, genElixirWrapper(erlModuleName, nifFilename, loadInfo, funcs))
+    of "erlang":
+      writeFile(moduleFilepath, genErlangWrapper(erlModuleName, nifFilename, loadInfo, funcs))
+    else:
+      error("invalid wrapper module type: " & nimlerWrapperType)
 

@@ -24,16 +24,15 @@ Nimler is documented at [smrz.dev/nimler](https://smrz.dev/nimler).
 
 ```nim
 import nimler
-import nimler/codec
 
 using
   env: ptr ErlNifEnv
 
 func add(env; a: int, b: int): (ErlAtom, int) {.xnif.} =
-  return (AtomOk, a + b)
+  (AtomOk, a + b)
   
 func sub(env; a: int, b: int): (ErlAtom, int) {.xnif.} =
-  return (AtomOk, a - b)
+  (AtomOk, a - b)
 
 exportNifs "Elixir.NifMath", [ add, sub ]
 ```

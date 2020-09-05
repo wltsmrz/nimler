@@ -1,7 +1,8 @@
 defmodule NimlerIntegration do
   @on_load :init
 
-  def init(), do: :erlang.load_nif(to_charlist(Path.join(Path.dirname(__ENV__.file), 'nif')), 0)
+  def init(), do: :erlang.load_nif(to_charlist(
+      Path.join(Path.dirname(__ENV__.file), 'nif')), 0)
 
   def is_atom(_), do: exit(:nif_library_not_loaded)
   def is_binary(_), do: exit(:nif_library_not_loaded)

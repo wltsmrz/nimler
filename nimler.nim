@@ -126,36 +126,28 @@ proc genNifWrapper(nifName: NimNode, fn: NimNode): NimNode {.compileTime.} =
   let rbody = newTree(nnkStmtList, fn)
   let rcall = newCall(fn.name, ident("env"))
 
+  template tNifFn(n, rbody) {.dirty.} =
+    func n(env: ptr ErlNifEnv; argc: cint; argv: ErlNifArgs): ErlNifTerm =
+      rbody
+  template tReturnTerm(v) =
+    return toTerm(env, v)
+  template tFromTerm(a, b, c) =
+    let a = fromTerm(env, argv[b], c)
+  template tCheckTerm(p) =
+    if unlikely(isNone(p)):
+      return enif_make_badarg(env)
+  template tGetFromTerm(p) =
+    unsafeGet(p)
+
   for i in 2 ..< len(fn.params):
     let p = fn.params[i]
-    let arg = newTree(nnkBracketExpr, ident("argv"), newLit(i-2))
-    rbody.add(newTree(nnkLetSection, newTree(nnkIdentDefs,
-      p[0],
-      newNimNode(nnkEmpty),
-      newCall("fromTerm", ident("env"), arg, p[1]))))
-    rbody.add(newTree(nnkIfStmt, newTree(nnkElifBranch,
-      newCall("unlikely", newCall("isNone", p[0])),
-      newTree(nnkReturnStmt, newCall("enif_make_badarg", ident("env"))))))
-    rcall.add(newCall("unsafeGet", p[0]))
+    rbody.add(getAst(tFromTerm(p[0], newLit(i-2), p[1])))
+    rbody.add(getAst(tCheckTerm(p[0])))
+    rcall.add(getAst(tGetFromTerm(p[0])))
 
-  rbody.add(newTree(nnkReturnStmt, newCall("toTerm", ident("env"), rcall)))
+  rbody.add(getAst(tReturnTerm(rcall)))
 
-  let rfn = newProc(rname, [], rbody, fn.kind)
-  rfn.params = newTree(nnkFormalParams,
-    ident("ErlTerm"),
-    newTree(nnkIdentDefs,
-      ident("env"),
-      newNimNode(nnkPtrTy).add(ident("ErlNifEnv")),
-      newNimNode(nnkEmpty)),
-    newTree(nnkIdentDefs,
-      ident("argc"),
-      ident("cint"),
-      newNimNode(nnkEmpty)),
-    newTree(nnkIdentDefs,
-      ident("argv"),
-      ident("ErlNifArgs"),
-      newNimNode(nnkEmpty)))
-
+  let rfn = getAst(tNifFn(rname, rbody))
   rfn.pragma = copyPragmaWithout(fn.pragma, "raises")
   rfn.pragma.add(ident("nif"))
   rfn.pragma.add(newTree(nnkExprColonExpr,

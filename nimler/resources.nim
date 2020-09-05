@@ -6,7 +6,8 @@ proc priv_data*(env: ptr ErlNifEnv): Option[ptr ErlNifResourceType] =
   if not isNil(priv):
     return some(priv)
 
-proc get_resource*(env: ptr ErlNifEnv, term: ErlNifTerm, T: typedesc): Option[ptr T] =
+proc get_resource*(env: ptr ErlNifEnv,
+    term: ErlNifTerm, T: typedesc): Option[ptr T] =
   let privdata = priv_data(env)
   var res: ptr T
   if privdata.isSome() and enif_get_resource(env, term, privdata.unsafeGet(),
@@ -30,7 +31,8 @@ template export_nifs*(module_name: string, nifs: static openArray[ErlNifFunc]) =
       load_info: ErlNifTerm): cint =
     let flags = cast[cint]({ERL_NIF_RT_CREATE, ERL_NIF_RT_TAKEOVER})
     var flags_tried: cint
-    let open_res = enif_open_resource_type(env, module_name, flags, addr(flags_tried))
+    let open_res = enif_open_resource_type(env,
+        module_name, flags, addr(flags_tried))
     if isNil(open_res): return -1
     priv_data[] = open_res
     return 0

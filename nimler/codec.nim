@@ -19,7 +19,6 @@ type ErlList*[T] = seq[T]
 type ErlInt* = int
 type ErlUInt* = uint
 type ErlFloat* = float
-
 type ErlTerm* = ErlNifTerm
 type ErlAtom* = distinct string
 type ErlKeywords*[T] = seq[tuple[k: ErlAtom, v: T]]
@@ -32,7 +31,8 @@ proc len*(x: ErlAtom): int {.borrow.}
 proc add*[T](x: var ErlKeywords[T], k: string, v: T) =
   x.add((ErlAtom(k), v))
 
-func getKey*[T](keywords: ErlKeywords[T], key: ErlAtom, def: T = default(T)): (bool, T) =
+func getKey*[T](keywords: ErlKeywords[T],
+    key: ErlAtom, def: T = default(T)): (bool, T) =
   for (k, v) in keywords:
     if k == key:
       return (true, v)
@@ -73,7 +73,8 @@ macro genericParams(T: typedesc): untyped =
       error "wrong kind: " & $impl.kind
 
 # term
-func fromTerm*(env; term; T: typedesc[ErlTerm]): Option[T] {.inline.} = some(term)
+func fromTerm*(env; term;
+    T: typedesc[ErlTerm]): Option[T] {.inline.} = some(term)
 
 func toTerm*(env; term: ErlTerm): ErlTerm {.inline.} = term
 
@@ -121,7 +122,7 @@ func fromTerm*(env; term; T: typedesc[uint32]): Option[T] {.inline.} =
 
 func toTerm*(env; term: uint32): ErlTerm {.inline.} =
   enif_make_ulong(env, term)
-  
+
 # int64
 func fromTerm*(env; term; T: typedesc[int64]): Option[T] {.inline.} =
   var res: int64
@@ -155,7 +156,8 @@ func fromTerm*(env; term; T: typedesc[ErlAtom]): Option[T] =
   if enif_get_atom_length(env, term, addr(atomLen), ERL_NIF_LATIN1):
     let bufLen = atomLen + 1
     var atom = newString(atomLen)
-    if enif_get_atom(env, term, addr(atom[0]), bufLen, ERL_NIF_LATIN1) == cint(bufLen):
+    if enif_get_atom(env,
+          term, addr(atom[0]), bufLen, ERL_NIF_LATIN1) == cint(bufLen):
       result = some(ErlAtom(atom))
 
 func toTerm*(env; V: ErlAtom): ErlTerm {.inline.} =
@@ -178,7 +180,8 @@ func fromTerm*(env; term; T: typedesc[seq[char]]): Option[T] =
   if enif_get_list_length(env, term, addr(stringLen)):
     let bufLen = stringLen + 1
     var stringBuf = newSeq[char](stringLen)
-    if enif_get_string(env, term, addr(stringBuf[0]), bufLen, ERL_NIF_LATIN1) == cint(bufLen):
+    if enif_get_string(env, term, addr(stringBuf[0]), bufLen, ERL_NIF_LATIN1) ==
+        cint(bufLen):
       result = some(stringBuf)
 
 func toTerm*(env; V: seq[char]): ErlTerm {.inline.} =
@@ -199,7 +202,8 @@ func toTerm*(env; V: string): ErlTerm {.inline.} =
   result = term
 
 # binary
-func fromTerm*(env; term; T: typedesc[openArray[byte] or seq[byte]]): Option[T] =
+func fromTerm*(env; term;
+    T: typedesc[openArray[byte] or seq[byte]]): Option[T] =
   var erlBin: ErlNifBinary
   if enif_inspect_binary(env, term, addr(erlBin)):
     var bin = newSeq[byte](erlBin.size)
@@ -275,7 +279,8 @@ func fromTerm*(env; term; T: typedesc[Table]): Option[T] =
   var res: Table[KeyType, ValType]
   var iter: ErlNifMapIterator
   var key, val: ErlTerm
-  if not enif_map_iterator_create(env, term, addr(iter), ERL_NIF_MAP_ITERATOR_FIRST):
+  if not enif_map_iterator_create(env, term, addr(iter),
+      ERL_NIF_MAP_ITERATOR_FIRST):
     return none(T)
   while enif_map_iterator_get_pair(env, addr(iter), addr(key), addr(val)):
     let keyD = env.fromTerm(key, KeyType)
@@ -294,7 +299,8 @@ func toTerm*(env; V: Table): ErlTerm =
     keys.add(env.toTerm(k))
     vals.add(env.toTerm(v))
   var res: ErlTerm
-  if not enif_make_map_from_arrays(env, addr(keys[0]), addr(vals[0]), cuint(keys.len), addr(res)):
+  if not enif_make_map_from_arrays(env, addr(keys[0]), addr(vals[0]), cuint(
+      keys.len), addr(res)):
     return enif_raise_exception(env, env.toTerm(ErlAtom("fail to encode map")))
   return res
 
@@ -347,7 +353,8 @@ macro resultTuple*(env; res: ErlResult): untyped =
 macro resultTuple*(env; resType: ErlAtom, term: untyped): untyped =
   template args(resType, term) =
     [toTerm(env, resType), toTerm(env, term)]
-  result = newCall("enif_make_tuple_from_array", env, getAst(args(resType, term)))
+  result = newCall("enif_make_tuple_from_array",
+      env, getAst(args(resType, term)))
 
 macro resultTuple*(env; resType: ErlAtom): untyped =
   result = newCall("toTerm", env, resType)
@@ -360,71 +367,3 @@ template error*(env): untyped = resultTuple(env, AtomError)
 
 macro toTerm*(env; V: ErlResult): ErlTerm =
   result = newCall("resultTuple", env, V)
-
-proc copyPragmaWithout(p: NimNode, x: string): NimNode {.compileTime.} =
-  expectKind(p, {nnkEmpty, nnkPragma})
-  result = newTree(nnkPragma)
-  for e in p:
-    expectKind(e, {nnkIdent, nnkExprColonExpr})
-    case e.kind
-    of nnkExprColonExpr:
-      if not eqIdent(e[0], x):
-        result.add(e)
-    of nnkIdent:
-      if not eqIdent(e, x):
-        result.add(e)
-    else: error "wrong kind"
-
-proc genNifWrapper(nifName: NimNode, fn: NimNode): NimNode {.compileTime.} =
-  expectKind(nifName, nnkStrLit)
-  expectKind(fn, {nnkProcDef, nnkFuncDef})
-
-  let rname = fn.name
-  fn.name = ident("z" & $fn.name & "Internal")
-
-  let rbody = newTree(nnkStmtList, fn)
-  let rcall = newCall(fn.name, ident("env"))
-
-  for i in 2 ..< len(fn.params):
-    let p = fn.params[i]
-    let arg = newTree(nnkBracketExpr, ident("argv"), newLit(i-2))
-    rbody.add(newTree(nnkLetSection, newTree(nnkIdentDefs,
-      p[0],
-      newNimNode(nnkEmpty),
-      newCall("fromTerm", ident("env"), arg, p[1]))))
-    rbody.add(newTree(nnkIfStmt, newTree(nnkElifBranch,
-      newCall("unlikely", newCall("isNone", p[0])),
-      newTree(nnkReturnStmt, newCall("enif_make_badarg", ident("env"))))))
-    rcall.add(newCall("unsafeGet", p[0]))
-
-  rbody.add(newTree(nnkReturnStmt, newCall("toTerm", ident("env"), rcall)))
-
-  let rfn = newProc(rname, [], rbody, fn.kind)
-  rfn.params = newTree(nnkFormalParams,
-    ident("ErlTerm"),
-    newTree(nnkIdentDefs,
-      ident("env"),
-      newNimNode(nnkPtrTy).add(ident("ErlNifEnv")),
-      newNimNode(nnkEmpty)),
-    newTree(nnkIdentDefs,
-      ident("argc"),
-      ident("cint"),
-      newNimNode(nnkEmpty)),
-    newTree(nnkIdentDefs,
-      ident("argv"),
-      ident("ErlNifArgs"),
-      newNimNode(nnkEmpty)))
-
-  rfn.pragma = copyPragmaWithout(fn.pragma, "raises")
-  rfn.pragma.add(ident("nif"))
-  rfn.pragma.add(newTree(nnkExprColonExpr, ident("arity"), newLit(len(fn.params)-2)))
-  rfn.pragma.add(newTree(nnkExprColonExpr, ident("nif_name"), nifName))
-
-  result = rfn
-
-macro xnif*(nifName: untyped, fn: untyped): untyped =
-  result = genNifWrapper(nifName, fn)
-
-macro xnif*(fn: untyped): untyped =
-  result = genNifWrapper(newLit(repr fn.name), fn)
-

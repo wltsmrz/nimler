@@ -17,6 +17,9 @@ jobs:
           - otp: '23.0'
             elixir: '1.10.4'
             nim: '1.2.6'
+          - otp: '23.1.2'
+            elixir: '1.11.2'
+            nim: '1.2.8'
     name: OTP ${{matrix.tuple.otp}} - Elixir ${{matrix.tuple.elixir}} - Nim ${{matrix.tuple.nim}}
     runs-on: ubuntu-18.04
     steps:

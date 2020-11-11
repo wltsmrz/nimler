@@ -1,6 +1,6 @@
 # nimler
 
-Nimler is a library for authoring Erlang and Elixir NIFs in the nim programming language. It has mostly complete bindings for the Erlang NIF API and some accessories for making writing NIFs easier, including idiomatic functions for converting between Erlang terms and nim types, and simplifications for using resource objects.
+Nimler is a library for authoring Erlang and Elixir NIFs in the Nim programming language. It has mostly complete bindings for the Erlang NIF API and some accessories for making writing NIFs easier, including idiomatic functions for converting between Erlang terms and Nim types, and simplifications for using resource objects.
 
 Mostly, Nimler is a minimal, zero-dependency wrapper for Erlang NIF API.
 

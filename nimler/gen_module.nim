@@ -20,7 +20,7 @@ $4
   end
 """
 const elixirFn = """
-  def $1($2), do: exit(:nif_library_not_loaded)
+  def $1($2), do: :erlang.nif_error(:nif_library_not_loaded)
 """
 
 const erlangModule = """
@@ -35,7 +35,7 @@ $4
 $5
 """
 const erlangFn = """
-  $1($2) -> exit(nif_library_not_loaded).
+  $1($2) -> :erlang.nif_error(:nif_library_not_loaded).
 """
 
 proc genFn(templ: string, fn: ErlNifFunc): string {.compileTime.} =
